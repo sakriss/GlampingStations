@@ -1,0 +1,100 @@
+ [
+  {
+  "id": "1",
+  "name": "Arco",
+  "latitude": 47.5889687,
+  "longitude": -122.3239951,
+  "rating": "Good",
+  "comment": "Not too bad"
+  },
+  {
+  "id": "2",
+  "name": "Jacksons",
+  "latitude": 47.6111103,
+  "longitude": -122.3315225,
+  "rating": "Good",
+  "comment": "Not too bad"
+  
+  },
+  {
+  "id": "3",
+  "name": "Flying J's",
+  "latitude": 47.2906466,
+  "longitude": -122.2622365,
+  "rating": "Ideal",
+  "comment": "Ideal for big trailers"
+  },
+  {
+  "id": "4",
+  "name": "Chevron",
+  "latitude": 45.5493576,
+  "longitude": -122.5433662,
+  "rating": "Good",
+  "comment": "Not too bad"
+  
+  },
+  {
+  "id": "5",
+  "name": "Shell",
+  "latitude": 46.9663123,
+  "longitude": -122.8978648,
+  "rating": "Good",
+  "comment": "Not too bad"
+  },
+  {
+  "id": "6",
+  "name": "Texaco",
+  "latitude": 46.7824544,
+  "longitude": -123.016462,
+  "rating": "Good",
+  "comment": "Not too bad"
+  },
+  {
+  "id": "7",
+  "name": "Pacific Pride",
+  "latitude": 47.2458844,
+  "longitude": -122.3460504,
+  "rating": "Good",
+  "comment": "Not too bad"
+  },
+  {
+  "id": "8",
+  "name": "Safeway",
+  "latitude": 47.2232223,
+  "longitude": -122.4192183,
+  "rating": "Bad",
+  "comment": "Not easy to get in and out of"
+  },
+  {
+  "id": "9",
+  "name": "Gas & Go",
+  "latitude": 47.7700959,
+  "longitude": -122.3363213,
+  "rating": "Good",
+  "comment": "Not too bad"
+  },
+  {
+  "id": "10",
+  "name": "Last mile stop",
+  "latitude": 47.9099298,
+  "longitude": -122.2556405,
+  "rating": "Good",
+  "comment": "Not too bad"
+  },
+  {
+  "id": "11",
+  "name": "Fred Meyer",
+  "latitude": 47.1670218,
+  "longitude": -122.1514177,
+  "rating": "Ok",
+  "comment": "Not too bad, but tight"
+  },
+  {
+  "id": "12",
+  "name": "Hi Ways Gas",
+  "latitude": 47.1647434,
+  "longitude": -122.1183152,
+  "rating": "Bad",
+  "comment": "Keep driving past this one"
+  }
+  ]
