@@ -19,9 +19,9 @@ class StationDetailsViewController: UIViewController {
     var stationDetails:Station?
     
     var text = NSMutableAttributedString(string: "")
-    var stationName:String = ""
-    var stationAddress = ""
-    var stationDistance = ""
+//    var stationName:String = ""
+//    var stationAddress = ""
+//    var stationDistance = ""
     var stepByStepDirections:String = ""
     var stationCoords = [CLLocationCoordinate2D()]
     
