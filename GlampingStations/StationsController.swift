@@ -15,6 +15,7 @@ class StationsController: Codable {
     static let shared = StationsController()
     
     static let stationsDataParseComplete = Notification.Name("stationsDataParseComplete")
+    static let stationsDataParseFailed = Notification.Name("stationsDataParseFailed")
     
     var stations: [Station]?
     
@@ -34,6 +35,9 @@ class StationsController: Codable {
                 self.stations = ( try? JSONDecoder().decode([Station].self, from: data))
                 self.saveToCoreData()
                 NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
+            } else {
+                print("ERROR: \(error!)")
+                NotificationCenter.default.post(name: StationsController.stationsDataParseFailed, object: nil)
             }
 
             }.resume()

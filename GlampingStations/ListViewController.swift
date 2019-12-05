@@ -30,8 +30,31 @@ class ListViewController: UIViewController {
 
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
+//        locationManager.requestWhenInUseAuthorization()
         
+        let authStatus = CLLocationManager.authorizationStatus()
+        
+        if authStatus == .notDetermined {
+            locationManager.requestWhenInUseAuthorization()
+        } else {
+            locationManager.requestLocation()
+        }
+        
+        loadingDataAnimation()
+        
+        //pull to refresh
+        let attributes = [NSAttributedStringKey.foregroundColor: UIColor(red: 213/255, green: 220/255, blue: 232/255, alpha: 1)]
+        refreshControl.tintColor = UIColor(red: 213/255, green: 220/255, blue: 232/255, alpha: 1)
+        refreshControl.backgroundColor = UIColor(red: 120/255, green: 135/255, blue: 171/255, alpha: 1)
+        refreshControl.attributedTitle = NSAttributedString(string: "Refreshing Stations...", attributes: attributes)
+        refreshControl.addTarget(self, action: #selector(refreshData), for: UIControlEvents.valueChanged)
+        self.stationsTableView.addSubview(refreshControl)
+
+//        StationsController.shared.fetchStations()
+        NotificationCenter.default.addObserver(self, selector: #selector(stationDataFetched) , name: StationsController.stationsDataParseComplete, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(stationDataFailed) , name: StationsController.stationsDataParseFailed, object: nil)
+    }
+    func loadingDataAnimation () {
         //*** small alert on application load with blur background ***/
         let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.light)
         let blurEffectView = UIVisualEffectView(effect: blurEffect)
@@ -44,17 +67,6 @@ class ListViewController: UIViewController {
         view.addSubview(blurEffectView)
         alert.view.addSubview(loadingIndicator)
         present(alert, animated: true, completion: nil)
-        
-        //pull to refresh
-        let attributes = [NSAttributedStringKey.foregroundColor: UIColor(red: 213/255, green: 220/255, blue: 232/255, alpha: 1)]
-        refreshControl.tintColor = UIColor(red: 213/255, green: 220/255, blue: 232/255, alpha: 1)
-        refreshControl.backgroundColor = UIColor(red: 120/255, green: 135/255, blue: 171/255, alpha: 1)
-        refreshControl.attributedTitle = NSAttributedString(string: "Refreshing Stations...", attributes: attributes)
-        refreshControl.addTarget(self, action: #selector(refreshData), for: UIControlEvents.valueChanged)
-        self.stationsTableView.addSubview(refreshControl)
-
-//        StationsController.shared.fetchStations()
-        NotificationCenter.default.addObserver(self, selector: #selector(stationDataFetched) , name: StationsController.stationsDataParseComplete, object: nil)
     }
     
     @objc func refreshData(sender:AnyObject) {
@@ -80,6 +92,48 @@ class ListViewController: UIViewController {
             
         }
         
+    }
+    
+    @objc func stationDataFailed () {
+        //now that data fetch failed, do something about it
+                DispatchQueue.main.async {
+                    //dismiss the alert
+                    self.dismiss(animated: false, completion: nil)
+                    
+                    //display the alert
+                    let alert = UIAlertController(title: "Error gathering locations", message: "Please make sure you're connected to the internet and tap Try Again", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Try Again", style: .default, handler: { action in
+                        switch action.style{
+                        case .default:
+                            
+                            //remove the UIViews
+                            self.view.subviews.compactMap {  $0 as? UIVisualEffectView }.forEach {
+                                $0.removeFromSuperview()
+                            }
+
+                            //initiate the refreshdata call and start the animation
+                            self.refreshData(sender: AnyObject.self as AnyObject)
+                            self.loadingDataAnimation()
+
+                            print("default")
+                            
+                        case .cancel:
+                            print("cancel")
+                            
+                        case .destructive:
+                            print("destructive")
+                            
+                            
+                        }}))
+                    self.present(alert, animated: true, completion: nil)
+        //            self.view.subviews.compactMap {  $0 as? UIVisualEffectView }.forEach {
+        //                $0.removeFromSuperview()
+        //            }
+
+                    self.stationsTableView.reloadData()
+                    
+                    self.refreshControl.endRefreshing()
+                }
     }
     
     func getPlacemark(forLocation location: CLLocation, completionHandler: @escaping (CLPlacemark?, String?) -> ()) {
