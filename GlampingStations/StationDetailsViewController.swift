@@ -32,7 +32,7 @@ class StationDetailsViewController: UIViewController {
         
         placeAnnotation()
         
-        self.stationsDetailsTableView.rowHeight = UITableViewAutomaticDimension
+        self.stationsDetailsTableView.rowHeight = UITableView.automaticDimension
         self.stationsDetailsTableView.estimatedRowHeight = 800
         self.stationsDetailsTableView.isScrollEnabled = true
         
@@ -57,7 +57,7 @@ class StationDetailsViewController: UIViewController {
     }
     
     func createRoute() {
-        let request = MKDirectionsRequest()
+        let request = MKDirections.Request()
         
         let coords = CLLocationCoordinate2D(latitude: (stationDetails?.latitude)!, longitude: (stationDetails?.longitude)!)
         
@@ -67,7 +67,7 @@ class StationDetailsViewController: UIViewController {
         request.source = MKMapItem(placemark: source)
         
         let directions = MKDirections(request: request)
-        directions.calculate { (response: MKDirectionsResponse?, error: Error?) in
+        directions.calculate { (response: MKDirections.Response?, error: Error?) in
             guard let response = response else {
                 print(error ?? "No Response and no error!")
                 return
@@ -79,8 +79,8 @@ class StationDetailsViewController: UIViewController {
                 self.stepByStepDirections.append(step.instructions)
                 print(step.instructions)
             }
-            self.setVisibleMapArea(polyline: route.polyline, edgeInsets: UIEdgeInsetsMake(15, 15, 15, 15))
-            self.stationDetailMapView.add(route.polyline, level: .aboveRoads)
+            self.setVisibleMapArea(polyline: route.polyline, edgeInsets: UIEdgeInsets.init(top: 15, left: 15, bottom: 15, right: 15))
+            self.stationDetailMapView.addOverlay(route.polyline, level: .aboveRoads)
         }
     }
     

@@ -37,7 +37,7 @@ class StationDetailsTableViewCell: UITableViewCell {
     @IBAction func getDirectionsButton(_ sender: UIButton) {
         let regionDistance:CLLocationDistance = 10000
         let coordinates = CLLocationCoordinate2DMake((stationDetails?.latitude)!, (stationDetails?.longitude!)!)
-        let regionSpan = MKCoordinateRegionMakeWithDistance(coordinates, regionDistance, regionDistance)
+        let regionSpan = MKCoordinateRegion.init(center: coordinates, latitudinalMeters: regionDistance, longitudinalMeters: regionDistance)
         let options = [
             MKLaunchOptionsMapCenterKey: NSValue(mkCoordinate: regionSpan.center),
             MKLaunchOptionsMapSpanKey: NSValue(mkCoordinateSpan: regionSpan.span)
@@ -55,10 +55,10 @@ class StationDetailsTableViewCell: UITableViewCell {
             stationCommentTextView.text = stationComment
             
             // create the alert
-            let alert = UIAlertController(title: "Station Comments", message: "Your comment has been saved for this station.", preferredStyle: UIAlertControllerStyle.alert)
+            let alert = UIAlertController(title: "Station Comments", message: "Your comment has been saved for this station.", preferredStyle: UIAlertController.Style.alert)
             
             // add an action (button)
-            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
             
             // show the alert
             UIApplication.shared.keyWindow?.rootViewController?.present(alert, animated: true, completion: nil)

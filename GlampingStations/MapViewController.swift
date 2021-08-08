@@ -141,7 +141,7 @@ extension MapViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         
-        let request = MKDirectionsRequest()
+        let request = MKDirections.Request()
 
         let coords = CLLocationCoordinate2D(latitude: mapView.selectedAnnotations[0].coordinate.latitude, longitude: mapView.selectedAnnotations[0].coordinate.longitude )
 
@@ -151,7 +151,7 @@ extension MapViewController: MKMapViewDelegate {
         request.source = MKMapItem(placemark: source)
         
         let directions = MKDirections(request: request)
-        directions.calculate { (response: MKDirectionsResponse?, error: Error?) in
+        directions.calculate { (response: MKDirections.Response?, error: Error?) in
             guard let response = response else {
                 print(error ?? "No Response and no error!")
                 return
@@ -163,8 +163,8 @@ extension MapViewController: MKMapViewDelegate {
                 self.stepByStepDirections.append(step.instructions)
                 print(step.instructions)
             }
-            self.setVisibleMapArea(polyline: route.polyline, edgeInsets: UIEdgeInsetsMake(90, 40, 40, 40))
-            self.mapView.add(route.polyline, level: .aboveRoads)
+            self.setVisibleMapArea(polyline: route.polyline, edgeInsets: UIEdgeInsets.init(top: 90, left: 40, bottom: 40, right: 40))
+            self.mapView.addOverlay(route.polyline, level: .aboveRoads)
             
             
         }
@@ -176,7 +176,7 @@ extension MapViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didDeselect view: MKAnnotationView) {
         self.mapView.overlays.forEach {
             if !($0 is MKUserLocation) {
-                self.mapView.remove($0)
+                self.mapView.removeOverlay($0)
             }
         }
         stepByStepDirections = []

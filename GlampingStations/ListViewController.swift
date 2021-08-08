@@ -25,7 +25,7 @@ class ListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.stationsTableView.rowHeight = UITableViewAutomaticDimension
+        self.stationsTableView.rowHeight = UITableView.automaticDimension
         self.stationsTableView.estimatedRowHeight = 100
 
         locationManager.delegate = self
@@ -43,11 +43,11 @@ class ListViewController: UIViewController {
         loadingDataAnimation()
         
         //pull to refresh
-        let attributes = [NSAttributedStringKey.foregroundColor: UIColor(red: 213/255, green: 220/255, blue: 232/255, alpha: 1)]
+        let attributes = [NSAttributedString.Key.foregroundColor: UIColor(red: 213/255, green: 220/255, blue: 232/255, alpha: 1)]
         refreshControl.tintColor = UIColor(red: 213/255, green: 220/255, blue: 232/255, alpha: 1)
         refreshControl.backgroundColor = UIColor(red: 120/255, green: 135/255, blue: 171/255, alpha: 1)
         refreshControl.attributedTitle = NSAttributedString(string: "Refreshing Stations...", attributes: attributes)
-        refreshControl.addTarget(self, action: #selector(refreshData), for: UIControlEvents.valueChanged)
+        refreshControl.addTarget(self, action: #selector(refreshData), for: UIControl.Event.valueChanged)
         self.stationsTableView.addSubview(refreshControl)
 
 //        StationsController.shared.fetchStations()
@@ -56,13 +56,13 @@ class ListViewController: UIViewController {
     }
     func loadingDataAnimation () {
         //*** small alert on application load with blur background ***/
-        let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.light)
+        let blurEffect = UIBlurEffect(style: UIBlurEffect.Style.light)
         let blurEffectView = UIVisualEffectView(effect: blurEffect)
         blurEffectView.frame = view.bounds
         let alert = UIAlertController(title: nil, message: "Finding Stations...", preferredStyle: .alert)
         let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
         loadingIndicator.hidesWhenStopped = true
-        loadingIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
+        loadingIndicator.style = UIActivityIndicatorView.Style.gray
         loadingIndicator.startAnimating()
         view.addSubview(blurEffectView)
         alert.view.addSubview(loadingIndicator)
