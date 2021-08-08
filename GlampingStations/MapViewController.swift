@@ -35,7 +35,11 @@ class MapViewController: UIViewController {
         mapView.translatesAutoresizingMaskIntoConstraints = false
         mapView.delegate = self
         
-        let center = CLLocationCoordinate2D(latitude: 47.625030, longitude: -122.337419)
+        if let location = locationManager.location {
+            userLocation = location
+        }
+        
+        let center = CLLocationCoordinate2D(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude)
         let span = MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.2)
         
         mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: false)

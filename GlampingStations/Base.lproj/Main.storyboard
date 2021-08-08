@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="4WV-qf-Oa7">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="4WV-qf-Oa7">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -25,7 +25,7 @@
                                 </constraints>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="StationDetailsTableViewCell" rowHeight="265" id="uQK-zH-RqD" customClass="StationDetailsTableViewCell" customModule="GlampingStations" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="28" width="375" height="265"/>
+                                        <rect key="frame" x="0.0" y="24.5" width="375" height="265"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="uQK-zH-RqD" id="cb7-2Z-Aue">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="265"/>
@@ -49,7 +49,7 @@
                                                     <color key="textColor" name="DarkModeText"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3nN-NQ-Tga">
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3nN-NQ-Tga">
                                                     <rect key="frame" x="261" y="51.5" width="98" height="30"/>
                                                     <state key="normal" title="Get Directions"/>
                                                     <connections>
@@ -67,8 +67,8 @@
                                                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                                     <dataDetectorType key="dataDetectorTypes" phoneNumber="YES" lookupSuggestion="YES"/>
                                                 </textView>
-                                                <button opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="251" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kex-wH-vJM">
-                                                    <rect key="frame" x="15" y="220" width="112" height="30"/>
+                                                <button opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="251" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kex-wH-vJM">
+                                                    <rect key="frame" x="16" y="220" width="112" height="30"/>
                                                     <state key="normal" title="Save Comments"/>
                                                     <connections>
                                                         <action selector="saveCommentbutton:" destination="uQK-zH-RqD" eventType="touchUpInside" id="PkB-Ae-e9W"/>
@@ -116,6 +116,7 @@
                                 </connections>
                             </mapView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="F52-eu-YNA"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="F52-eu-YNA" firstAttribute="trailing" secondItem="xgk-yt-uJC" secondAttribute="trailing" id="6f8-q8-bkf"/>
@@ -126,7 +127,6 @@
                             <constraint firstItem="xgk-yt-uJC" firstAttribute="leading" secondItem="F52-eu-YNA" secondAttribute="leading" id="aaK-1d-bx3"/>
                             <constraint firstItem="xgk-yt-uJC" firstAttribute="bottom" secondItem="NIU-jY-cAa" secondAttribute="bottom" id="lX0-Zh-RBv"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="F52-eu-YNA"/>
                     </view>
                     <connections>
                         <outlet property="stationDetailMapView" destination="bzw-kH-Wcw" id="yqe-ll-YCa"/>
@@ -156,7 +156,7 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="ListTableViewCell" rowHeight="100" id="lwz-m9-cc9" customClass="ListTableViewCell" customModule="GlampingStations" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="28" width="375" height="100"/>
+                                        <rect key="frame" x="0.0" y="24.5" width="375" height="100"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="lwz-m9-cc9" id="rq5-WR-kV9" customClass="ListTableViewCell" customModule="GlampingStations" customModuleProvider="target">
                                             <rect key="frame" x="0.0" y="0.0" width="375" height="100"/>
@@ -198,6 +198,7 @@
                                 </connections>
                             </tableView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="9vK-lI-mXp"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="gid-WW-gjO" firstAttribute="bottom" secondItem="9vK-lI-mXp" secondAttribute="bottom" id="D95-Fe-GzJ"/>
@@ -205,7 +206,6 @@
                             <constraint firstItem="gid-WW-gjO" firstAttribute="leading" secondItem="9vK-lI-mXp" secondAttribute="leading" id="WU8-Ps-Qyf"/>
                             <constraint firstItem="gid-WW-gjO" firstAttribute="trailing" secondItem="9vK-lI-mXp" secondAttribute="trailing" id="uUh-aR-GV8"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="9vK-lI-mXp"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="List of Stations" image="listicon_tab" id="LGl-gh-9wx"/>
                     <connections>
@@ -230,6 +230,7 @@
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="VoW-uh-6Ci"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="VoW-uh-6Ci" firstAttribute="trailing" secondItem="B5z-6z-9nV" secondAttribute="trailing" id="6xv-Lq-13r"/>
@@ -237,7 +238,6 @@
                             <constraint firstItem="B5z-6z-9nV" firstAttribute="top" secondItem="VoW-uh-6Ci" secondAttribute="top" id="hUc-fw-cUs"/>
                             <constraint firstItem="B5z-6z-9nV" firstAttribute="leading" secondItem="VoW-uh-6Ci" secondAttribute="leading" id="smp-1e-TgC"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="VoW-uh-6Ci"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="Map of Stations" image="mapicon_tab" id="lgD-Ql-w8I"/>
                     <connections>
@@ -588,6 +588,7 @@ Cg
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="es8-rG-CKh"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="pQo-jo-LaB" firstAttribute="leading" secondItem="es8-rG-CKh" secondAttribute="leading" constant="16" id="BZt-45-Qax"/>
@@ -595,7 +596,6 @@ Cg
                             <constraint firstItem="es8-rG-CKh" firstAttribute="bottom" secondItem="pQo-jo-LaB" secondAttribute="bottom" id="jS5-8h-uy4"/>
                             <constraint firstItem="pQo-jo-LaB" firstAttribute="top" secondItem="es8-rG-CKh" secondAttribute="top" id="zdT-FL-s3d"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="es8-rG-CKh"/>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6ch-3M-lNM" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1466,6 +1466,7 @@ Cg
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="a2P-cB-6jh"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="e2A-QT-2lH" firstAttribute="top" secondItem="a2P-cB-6jh" secondAttribute="top" id="4tA-sN-jPR"/>
@@ -1473,7 +1474,6 @@ Cg
                             <constraint firstItem="a2P-cB-6jh" firstAttribute="trailing" secondItem="e2A-QT-2lH" secondAttribute="trailing" constant="16" id="L1V-C2-YDW"/>
                             <constraint firstItem="e2A-QT-2lH" firstAttribute="leading" secondItem="a2P-cB-6jh" secondAttribute="leading" constant="16" id="o6L-Ye-R5K"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="a2P-cB-6jh"/>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="opP-SJ-kNV" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -1502,7 +1502,7 @@ Cg
                                 <color key="textColor" red="0.086274509799999996" green="0.16078431369999999" blue="0.33333333329999998" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bit-S1-w4J">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bit-S1-w4J">
                                 <rect key="frame" x="16" y="106" width="95" height="30"/>
                                 <state key="normal" title="Privacy Policy">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1511,7 +1511,7 @@ Cg
                                     <segue destination="Rov-lV-nCo" kind="show" id="HJm-pb-DkF"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3aO-0A-yYZ">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3aO-0A-yYZ">
                                 <rect key="frame" x="16" y="144" width="150" height="30"/>
                                 <state key="normal" title="Terms and Conditions">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -1521,6 +1521,7 @@ Cg
                                 </connections>
                             </button>
                         </subviews>
+                        <viewLayoutGuide key="safeArea" id="FfD-OC-LYq"/>
                         <color key="backgroundColor" red="0.47058823529999999" green="0.52941176469999995" blue="0.6705882353" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
                             <constraint firstItem="GYO-2w-0U8" firstAttribute="top" secondItem="FfD-OC-LYq" secondAttribute="top" constant="6" id="4Ev-jp-hfQ"/>
@@ -1534,7 +1535,6 @@ Cg
                             <constraint firstItem="FfD-OC-LYq" firstAttribute="trailing" secondItem="GYO-2w-0U8" secondAttribute="trailing" id="tfK-hR-bvc"/>
                             <constraint firstItem="GYO-2w-0U8" firstAttribute="leading" secondItem="FfD-OC-LYq" secondAttribute="leading" id="wFk-Ny-crA"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="FfD-OC-LYq"/>
                     </view>
                     <connections>
                         <outlet property="buildLabel" destination="emj-eY-3yc" id="RQ6-eT-tJR"/>
@@ -1574,6 +1574,9 @@ Cg
             <point key="canvasLocation" x="1150" y="-54"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="BlM-QL-PEX"/>
+    </inferredMetricsTieBreakers>
     <resources>
         <image name="listicon_tab" width="25" height="25"/>
         <image name="mapicon_tab" width="25" height="25"/>
@@ -1581,7 +1584,4 @@ Cg
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </namedColor>
     </resources>
-    <inferredMetricsTieBreakers>
-        <segue reference="BlM-QL-PEX"/>
-    </inferredMetricsTieBreakers>
 </document>
