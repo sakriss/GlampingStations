@@ -56,7 +56,7 @@ class MapViewController: UIViewController {
         for station in StationsController.shared.stations! {
             let lat = station.latitude
             let long = station.longitude
-            let stationLocation = CLLocationCoordinate2D(latitude: lat!, longitude: long!)
+            let stationLocation = CLLocationCoordinate2D(latitude: lat, longitude: long)
             
             stationCoords.append(stationLocation)
             

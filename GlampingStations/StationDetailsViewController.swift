@@ -212,7 +212,7 @@ extension StationDetailsViewController: UITableViewDataSource {
         
         cell.stationCommentTextView.layer.borderWidth = 1
         
-        cell.stationDetails = stationDetails
+        cell.stationDetails = stationDetails!
         
         if let stationName = stationDetails?.name, let rating = stationDetails?.rating {
             cell.stationNameLabel.text = stationName + " - " + ("\( rating )")
