@@ -23,6 +23,12 @@
 		16F5BDD32106382C00A93A03 /* Station.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F5BDD22106382C00A93A03 /* Station.swift */; };
 		16F5BDD72106397000A93A03 /* stations.json in Resources */ = {isa = PBXBuildFile; fileRef = 16F5BDD62106397000A93A03 /* stations.json */; };
 		16F5BDD92106789800A93A03 /* StationsInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F5BDD82106789800A93A03 /* StationsInfo.swift */; };
+		D236AF7626CB4FDD009FD4BE /* dumpstations.json in Resources */ = {isa = PBXBuildFile; fileRef = D236AF7526CB4FDD009FD4BE /* dumpstations.json */; };
+		D236AF7826CB507C009FD4BE /* DumpStation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D236AF7726CB507C009FD4BE /* DumpStation.swift */; };
+		D236AF7A26CB51A3009FD4BE /* DumpStationsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D236AF7926CB51A3009FD4BE /* DumpStationsController.swift */; };
+		D236AF7D26CB5337009FD4BE /* dumpStations.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = D236AF7B26CB5337009FD4BE /* dumpStations.xcdatamodeld */; };
+		D236AF8026CB5870009FD4BE /* DumpStationCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = D236AF7E26CB5870009FD4BE /* DumpStationCD+CoreDataClass.swift */; };
+		D236AF8126CB5870009FD4BE /* DumpStationCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = D236AF7F26CB5870009FD4BE /* DumpStationCD+CoreDataProperties.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +50,12 @@
 		16F5BDD22106382C00A93A03 /* Station.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Station.swift; sourceTree = "<group>"; };
 		16F5BDD62106397000A93A03 /* stations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = stations.json; sourceTree = "<group>"; };
 		16F5BDD82106789800A93A03 /* StationsInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationsInfo.swift; sourceTree = "<group>"; };
+		D236AF7526CB4FDD009FD4BE /* dumpstations.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = dumpstations.json; sourceTree = "<group>"; };
+		D236AF7726CB507C009FD4BE /* DumpStation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DumpStation.swift; sourceTree = "<group>"; };
+		D236AF7926CB51A3009FD4BE /* DumpStationsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DumpStationsController.swift; sourceTree = "<group>"; };
+		D236AF7C26CB5337009FD4BE /* dumpStations.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = dumpStations.xcdatamodel; sourceTree = "<group>"; };
+		D236AF7E26CB5870009FD4BE /* DumpStationCD+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DumpStationCD+CoreDataClass.swift"; sourceTree = "<group>"; };
+		D236AF7F26CB5870009FD4BE /* DumpStationCD+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DumpStationCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +72,9 @@
 		16F5BDAC21062B7E00A93A03 = {
 			isa = PBXGroup;
 			children = (
+				D236AF7E26CB5870009FD4BE /* DumpStationCD+CoreDataClass.swift */,
+				D236AF7F26CB5870009FD4BE /* DumpStationCD+CoreDataProperties.swift */,
+				D236AF7B26CB5337009FD4BE /* dumpStations.xcdatamodeld */,
 				1668EE3C2124A879008B5B4A /* stations.xcdatamodeld */,
 				16F5BDB721062B7F00A93A03 /* GlampingStations */,
 				16F5BDB621062B7F00A93A03 /* Products */,
@@ -90,6 +105,9 @@
 				16F5BDD02106376C00A93A03 /* StationsController.swift */,
 				16F5BDD22106382C00A93A03 /* Station.swift */,
 				16F5BDD62106397000A93A03 /* stations.json */,
+				D236AF7926CB51A3009FD4BE /* DumpStationsController.swift */,
+				D236AF7726CB507C009FD4BE /* DumpStation.swift */,
+				D236AF7526CB4FDD009FD4BE /* dumpstations.json */,
 				16C70A782107DF7400806321 /* StationDetailsViewController.swift */,
 				16C70A7A210AA5FD00806321 /* StationDetailsTableViewCell.swift */,
 				16F5BDD82106789800A93A03 /* StationsInfo.swift */,
@@ -158,6 +176,7 @@
 			files = (
 				16F5BDC321062B8000A93A03 /* LaunchScreen.storyboard in Resources */,
 				16F5BDC021062B8000A93A03 /* Assets.xcassets in Resources */,
+				D236AF7626CB4FDD009FD4BE /* dumpstations.json in Resources */,
 				16F5BDD72106397000A93A03 /* stations.json in Resources */,
 				16F5BDBE21062B7F00A93A03 /* Main.storyboard in Resources */,
 			);
@@ -170,6 +189,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D236AF7D26CB5337009FD4BE /* dumpStations.xcdatamodeld in Sources */,
 				16F5BDBB21062B7F00A93A03 /* ViewController.swift in Sources */,
 				16F5BDCB2106320400A93A03 /* MapViewController.swift in Sources */,
 				1668EE3E2124A879008B5B4A /* stations.xcdatamodeld in Sources */,
@@ -179,8 +199,12 @@
 				16C522352141E25B007F9935 /* AboutViewController.swift in Sources */,
 				16F5BDB921062B7F00A93A03 /* AppDelegate.swift in Sources */,
 				16C70A792107DF7400806321 /* StationDetailsViewController.swift in Sources */,
+				D236AF7826CB507C009FD4BE /* DumpStation.swift in Sources */,
 				16F5BDD32106382C00A93A03 /* Station.swift in Sources */,
+				D236AF8126CB5870009FD4BE /* DumpStationCD+CoreDataProperties.swift in Sources */,
 				16F5BDD92106789800A93A03 /* StationsInfo.swift in Sources */,
+				D236AF8026CB5870009FD4BE /* DumpStationCD+CoreDataClass.swift in Sources */,
+				D236AF7A26CB51A3009FD4BE /* DumpStationsController.swift in Sources */,
 				16F5BDCF2106332600A93A03 /* ListTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -390,6 +414,16 @@
 			);
 			currentVersion = 1668EE3D2124A879008B5B4A /* stations.xcdatamodel */;
 			path = stations.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+		D236AF7B26CB5337009FD4BE /* dumpStations.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				D236AF7C26CB5337009FD4BE /* dumpStations.xcdatamodel */,
+			);
+			currentVersion = D236AF7C26CB5337009FD4BE /* dumpStations.xcdatamodel */;
+			path = dumpStations.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};
