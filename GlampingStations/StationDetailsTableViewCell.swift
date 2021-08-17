@@ -29,7 +29,7 @@ class StationDetailsTableViewCell: UITableViewCell {
     enum NavigationApps: String {
         case appleMaps = "Apple Maps"
         case googleMaps = "Google Maps"
-        case wazeMaps = "Waze Maps"
+        case wazeMaps = "Waze"
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {

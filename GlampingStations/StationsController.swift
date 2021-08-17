@@ -39,9 +39,8 @@ class StationsController: Codable {
                 print("ERROR: \(error!)")
                 NotificationCenter.default.post(name: StationsController.stationsDataParseFailed, object: nil)
             }
-
-            }.resume()
-    
+            
+        }.resume()
     }
     
     func saveToCoreData() {
@@ -69,7 +68,6 @@ class StationsController: Codable {
                     
                     AppDelegate.saveContext()
                 }
-                
             }
             catch {
                 print("error executing fetch request: \(error)")
@@ -78,22 +76,22 @@ class StationsController: Codable {
     }
     
     func updateStationComment(stationId: String, newComment: String) {
-    
-            let fetchRequest = NSFetchRequest<StationCD>(entityName: "StationCD")
-            fetchRequest.predicate = NSPredicate(format: "id = %@", stationId)
-            
-            var results: [StationCD] = []
-            
-            do {
-                results = try AppDelegate.moc.fetch(fetchRequest)
-                if let stationCD = results.first {
-                    stationCD.comment = newComment
-                    AppDelegate.saveContext()
-                }
+        
+        let fetchRequest = NSFetchRequest<StationCD>(entityName: "StationCD")
+        fetchRequest.predicate = NSPredicate(format: "id = %@", stationId)
+        
+        var results: [StationCD] = []
+        
+        do {
+            results = try AppDelegate.moc.fetch(fetchRequest)
+            if let stationCD = results.first {
+                stationCD.comment = newComment
+                AppDelegate.saveContext()
             }
-            catch {
-                print("error executing fetch request: \(error)")
-            }
+        }
+        catch {
+            print("error executing fetch request: \(error)")
+        }
     }
     
     func commentForStation(stationId: String) -> String? {
@@ -108,12 +106,10 @@ class StationsController: Codable {
             if let stationCD = results.first {
                 return stationCD.comment
             }
-            
         }
         catch {
             print("error executing fetch request: \(error)")
         }
         return nil
     }
-    
 }
