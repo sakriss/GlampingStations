@@ -7,16 +7,6 @@
 //
 
 import Foundation
-
-//
-//  DumpStationsController.swift
-//  GlampingStations
-//
-//  Created by Scott Kriss on 7/23/18.
-//  Copyright © 2018 Scott Kriss. All rights reserved.
-//
-
-import Foundation
 import CoreLocation
 import CoreData
 
@@ -29,7 +19,7 @@ class DumpStationsController: Codable {
     
     var dumpStation: [DumpStation]?
     
-    var stationArray:[DumpStation] {
+    var dumpStationArray:[DumpStation] {
         if let theArray = self.dumpStation {
             return theArray
         }
@@ -43,19 +33,64 @@ class DumpStationsController: Codable {
         URLSession.shared.dataTask(with: URL(fileURLWithPath: baseURL!)) { (data:Data?, response:URLResponse?, error:Error?) in
             if let data = data {
                 self.dumpStation = ( try? JSONDecoder().decode([DumpStation].self, from: data))
-                self.saveToCoreData()
-                NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
+                print("DUMPSTATIONS \(self.dumpStation?.count)")
+                //self.saveToCoreData()
+                NotificationCenter.default.post(name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
             } else {
                 print("ERROR: \(error!)")
-                NotificationCenter.default.post(name: StationsController.stationsDataParseFailed, object: nil)
+                NotificationCenter.default.post(name: DumpStationsController.dumpStationsDataParseFailed, object: nil)
             }
-            
+
         }.resume()
+        
+//        let configuration = URLSessionConfiguration.default
+//        configuration.timeoutIntervalForRequest = TimeInterval(5)
+//        configuration.timeoutIntervalForResource = TimeInterval(5)
+//
+//        let session = URLSession(configuration: configuration)
+//        var request: URLRequest? = nil
+//        let task = URLSession.shared.dataTask(
+//                    with: session!,
+//                    completionHandler: { data, response, error in
+//                        DispatchQueue.main.async(execute: {
+//
+//            if error != nil || data == nil {
+//                print("Client error!")
+//                NotificationCenter.default.post(name: NetworkManager.dataParseFailed, object: nil)
+//                return
+//            }
+//
+//            guard let response = response as? HTTPURLResponse, (200...299).contains(response.statusCode) else {
+//                print("Server error!")
+//                NotificationCenter.default.post(name: NetworkManager.dataParseFailed, object: nil)
+//                return
+//            }
+//
+//            guard let mime = response.mimeType, mime == "application/json" else {
+//                print("Wrong MIME type!")
+//                return
+//            }
+//
+//            do {
+//                let json = try JSONSerialization.jsonObject(with: data!, options: [])
+//                print(json)
+//                let dataString = String(data: data!, encoding: .utf8)
+//                print(dataString ?? "")
+//                self.dumpStation = ( try! JSONDecoder().decode(DumpStation.self, from: data!))
+//                NotificationCenter.default.post(name: NetworkManager.dataParseComplete, object: nil)
+//            } catch {
+//                print("JSON error: \(error.localizedDescription)")
+//                NotificationCenter.default.post(name: NetworkManager.dataParseFailed, object: nil)
+//            }
+//        })
+//        })
+//        task.resume()
+        
     }
     
     func saveToCoreData() {
         
-        for station in stationArray {
+        for station in dumpStationArray {
             guard let id = station.id else { continue }
             let fetchRequest = NSFetchRequest<DumpStationCD>(entityName: "DumpStationCD")
             fetchRequest.predicate = NSPredicate(format: "id = %@", id)

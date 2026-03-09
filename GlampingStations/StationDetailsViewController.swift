@@ -9,6 +9,9 @@
 import UIKit
 import CoreLocation
 import MapKit
+import Firebase
+import Foundation
+//import FirebaseFirestore
 
 class StationDetailsViewController: UIViewController {
     
@@ -31,11 +34,17 @@ class StationDetailsViewController: UIViewController {
         stationsDetailsTableView.tableFooterView = UIView()
         
         placeAnnotation()
-        
+//        if let station = stationDetails {
+//                saveStation(station)
+//            }
+//        
         self.stationsDetailsTableView.rowHeight = UITableView.automaticDimension
         self.stationsDetailsTableView.estimatedRowHeight = 800
         self.stationsDetailsTableView.isScrollEnabled = true
-        
+        if let navController = self.navigationController, navController.viewControllers.count >= 2 {
+            _ = navController.viewControllers[navController.viewControllers.count - 2]
+        }
+        print("NAVIGATION CONTROLLER \(navigationController!)")
     }
     
     func placeAnnotation() {
@@ -58,23 +67,25 @@ class StationDetailsViewController: UIViewController {
     
     func createRoute() {
         let request = MKDirections.Request()
-        
         let coords = CLLocationCoordinate2D(latitude: (stationDetails?.latitude)!, longitude: (stationDetails?.longitude)!)
-        
-        let destination = MKPlacemark(coordinate: coords)
-        let source = MKPlacemark(coordinate: userLocation.coordinate)
-        request.destination = MKMapItem(placemark: destination)
-        request.source = MKMapItem(placemark: source)
-        
+
+        // Create MKMapItem instances using modern initializer (iOS 26+)
+        let destinationLocation = CLLocation(latitude: coords.latitude, longitude: coords.longitude)
+        let sourceLocation = CLLocation(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude)
+        let destinationItem = MKMapItem(location: destinationLocation, address: nil)
+        let sourceItem = MKMapItem(location: sourceLocation, address: nil)
+        request.destination = destinationItem
+        request.source = sourceItem
+
         let directions = MKDirections(request: request)
         directions.calculate { (response: MKDirections.Response?, error: Error?) in
             guard let response = response else {
                 print(error ?? "No Response and no error!")
                 return
             }
-            
+
             guard let route = response.routes.first else { return }
-            
+
             for step in route.steps {
                 self.stepByStepDirections.append(step.instructions)
                 print(step.instructions)
@@ -129,6 +140,31 @@ class StationDetailsViewController: UIViewController {
         UIGraphicsEndImageContext()
         return newImage
     }
+    
+//    func saveStationToFirestore(_ station: Station) {
+//        let db = Firestore.firestore()
+//        
+//        guard let stationId = station.id else {
+//            print("Station ID is nil – cannot save.")
+//            return
+//        }
+//
+//        let data: [String: Any] = [
+//            "name": station.name ?? "",
+//            "latitude": station.latitude ?? 0.0,
+//            "longitude": station.longitude ?? 0.0,
+//            "rating": station.rating ?? 0.0,
+//            "note": StationsController.shared.commentForStation(stationId: stationId)
+//        ]
+//        
+//        db.collection("stations").document(stationId).setData(data) { error in
+//            if let error = error {
+//                print("❌ Error saving station: \(error.localizedDescription)")
+//            } else {
+//                print("✅ Station saved to Firestore")
+//            }
+//        }
+//    }
     
 }
 
@@ -244,11 +280,38 @@ extension StationDetailsViewController: UITableViewDataSource {
                     
                 }
             }
-            //cell.stationsAddressLabel.text = String(stationLat)
+            // Fetch and display weather for this station
+            Task { [weak cell] in
+                do {
+                    let weather = try await WeatherService.shared.fetchCurrentWeather(lat: stationLat, lon: stationLong)
+                    let temp = Int(weather.main.temp.rounded())
+                    let summary = weather.weather.first?.description.capitalized ?? "—"
+                    await MainActor.run {
+                        if let weatherLabel = cell?.weatherLabel {
+                            weatherLabel.text = "\(temp)° • \(summary)"
+                        } else {
+                            // Fallback: append to comment text if no weather label exists
+                            let appended = (cell?.stationCommentTextView.text ?? "") + "\n\nWeather: \(temp)° • \(summary)"
+                            cell?.stationCommentTextView.text = appended
+                        }
+                    }
+                } catch {
+                    await MainActor.run {
+                        if let weatherLabel = cell?.weatherLabel {
+                            weatherLabel.text = "Weather unavailable"
+                        }
+                    }
+                }
+            }
         }
         
         return cell
     }
-    
-    
 }
+
+extension UINavigationController {
+    var previousViewController: UIViewController? {
+       viewControllers.count > 1 ? viewControllers[viewControllers.count - 2] : nil
+    }
+}
+

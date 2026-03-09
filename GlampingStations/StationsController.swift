@@ -9,6 +9,7 @@
 import Foundation
 import CoreLocation
 import CoreData
+//import FirebaseFirestore  ✅ Firestore import
 
 class StationsController: Codable {
     
@@ -19,32 +20,63 @@ class StationsController: Codable {
     
     var stations: [Station]?
     
-    var stationArray:[Station] {
-        if let theArray = self.stations {
-            return theArray
-        }
-        return []
+    var stationArray: [Station] {
+        return stations ?? []
     }
     
     func fetchStations() {
-        
         let baseURL = Bundle.main.path(forResource: "stations", ofType: "json")
         
-        URLSession.shared.dataTask(with: URL(fileURLWithPath: baseURL!)) { (data:Data?, response:URLResponse?, error:Error?) in
+        URLSession.shared.dataTask(with: URL(fileURLWithPath: baseURL!)) { (data: Data?, response: URLResponse?, error: Error?) in
             if let data = data {
-                self.stations = ( try? JSONDecoder().decode([Station].self, from: data))
+                self.stations = (try? JSONDecoder().decode([Station].self, from: data))
                 self.saveToCoreData()
                 NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
             } else {
                 print("ERROR: \(error!)")
                 NotificationCenter.default.post(name: StationsController.stationsDataParseFailed, object: nil)
             }
-            
         }.resume()
     }
     
+    // ✅ NEW METHOD: Fetch stations from Firestore
+//    func fetchStationsFromFirestore() {
+//        let db = Firestore.firestore()
+//        
+//        db.collection("stations").getDocuments { (snapshot, error) in
+//            if let error = error {
+//                print("Error getting documents: \(error)")
+//                NotificationCenter.default.post(name: StationsController.stationsDataParseFailed, object: nil)
+//                return
+//            }
+//            
+//            guard let documents = snapshot?.documents else {
+//                NotificationCenter.default.post(name: StationsController.stationsDataParseFailed, object: nil)
+//                return
+//            }
+//            
+//            var fetchedStations = [Station]()
+//            
+//            for doc in documents {
+//                let data = doc.data()
+//                
+//                let id = doc.documentID
+//                let name = data["name"] as? String ?? "Unnamed"
+//                let latitude = data["latitude"] as? CLLocationDegrees ?? 0.0
+//                let longitude = data["longitude"] as? CLLocationDegrees ?? 0.0
+//                let rating = data["rating"] as? Double // Optional
+//                
+//                let station = Station(id: id, name: name, latitude: latitude, longitude: longitude, rating: rating, comment: nil)
+//                fetchedStations.append(station)
+//            }
+//            
+//            self.stations = fetchedStations
+//            self.saveToCoreData()
+//            NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
+//        }
+//    }
+    
     func saveToCoreData() {
-        
         for station in stationArray {
             guard let id = station.id else { continue }
             let fetchRequest = NSFetchRequest<StationCD>(entityName: "StationCD")
@@ -55,28 +87,23 @@ class StationsController: Codable {
             do {
                 results = try AppDelegate.moc.fetch(fetchRequest)
                 if results.first != nil {
-                    //Do nothing for now...
-                }
-                else {
+                    // Already exists
+                } else {
                     let stationCD = NSEntityDescription.insertNewObject(forEntityName: "StationCD", into: AppDelegate.moc) as! StationCD
-                    
                     stationCD.id = station.id
                     stationCD.latitude = station.latitude ?? 0.0
                     stationCD.longitude = station.longitude ?? 0.0
                     stationCD.name = station.name
                     stationCD.rating = station.rating
-                    
                     AppDelegate.saveContext()
                 }
-            }
-            catch {
+            } catch {
                 print("error executing fetch request: \(error)")
             }
         }
     }
     
     func updateStationComment(stationId: String, newComment: String) {
-        
         let fetchRequest = NSFetchRequest<StationCD>(entityName: "StationCD")
         fetchRequest.predicate = NSPredicate(format: "id = %@", stationId)
         
@@ -88,14 +115,12 @@ class StationsController: Codable {
                 stationCD.comment = newComment
                 AppDelegate.saveContext()
             }
-        }
-        catch {
+        } catch {
             print("error executing fetch request: \(error)")
         }
     }
     
     func commentForStation(stationId: String) -> String? {
-        
         let fetchRequest = NSFetchRequest<StationCD>(entityName: "StationCD")
         fetchRequest.predicate = NSPredicate(format: "id = %@", stationId)
         
@@ -106,10 +131,10 @@ class StationsController: Codable {
             if let stationCD = results.first {
                 return stationCD.comment
             }
-        }
-        catch {
+        } catch {
             print("error executing fetch request: \(error)")
         }
         return nil
     }
 }
+

@@ -1,23 +1,22 @@
 //
-//  ListViewController.swift
+//  DumpStationViewController.swift
 //  GlampingStations
 //
-//  Created by Scott Kriss on 7/23/18.
-//  Copyright © 2018 Scott Kriss. All rights reserved.
+//  Created by Scott Kriss on 8/18/21.
+//  Copyright © 2021 Scott Kriss. All rights reserved.
 //
 
 import UIKit
 import CoreLocation
-import Firebase
-//import FirebaseFirestore
 
-class ListViewController: UIViewController {
+class DumpStationViewController: UIViewController {
     
-    static let shared = ListViewController()
+    @IBOutlet weak var dumpStationTableView: UITableView!
+    
+    static let shared = DumpStationViewController()
     
     private let refreshControl = UIRefreshControl()
     
-    @IBOutlet weak var stationsTableView: UITableView!
     var userLocation = CLLocation()
     var currentlySelectedRow:Int?
     
@@ -26,67 +25,15 @@ class ListViewController: UIViewController {
 //    override var preferredStatusBarStyle: UIStatusBarStyle {
 //        return .lightContent
 //    }
-//    
+//
 //    override func viewDidAppear(_ animated: Bool) {
 //        navigationController?.navigationBar.barStyle = .black
 //    }
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if #available(iOS 13.0, *) {
-            let appearance = UINavigationBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark ? .black : .white
-            }
-            appearance.largeTitleTextAttributes = [
-                .foregroundColor: UIColor { traitCollection in
-                    return traitCollection.userInterfaceStyle == .dark ? .white : .black
-                }
-            ]
-            appearance.titleTextAttributes = [
-                .foregroundColor: UIColor { traitCollection in
-                    return traitCollection.userInterfaceStyle == .dark ? .white : .black
-                }
-            ]
-
-            navigationController?.navigationBar.standardAppearance = appearance
-            navigationController?.navigationBar.scrollEdgeAppearance = appearance
-            navigationController?.navigationBar.compactAppearance = appearance
-        } else {
-            // Fallback for earlier versions (light mode only)
-            navigationController?.navigationBar.barTintColor = .white
-            navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
-            navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.black]
-        }
-        
-        if #available(iOS 13.0, *) {
-            let appearance = UITabBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark ? .black : .white
-            }
-
-            // Normal state (unselected icons)
-//            appearance.stackedLayoutAppearance.normal.iconColor = .orange.withAlphaComponent(0.5)
-//            appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
-//                .foregroundColor: UIColor.black.withAlphaComponent(0.5)
-//            ]
-
-            // Selected state
-            appearance.stackedLayoutAppearance.selected.iconColor = .orange
-            appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-                .foregroundColor: UIColor.orange
-            ]
-
-            tabBarController?.tabBar.standardAppearance = appearance
-            if #available(iOS 15.0, *) {
-                tabBarController?.tabBar.scrollEdgeAppearance = appearance
-            }
-        }
-        
-        self.stationsTableView.rowHeight = UITableView.automaticDimension
-        self.stationsTableView.estimatedRowHeight = 110
+        self.dumpStationTableView.rowHeight = UITableView.automaticDimension
+        self.dumpStationTableView.estimatedRowHeight = 110
         
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -102,48 +49,17 @@ class ListViewController: UIViewController {
         
         loadingDataAnimation()
         
-        // Define alternating colors for light/dark modes
-        let refreshControlTextColor: UIColor
-        let refreshControlTintColor: UIColor
-        let refreshControlBackgroundColor: UIColor
-
-        if #available(iOS 13.0, *) {
-            // Light Mode and Dark Mode Color Logic
-            refreshControlTextColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark
-                    ? UIColor(red: 1.0, green: 0.7, blue: 0.4, alpha: 1.0) // Lighter orange
-                    : UIColor(red: 0.9, green: 0.5, blue: 0.1, alpha: 1.0) // Soft orange
-            }
-            
-            refreshControlTintColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark
-                    ? UIColor(red: 1.0, green: 0.6, blue: 0.3, alpha: 1.0) // Vibrant orange
-                    : UIColor(red: 1.0, green: 0.5, blue: 0.2, alpha: 1.0) // Bright orange
-            }
-            
-            refreshControlBackgroundColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark
-                    ? UIColor(red: 0.6, green: 0.4, blue: 0.2, alpha: 1.0) // Darker muted orange
-                    : UIColor(red: 1.0, green: 0.9, blue: 0.8, alpha: 1.0) // Light peach background
-            }
-        } else {
-            // Fallback colors for earlier versions
-            refreshControlTextColor = UIColor.orange // Soft orange text color
-            refreshControlTintColor = UIColor.orange // Bright orange
-            refreshControlBackgroundColor = UIColor(red: 1.0, green: 0.9, blue: 0.8, alpha: 1.0) // Light peach background
-        }
-
-        // Set up pull-to-refresh
-        let attributes = [NSAttributedString.Key.foregroundColor: refreshControlTextColor]
-        refreshControl.tintColor = refreshControlTintColor
-        refreshControl.backgroundColor = refreshControlBackgroundColor
-        refreshControl.attributedTitle = NSAttributedString(string: "Refreshing Stations...", attributes: attributes)
-        refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
-        self.stationsTableView.addSubview(refreshControl)
+        //pull to refresh
+        let attributes = [NSAttributedString.Key.foregroundColor: UIColor(red: 213/255, green: 220/255, blue: 232/255, alpha: 1)]
+        refreshControl.tintColor = UIColor(red: 213/255, green: 220/255, blue: 232/255, alpha: 1)
+        refreshControl.backgroundColor = UIColor(red: 120/255, green: 135/255, blue: 171/255, alpha: 1)
+        refreshControl.attributedTitle = NSAttributedString(string: "Refreshing Dump Stations...", attributes: attributes)
+        refreshControl.addTarget(self, action: #selector(refreshData), for: UIControl.Event.valueChanged)
+        self.dumpStationTableView.addSubview(refreshControl)
         
-        // StationsController.shared.fetchStations()
-        NotificationCenter.default.addObserver(self, selector: #selector(stationDataFetched) , name: StationsController.stationsDataParseComplete, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(stationDataFailed) , name: StationsController.stationsDataParseFailed, object: nil)
+        //DumpStationsController.shared.fetchStations()
+        NotificationCenter.default.addObserver(self, selector: #selector(stationDataFetched) , name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(stationDataFailed) , name: DumpStationsController.dumpStationsDataParseFailed, object: nil)
     }
     
     func loadingDataAnimation() {
@@ -154,7 +70,7 @@ class ListViewController: UIViewController {
         view.addSubview(blurEffectView)
         
         // Create alert
-        let alert = UIAlertController(title: nil, message: "Finding Stations...", preferredStyle: .alert)
+        let alert = UIAlertController(title: nil, message: "Finding Dump Stations...", preferredStyle: .alert)
         
         // Create and configure spinner
         let loadingIndicator = UIActivityIndicatorView(style: .medium)
@@ -179,7 +95,6 @@ class ListViewController: UIViewController {
         locationManager.requestLocation()
     }
     
-    
     @objc func stationDataFetched () {
         
         //now that data is parsed, we can display it
@@ -189,7 +104,7 @@ class ListViewController: UIViewController {
             self.view.subviews.compactMap {  $0 as? UIVisualEffectView }.forEach {
                 $0.removeFromSuperview()
             }
-            self.stationsTableView.reloadData()
+            self.dumpStationTableView.reloadData()
             self.refreshControl.endRefreshing()
             
         }
@@ -231,7 +146,7 @@ class ListViewController: UIViewController {
             //                $0.removeFromSuperview()
             //            }
             
-            self.stationsTableView.reloadData()
+            self.dumpStationTableView.reloadData()
             
             self.refreshControl.endRefreshing()
         }
@@ -268,7 +183,7 @@ class ListViewController: UIViewController {
     }
 }
 
-extension ListViewController: CLLocationManagerDelegate {
+extension DumpStationViewController: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         self.locationAuthStatus = status
@@ -284,8 +199,7 @@ extension ListViewController: CLLocationManagerDelegate {
             print("\(location.coordinate.latitude), \(location.coordinate.longitude)")
             userLocation = location
             
-            StationsController.shared.fetchStations()
-//            fetchStationsFromFirestore()
+            DumpStationsController.shared.fetchStations()
             
             let geocoder = CLGeocoder()
             geocoder.reverseGeocodeLocation(location) { (placemarks:[CLPlacemark]?, error: Error?) in
@@ -312,7 +226,7 @@ extension ListViewController: CLLocationManagerDelegate {
     }
 }
 
-extension ListViewController: UITableViewDelegate {
+extension DumpStationViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 110
     }
@@ -324,46 +238,29 @@ extension ListViewController: UITableViewDelegate {
     }
 }
 
-extension ListViewController: UITableViewDataSource {
+extension DumpStationViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return StationsController.shared.stationArray.count
+        return 10
         
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "ListTableViewCell", for: indexPath) as? ListTableViewCell else {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "DumpStationViewCell", for: indexPath) as? DumpStationViewCell else {
             return UITableViewCell()
         }
         
-        // Define alternating colors
-        let evenRowColor: UIColor
-        let oddRowColor: UIColor
+        if indexPath.row % 2 == 0 {
+            cell.backgroundColor = UIColor(red: 100/255, green: 119/255, blue: 163/255, alpha: 1)
 
-        if #available(iOS 13.0, *) {
-            evenRowColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark
-                    ? UIColor(red: 0.5, green: 0.3, blue: 0.2, alpha: 1.0) // Darker muted orange
-                    : UIColor(red: 1.0, green: 0.9, blue: 0.8, alpha: 1.0) // Light peach
-            }
-            oddRowColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark
-                    ? UIColor(red: 0.6, green: 0.4, blue: 0.2, alpha: 1.0) // Dark orange
-                    : UIColor(red: 1.0, green: 0.8, blue: 0.6, alpha: 1.0) // Soft orange
-            }
         } else {
-            // Fallback colors for earlier versions
-            evenRowColor = UIColor(red: 1.0, green: 0.9, blue: 0.8, alpha: 1.0) // Light peach
-            oddRowColor = UIColor(red: 1.0, green: 0.8, blue: 0.6, alpha: 1.0) // Soft orange
+            cell.backgroundColor = UIColor(red: 120/255, green: 135/255, blue: 171/255, alpha: 1)
         }
-
-        // Apply alternating colors
-        cell.backgroundColor = indexPath.row % 2 == 0 ? evenRowColor : oddRowColor
         
         cell.accessoryType = .disclosureIndicator
-        let dataPoint = StationsController.shared.stations
+        let dataPoint = DumpStationsController.shared.dumpStation
         
         if let stationName = dataPoint?[indexPath.row].name {
-            cell.stationNameLabel.text = stationName
+            cell.dumpStationName.text = stationName
         }
         
         if let lat = dataPoint?[indexPath.row].latitude, let long = dataPoint?[indexPath.row].longitude {
@@ -381,9 +278,9 @@ extension ListViewController: UITableViewDataSource {
                     addressString.append(placemark.locality ?? "")
                     addressString.append(", ")
                     addressString.append(placemark.administrativeArea ?? "")
-                    cell.stationAddressLabel.text = addressString
+                    cell.dumpStationAddressLbl.text = addressString
                     let distanceFrom = (originLocation.distance(from: self.userLocation) * 0.000621371)
-                    cell.stationDistanceLabel.text = String(format: "%.0f", distanceFrom) + " miles from you"
+                    cell.dumpStationDistanceLbl.text = String(format: "%.0f", distanceFrom) + " miles from you"
                     
                 }
             }

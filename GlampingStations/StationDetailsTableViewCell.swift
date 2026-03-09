@@ -17,12 +17,14 @@ class StationDetailsTableViewCell: UITableViewCell {
     @IBOutlet weak var stationCommentLabel: UILabel!
     @IBOutlet weak var stationCommentTextField: UITextField!
     @IBOutlet weak var stationCommentTextView: UITextView!
+    @IBOutlet weak var weatherLabel: UILabel!
     
     var stationDetails:Station = Station()
     
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
+        weatherLabel?.text = nil
         
     }
     

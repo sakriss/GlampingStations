@@ -9,5 +9,5 @@
 import Foundation
 
 class StationsInfo: Codable {
-    private(set) var stations: [Station] = []
+    //private(set) var stations: [Station] = []
 }
