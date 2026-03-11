@@ -95,6 +95,19 @@ class StationsController: Codable {
                     stationCD.longitude = station.longitude ?? 0.0
                     stationCD.name = station.name
                     stationCD.rating = station.rating
+                    
+                    // New fields from JSON structure
+                    stationCD.comment = station.comment
+                    stationCD.canopyHeight = station.canopyHeight
+                    if let amenity = station.amenity {
+                        stationCD.amenityShower = amenity.shower
+                        stationCD.amenityBathroom = amenity.bathroom
+                        stationCD.amenityTrailerParking = amenity.trailerParking
+                        stationCD.amenityDefAtPump = amenity.defAtPump
+                        stationCD.amenityRepairShop = amenity.repairShop
+                        stationCD.amenityCatScale = amenity.catScale
+                    }
+                    
                     AppDelegate.saveContext()
                 }
             } catch {

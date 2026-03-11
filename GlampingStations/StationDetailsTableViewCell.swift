@@ -18,6 +18,7 @@ class StationDetailsTableViewCell: UITableViewCell {
     @IBOutlet weak var stationCommentTextField: UITextField!
     @IBOutlet weak var stationCommentTextView: UITextView!
     @IBOutlet weak var weatherLabel: UILabel!
+    @IBOutlet weak var amenitiesContainerView: UIView!
     
     var stationDetails:Station = Station()
     
@@ -26,6 +27,12 @@ class StationDetailsTableViewCell: UITableViewCell {
         // Initialization code
         weatherLabel?.text = nil
         
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        weatherLabel?.text = nil
+        amenitiesContainerView?.subviews.forEach { $0.removeFromSuperview() }
     }
     
     enum NavigationApps: String {

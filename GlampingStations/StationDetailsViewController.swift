@@ -95,25 +95,28 @@ class StationDetailsViewController: UIViewController {
         }
     }
     
+    private var geocodeCache: [String: CLPlacemark] = [:]
+
     func getPlacemark(forLocation location: CLLocation, completionHandler: @escaping (CLPlacemark?, String?) -> ()) {
-        let geocoder = CLGeocoder()
+        let cacheKey = "\(location.coordinate.latitude),\(location.coordinate.longitude)"
         
-        geocoder.reverseGeocodeLocation(location, completionHandler: {
-            placemarks, error in
-            
+        // Return cached result if available
+        if let cached = geocodeCache[cacheKey] {
+            completionHandler(cached, nil)
+            return
+        }
+        
+        let geocoder = CLGeocoder()
+        geocoder.reverseGeocodeLocation(location) { placemarks, error in
             if let err = error {
                 completionHandler(nil, err.localizedDescription)
-            } else if let placemarkArray = placemarks {
-                if let placemark = placemarkArray.first {
-                    completionHandler(placemark, nil)
-                } else {
-                    completionHandler(nil, "Placemark was nil")
-                }
+            } else if let placemark = placemarks?.first {
+                self.geocodeCache[cacheKey] = placemark  // Store in cache
+                completionHandler(placemark, nil)
             } else {
-                completionHandler(nil, "Unknown error")
+                completionHandler(nil, "Placemark was nil")
             }
-        })
-        
+        }
     }
     
 //    func openMapForPlace() {
@@ -280,6 +283,98 @@ extension StationDetailsViewController: UITableViewDataSource {
                     
                 }
             }
+            // Build Amenities UI
+            if let container = cell.amenitiesContainerView {
+                // Clear old content (safety)
+                container.subviews.forEach { $0.removeFromSuperview() }
+
+                let vStack = UIStackView()
+                vStack.axis = .vertical
+                vStack.alignment = .fill
+                vStack.distribution = .fill
+                vStack.spacing = 8
+                vStack.translatesAutoresizingMaskIntoConstraints = false
+
+                // Header
+                let header = UILabel()
+                header.text = "Amenities"
+                header.font = UIFont.preferredFont(forTextStyle: .headline)
+                header.textColor = .label
+                vStack.addArrangedSubview(header)
+
+                // Grid (2 columns)
+                let grid = UIStackView()
+                grid.axis = .horizontal
+                grid.alignment = .top
+                grid.distribution = .fillEqually
+                grid.spacing = 16
+
+                let col1 = UIStackView()
+                col1.axis = .vertical
+                col1.alignment = .leading
+                col1.spacing = 6
+
+                let col2 = UIStackView()
+                col2.axis = .vertical
+                col2.alignment = .leading
+                col2.spacing = 6
+
+                func row(title: String, value: Bool) -> UIStackView {
+                    let h = UIStackView()
+                    h.axis = .horizontal
+                    h.alignment = .center
+                    h.spacing = 6
+
+                    let icon = UIImageView()
+                    let symbolName = value ? "checkmark.circle.fill" : "xmark.circle"
+                    icon.image = UIImage(systemName: symbolName)
+                    icon.tintColor = value ? UIColor.systemGreen : UIColor.systemRed
+                    icon.setContentCompressionResistancePriority(.required, for: .horizontal)
+                    icon.setContentHuggingPriority(.required, for: .horizontal)
+
+                    let label = UILabel()
+                    label.text = title
+                    label.font = UIFont.preferredFont(forTextStyle: .subheadline)
+                    label.textColor = .secondaryLabel
+
+                    h.addArrangedSubview(icon)
+                    h.addArrangedSubview(label)
+                    return h
+                }
+
+                if let amenity = self.stationDetails?.amenity {
+                    // 6 items -> split 3 and 3
+                    let items: [(String, Bool)] = [
+                        ("Shower", amenity.shower),
+                        ("Bathroom", amenity.bathroom),
+                        ("Trailer Parking", amenity.trailerParking),
+                        ("DEF at Pump", amenity.defAtPump),
+                        ("Repair Shop", amenity.repairShop),
+                        ("CAT Scale", amenity.catScale)
+                    ]
+                    for (index, item) in items.enumerated() {
+                        let r = row(title: item.0, value: item.1)
+                        if index < 3 {
+                            col1.addArrangedSubview(r)
+                        } else {
+                            col2.addArrangedSubview(r)
+                        }
+                    }
+                }
+
+                grid.addArrangedSubview(col1)
+                grid.addArrangedSubview(col2)
+                vStack.addArrangedSubview(grid)
+
+                container.addSubview(vStack)
+
+                NSLayoutConstraint.activate([
+                    vStack.topAnchor.constraint(equalTo: container.topAnchor),
+                    vStack.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                    vStack.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+                    vStack.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+                ])
+            }
             // Fetch and display weather for this station
             Task { [weak cell] in
                 do {
@@ -287,19 +382,11 @@ extension StationDetailsViewController: UITableViewDataSource {
                     let temp = Int(weather.main.temp.rounded())
                     let summary = weather.weather.first?.description.capitalized ?? "—"
                     await MainActor.run {
-                        if let weatherLabel = cell?.weatherLabel {
-                            weatherLabel.text = "\(temp)° • \(summary)"
-                        } else {
-                            // Fallback: append to comment text if no weather label exists
-                            let appended = (cell?.stationCommentTextView.text ?? "") + "\n\nWeather: \(temp)° • \(summary)"
-                            cell?.stationCommentTextView.text = appended
-                        }
+                        cell?.weatherLabel?.text = "\(temp)° - \(summary)"
                     }
                 } catch {
                     await MainActor.run {
-                        if let weatherLabel = cell?.weatherLabel {
-                            weatherLabel.text = "Weather unavailable"
-                        }
+                        cell?.weatherLabel?.text = "Weather unavailable"
                     }
                 }
             }
