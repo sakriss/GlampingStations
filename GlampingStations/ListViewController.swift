@@ -23,6 +23,22 @@ class ListViewController: UIViewController {
     
     let locationManager = CLLocationManager()
     var locationAuthStatus: CLAuthorizationStatus = .notDetermined
+    
+    private func sortStationsByDistance() {
+        guard let stations = StationsController.shared.stations else { return }
+        let userLoc = self.userLocation
+        StationsController.shared.stations = stations.sorted { a, b in
+            let alat = a.latitude
+            let along = a.longitude
+            let blat = b.latitude
+            let blong = b.longitude
+
+            let aLoc = CLLocation(latitude: alat, longitude: along)
+            let bLoc = CLLocation(latitude: blat, longitude: blong)
+            return aLoc.distance(from: userLoc) < bLoc.distance(from: userLoc)
+        }
+    }
+    
 //    override var preferredStatusBarStyle: UIStatusBarStyle {
 //        return .lightContent
 //    }
@@ -189,6 +205,7 @@ class ListViewController: UIViewController {
             self.view.subviews.compactMap {  $0 as? UIVisualEffectView }.forEach {
                 $0.removeFromSuperview()
             }
+            self.sortStationsByDistance()
             self.stationsTableView.reloadData()
             self.refreshControl.endRefreshing()
             
@@ -284,6 +301,9 @@ extension ListViewController: CLLocationManagerDelegate {
             print("\(location.coordinate.latitude), \(location.coordinate.longitude)")
             userLocation = location
             
+            self.sortStationsByDistance()
+            self.stationsTableView.reloadData()
+            
             StationsController.shared.fetchStations()
 //            fetchStationsFromFirestore()
             
@@ -360,13 +380,13 @@ extension ListViewController: UITableViewDataSource {
         cell.backgroundColor = indexPath.row % 2 == 0 ? evenRowColor : oddRowColor
         
         cell.accessoryType = .disclosureIndicator
-        let dataPoint = StationsController.shared.stations
+        let data = StationsController.shared.stations
         
-        if let stationName = dataPoint?[indexPath.row].name {
+        if let stationName = data?[indexPath.row].name {
             cell.stationNameLabel.text = stationName
         }
         
-        if let lat = dataPoint?[indexPath.row].latitude, let long = dataPoint?[indexPath.row].longitude {
+        if let lat = data?[indexPath.row].latitude, let long = data?[indexPath.row].longitude {
             let originLocation = CLLocation(latitude: lat, longitude: long)
             
             getPlacemark(forLocation: originLocation) {
@@ -391,3 +411,4 @@ extension ListViewController: UITableViewDataSource {
         return cell
     }
 }
+

@@ -12,11 +12,15 @@ import CoreLocation
 
 class StationPointAnno: MKPointAnnotation {
     var station: Station?
-    
+}
+
+class DumpStationPointAnno: MKPointAnnotation {
+    var dumpStation: DumpStation?
 }
 
 class MapViewController: UIViewController {
     var currentlySelectedStation:Station?
+    var currentlySelectedDumpStation:DumpStation?
     let mapView = MKMapView()
     let locationManager = CLLocationManager()
     var stationCoords = [CLLocationCoordinate2D()]
@@ -53,21 +57,43 @@ class MapViewController: UIViewController {
         mapView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor).isActive = true
         mapView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor).isActive = true
         
-        for station in StationsController.shared.stations! {
-            let lat = station.latitude
-            let long = station.longitude
-            let stationLocation = CLLocationCoordinate2D(latitude: lat, longitude: long)
-            
-            stationCoords.append(stationLocation)
-            
-            let annotation = StationPointAnno()
-            annotation.title = station.name
-            annotation.coordinate = stationLocation
-            annotation.station = station
-            mapView.addAnnotation(annotation)
-            
+        if let stations = StationsController.shared.stations {
+            for station in stations {
+                let lat = station.latitude
+                let long = station.longitude
+                let stationLocation = CLLocationCoordinate2D(latitude: lat, longitude: long)
+                
+                stationCoords.append(stationLocation)
+                
+                let annotation = StationPointAnno()
+                annotation.title = station.name
+                annotation.coordinate = stationLocation
+                annotation.station = station
+                mapView.addAnnotation(annotation)
+            }
         }
-
+        
+        addDumpStationAnnotations()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(dumpStationsLoaded), name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
+    }
+    
+    @objc func dumpStationsLoaded() {
+        DispatchQueue.main.async {
+            self.addDumpStationAnnotations()
+        }
+    }
+    
+    func addDumpStationAnnotations() {
+        guard let dumpStations = DumpStationsController.shared.dumpStation else { return }
+        for ds in dumpStations {
+            let coordinate = CLLocationCoordinate2D(latitude: ds.latitude, longitude: ds.longitude)
+            let annotation = DumpStationPointAnno()
+            annotation.title = ds.name
+            annotation.coordinate = coordinate
+            annotation.dumpStation = ds
+            mapView.addAnnotation(annotation)
+        }
     }
     
     func pinSizedImage(from image:UIImage?) -> UIImage? {
@@ -84,8 +110,10 @@ class MapViewController: UIViewController {
         if segue.identifier == "stationDetailsSegue", let vc = segue.destination as? StationDetailsViewController {
             if let station = currentlySelectedStation {
                 vc.stationDetails = station
-                vc.userLocation = userLocation
+            } else if let dumpStation = currentlySelectedDumpStation {
+                vc.dumpStationDetails = dumpStation
             }
+            vc.userLocation = userLocation
         }
     }
     
@@ -104,10 +132,28 @@ extension MapViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
     
-        if type(of: annotation) == MKUserLocation.self {
+        if annotation is MKUserLocation {
             return nil
         }
-        let viewId = "myAnnotationViewId"
+        
+        if annotation is DumpStationPointAnno {
+            let viewId = "dumpStationAnnotationId"
+            var view = mapView.dequeueReusableAnnotationView(withIdentifier: viewId)
+            if view == nil {
+                view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: viewId)
+            }
+            if let markerView = view as? MKMarkerAnnotationView {
+                markerView.markerTintColor = UIColor.brown
+                markerView.glyphImage = UIImage(systemName: "drop.fill")
+            }
+            view?.canShowCallout = true
+            let rightButton = UIButton(type: .detailDisclosure)
+            view?.rightCalloutAccessoryView = rightButton
+            return view
+        }
+        
+        // Station pins
+        let viewId = "stationAnnotationId"
         var view = mapView.dequeueReusableAnnotationView(withIdentifier: viewId)
         if view == nil {
             view = MKAnnotationView(annotation: annotation, reuseIdentifier: viewId)
@@ -120,17 +166,21 @@ extension MapViewController: MKMapViewDelegate {
         return view
     }
     
-        func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-            print("call out was tapped, gotta go to the details page")
-            
-            if let annotation = mapView.selectedAnnotations[0] as? StationPointAnno {
-                self.currentlySelectedStation = annotation.station
-            }
-            
-            
-            createMapRendering()
-            
-            self.performSegue(withIdentifier: "stationDetailsSegue", sender: self)
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        print("call out was tapped, gotta go to the details page")
+        
+        currentlySelectedStation = nil
+        currentlySelectedDumpStation = nil
+        
+        if let annotation = view.annotation as? StationPointAnno {
+            self.currentlySelectedStation = annotation.station
+        } else if let annotation = view.annotation as? DumpStationPointAnno {
+            self.currentlySelectedDumpStation = annotation.dumpStation
+        }
+        
+        createMapRendering()
+        
+        self.performSegue(withIdentifier: "stationDetailsSegue", sender: self)
     }
     
     func setVisibleMapArea(polyline: MKPolyline, edgeInsets: UIEdgeInsets, animated: Bool = true) {

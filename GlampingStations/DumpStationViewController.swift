@@ -22,6 +22,7 @@ class DumpStationViewController: UIViewController {
     
     let locationManager = CLLocationManager()
     var locationAuthStatus: CLAuthorizationStatus = .notDetermined
+    private var hasFetchedStations = false
 //    override var preferredStatusBarStyle: UIStatusBarStyle {
 //        return .lightContent
 //    }
@@ -92,7 +93,18 @@ class DumpStationViewController: UIViewController {
         DispatchQueue.main.async {
             self.refreshControl.beginRefreshing()
         }
+        hasFetchedStations = false
         locationManager.requestLocation()
+    }
+    
+    private func sortDumpStationsByDistance() {
+        guard let stations = DumpStationsController.shared.dumpStation else { return }
+        let userLoc = self.userLocation
+        DumpStationsController.shared.dumpStation = stations.sorted { a, b in
+            let aLoc = CLLocation(latitude: a.latitude, longitude: a.longitude)
+            let bLoc = CLLocation(latitude: b.latitude, longitude: b.longitude)
+            return aLoc.distance(from: userLoc) < bLoc.distance(from: userLoc)
+        }
     }
     
     @objc func stationDataFetched () {
@@ -104,6 +116,7 @@ class DumpStationViewController: UIViewController {
             self.view.subviews.compactMap {  $0 as? UIVisualEffectView }.forEach {
                 $0.removeFromSuperview()
             }
+            self.sortDumpStationsByDistance()
             self.dumpStationTableView.reloadData()
             self.refreshControl.endRefreshing()
             
@@ -175,8 +188,17 @@ class DumpStationViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
         if segue.identifier == "stationDetailsSegue", let vc = segue.destination as? StationDetailsViewController {
-            if let row = currentlySelectedRow {
-                vc.stationDetails = StationsController.shared.stationArray[row]
+            // Determine row from the sender cell if possible, fall back to currentlySelectedRow
+            let row: Int?
+            if let cell = sender as? UITableViewCell, let indexPath = dumpStationTableView.indexPath(for: cell) {
+                row = indexPath.row
+            } else {
+                row = currentlySelectedRow
+            }
+            if let row = row,
+               let dumpStations = DumpStationsController.shared.dumpStation,
+               row < dumpStations.count {
+                vc.dumpStationDetails = dumpStations[row]
                 vc.userLocation = userLocation
             }
         }
@@ -194,31 +216,13 @@ extension DumpStationViewController: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        print("\(location.coordinate.latitude), \(location.coordinate.longitude)")
+        userLocation = location
         
-        for location in locations {
-            print("\(location.coordinate.latitude), \(location.coordinate.longitude)")
-            userLocation = location
-            
-            DumpStationsController.shared.fetchStations()
-            
-            let geocoder = CLGeocoder()
-            geocoder.reverseGeocodeLocation(location) { (placemarks:[CLPlacemark]?, error: Error?) in
-                if let error = error {
-                    print(error)
-                    return
-                }
-                if let placemarks = placemarks {
-                    for placemark in placemarks {
-                        var addressString = placemark.subThoroughfare ?? ""
-                        addressString.append(" ")
-                        addressString.append(placemark.thoroughfare ?? "")
-                        addressString.append(", ")
-                        addressString.append(placemark.locality ?? "")
-                        
-                    }
-                }
-            }
-        }
+        guard !hasFetchedStations else { return }
+        hasFetchedStations = true
+        DumpStationsController.shared.fetchStations()
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -232,16 +236,13 @@ extension DumpStationViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
         self.currentlySelectedRow = indexPath.row
-        self.performSegue(withIdentifier: "stationDetailsSegue", sender: self)
     }
 }
 
 extension DumpStationViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
-        
+        return DumpStationsController.shared.dumpStation?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -258,6 +259,10 @@ extension DumpStationViewController: UITableViewDataSource {
         
         cell.accessoryType = .disclosureIndicator
         let dataPoint = DumpStationsController.shared.dumpStation
+        
+        if let dataPoint = dataPoint, indexPath.row >= dataPoint.count {
+            return UITableViewCell()
+        }
         
         if let stationName = dataPoint?[indexPath.row].name {
             cell.dumpStationName.text = stationName
@@ -288,3 +293,4 @@ extension DumpStationViewController: UITableViewDataSource {
         return cell
     }
 }
+

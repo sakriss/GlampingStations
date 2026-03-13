@@ -20,6 +20,7 @@ class StationDetailsViewController: UIViewController {
     
     var userLocation = CLLocation()
     var stationDetails:Station?
+    var dumpStationDetails:DumpStation?
     
     var text = NSMutableAttributedString(string: "")
 //    var stationName:String = ""
@@ -47,16 +48,28 @@ class StationDetailsViewController: UIViewController {
         print("NAVIGATION CONTROLLER \(navigationController!)")
     }
     
+    // Convenience accessors that work for either Station or DumpStation
+    private var displayName: String? { stationDetails?.name ?? dumpStationDetails?.name }
+    private var displayLatitude: Double { stationDetails?.latitude ?? dumpStationDetails?.latitude ?? 0.0 }
+    private var displayLongitude: Double { stationDetails?.longitude ?? dumpStationDetails?.longitude ?? 0.0 }
+    private var displayId: String? { stationDetails?.id ?? dumpStationDetails?.id }
+    private var displayRating: String? { stationDetails?.rating ?? dumpStationDetails?.rating }
+    private var displayComment: String? { stationDetails?.comment ?? dumpStationDetails?.comment }
+    private var displayCost: String? { dumpStationDetails?.cost }
+    
     func placeAnnotation() {
-        //TODO: Pass these in
-        let center = CLLocationCoordinate2D(latitude: (stationDetails?.latitude)!, longitude: (stationDetails?.longitude)!)
+        guard stationDetails != nil || dumpStationDetails != nil else {
+            print("Station details missing; cannot place annotation.")
+            return
+        }
+        let center = CLLocationCoordinate2D(latitude: displayLatitude, longitude: displayLongitude)
         let span = MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.2)
         
         stationDetailMapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: false)
-        let stationLocation = CLLocationCoordinate2D(latitude: (stationDetails?.latitude)!, longitude: (stationDetails?.longitude)!)
+        let stationLocation = CLLocationCoordinate2D(latitude: displayLatitude, longitude: displayLongitude)
         stationCoords.append(stationLocation)
         let annotation = StationPointAnno()
-        annotation.title = stationDetails?.name
+        annotation.title = displayName
         annotation.coordinate = stationLocation
         annotation.station = stationDetails
         stationDetailMapView.addAnnotation(annotation)
@@ -66,8 +79,12 @@ class StationDetailsViewController: UIViewController {
     }
     
     func createRoute() {
+        guard stationDetails != nil || dumpStationDetails != nil else {
+            print("Station details missing; cannot create route.")
+            return
+        }
         let request = MKDirections.Request()
-        let coords = CLLocationCoordinate2D(latitude: (stationDetails?.latitude)!, longitude: (stationDetails?.longitude)!)
+        let coords = CLLocationCoordinate2D(latitude: displayLatitude, longitude: displayLongitude)
 
         // Create MKMapItem instances using modern initializer (iOS 26+)
         let destinationLocation = CLLocation(latitude: coords.latitude, longitude: coords.longitude)
@@ -175,10 +192,25 @@ extension StationDetailsViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         
-        if type(of: annotation) == MKUserLocation.self {
+        if annotation is MKUserLocation {
             return nil
         }
-        let viewId = "myAnnotationViewId"
+        
+        if dumpStationDetails != nil {
+            let viewId = "dumpStationDetailAnnotationId"
+            var view = stationDetailMapView.dequeueReusableAnnotationView(withIdentifier: viewId)
+            if view == nil {
+                view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: viewId)
+            }
+            if let markerView = view as? MKMarkerAnnotationView {
+                markerView.markerTintColor = .brown
+                markerView.glyphImage = UIImage(systemName: "drop.fill")
+            }
+            view?.canShowCallout = false
+            return view
+        }
+        
+        let viewId = "stationDetailAnnotationId"
         var view = stationDetailMapView.dequeueReusableAnnotationView(withIdentifier: viewId)
         if view == nil {
             view = MKAnnotationView(annotation: annotation, reuseIdentifier: viewId)
@@ -251,18 +283,20 @@ extension StationDetailsViewController: UITableViewDataSource {
         
         cell.stationCommentTextView.layer.borderWidth = 1
         
-        cell.stationDetails = stationDetails!
+        if let details = stationDetails { cell.stationDetails = details }
         
-        if let stationName = stationDetails?.name, let rating = stationDetails?.rating {
+        if let stationName = displayName, let rating = displayRating {
             cell.stationNameLabel.text = stationName + " - " + ("\( rating )")
         }
         
-        if let stationId = stationDetails?.id {
+        if let stationId = displayId {
             cell.stationCommentTextView.text = StationsController.shared.commentForStation(stationId: stationId)
         }
         
         
-        if let stationLat = stationDetails?.latitude, let stationLong = stationDetails?.longitude {
+        let stationLat = displayLatitude
+        let stationLong = displayLongitude
+        if stationDetails != nil || dumpStationDetails != nil {
             let originLocation = CLLocation(latitude: stationLat, longitude: stationLong)
             
             getPlacemark(forLocation: originLocation) {
@@ -283,7 +317,7 @@ extension StationDetailsViewController: UITableViewDataSource {
                     
                 }
             }
-            // Build Amenities UI
+            // Build info section: Cost, Description, and Amenities
             if let container = cell.amenitiesContainerView {
                 // Clear old content (safety)
                 container.subviews.forEach { $0.removeFromSuperview() }
@@ -292,10 +326,42 @@ extension StationDetailsViewController: UITableViewDataSource {
                 vStack.axis = .vertical
                 vStack.alignment = .fill
                 vStack.distribution = .fill
-                vStack.spacing = 8
+                vStack.spacing = 12
                 vStack.translatesAutoresizingMaskIntoConstraints = false
 
-                // Header
+                // Cost (shown when available, e.g. dump stations)
+                if let cost = self.displayCost, !cost.isEmpty {
+                    let costRow = UIStackView()
+                    costRow.axis = .horizontal
+                    costRow.alignment = .center
+                    costRow.spacing = 6
+
+                    let costIcon = UIImageView(image: UIImage(systemName: "dollarsign.circle.fill"))
+                    costIcon.tintColor = .systemGreen
+                    costIcon.setContentHuggingPriority(.required, for: .horizontal)
+                    costIcon.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+                    let costLabel = UILabel()
+                    costLabel.text = cost
+                    costLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
+                    costLabel.textColor = .label
+
+                    costRow.addArrangedSubview(costIcon)
+                    costRow.addArrangedSubview(costLabel)
+                    vStack.addArrangedSubview(costRow)
+                }
+
+                // Description / Comment from JSON data
+                if let comment = self.displayComment, !comment.isEmpty {
+                    let commentLabel = UILabel()
+                    commentLabel.text = comment
+                    commentLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
+                    commentLabel.textColor = .secondaryLabel
+                    commentLabel.numberOfLines = 0
+                    vStack.addArrangedSubview(commentLabel)
+                }
+
+                // Amenities header
                 let header = UILabel()
                 header.text = "Amenities"
                 header.font = UIFont.preferredFont(forTextStyle: .headline)
@@ -343,7 +409,7 @@ extension StationDetailsViewController: UITableViewDataSource {
                 }
 
                 if let amenity = self.stationDetails?.amenity {
-                    // 6 items -> split 3 and 3
+                    // Station amenities: 6 items -> split 3 and 3
                     let items: [(String, Bool)] = [
                         ("Shower", amenity.shower),
                         ("Bathroom", amenity.bathroom),
@@ -351,6 +417,24 @@ extension StationDetailsViewController: UITableViewDataSource {
                         ("DEF at Pump", amenity.defAtPump),
                         ("Repair Shop", amenity.repairShop),
                         ("CAT Scale", amenity.catScale)
+                    ]
+                    for (index, item) in items.enumerated() {
+                        let r = row(title: item.0, value: item.1)
+                        if index < 3 {
+                            col1.addArrangedSubview(r)
+                        } else {
+                            col2.addArrangedSubview(r)
+                        }
+                    }
+                } else if let dumpAmenities = self.dumpStationDetails?.amenities {
+                    // Dump station amenities: 6 items -> split 3 and 3
+                    let items: [(String, Bool)] = [
+                        ("Potable Water", dumpAmenities.potableWater),
+                        ("Rinse Water", dumpAmenities.rinseWater),
+                        ("Trailer Parking", dumpAmenities.trailerParking),
+                        ("Restrooms", dumpAmenities.restrooms),
+                        ("Vending", dumpAmenities.vending),
+                        ("EV Charging", dumpAmenities.evCharging)
                     ]
                     for (index, item) in items.enumerated() {
                         let r = row(title: item.0, value: item.1)

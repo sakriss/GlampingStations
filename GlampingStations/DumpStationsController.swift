@@ -14,8 +14,8 @@ class DumpStationsController: Codable {
     
     static let shared = DumpStationsController()
     
-    static let dumpStationsDataParseComplete = Notification.Name("stationsDataParseComplete")
-    static let dumpStationsDataParseFailed = Notification.Name("stationsDataParseFailed")
+    static let dumpStationsDataParseComplete = Notification.Name("dumpStationsDataParseComplete")
+    static let dumpStationsDataParseFailed = Notification.Name("dumpStationsDataParseFailed")
     
     var dumpStation: [DumpStation]?
     
