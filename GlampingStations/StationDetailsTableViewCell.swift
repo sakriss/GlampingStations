@@ -19,16 +19,70 @@ class StationDetailsTableViewCell: UITableViewCell {
     @IBOutlet weak var stationCommentTextView: UITextView!
     @IBOutlet weak var weatherLabel: UILabel!
     @IBOutlet weak var amenitiesContainerView: UIView!
+
+    private var placeholderLabel: UILabel?
+
+    var stationDetails: Station = Station()
     
-    var stationDetails:Station = Station()
-    
+    private static let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
+    private static let cardColor  = UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
+    private static let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
+    private static let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+
     override func awakeFromNib() {
         super.awakeFromNib()
-        // Initialization code
+
+        backgroundColor = StationDetailsTableViewCell.primaryBg
+        contentView.backgroundColor = StationDetailsTableViewCell.primaryBg
+        selectionStyle = .none
+
+        stationNameLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        stationNameLabel?.textColor = .white
+        stationNameLabel?.numberOfLines = 2
+
+        stationsAddressLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        stationsAddressLabel?.textColor = StationDetailsTableViewCell.mutedText
+        stationsAddressLabel?.numberOfLines = 2
+
+        stationsDistanceLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        stationsDistanceLabel?.textColor = StationDetailsTableViewCell.accentGold
+
         weatherLabel?.text = nil
-        
+        weatherLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        weatherLabel?.textColor = .white
+
+        stationCommentLabel?.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+        stationCommentLabel?.textColor = .white
+
+        stationCommentTextView?.backgroundColor = StationDetailsTableViewCell.cardColor
+        stationCommentTextView?.textColor = StationDetailsTableViewCell.mutedText
+        stationCommentTextView?.layer.cornerRadius = 10
+        stationCommentTextView?.layer.borderWidth = 0
+        stationCommentTextView?.font = UIFont.systemFont(ofSize: 14)
+        stationCommentTextView?.textContainerInset = UIEdgeInsets(top: 10, left: 8, bottom: 10, right: 8)
+        stationCommentTextView?.delegate = self
+
+        // Add placeholder label
+        if let tv = stationCommentTextView {
+            let ph = UILabel()
+            ph.text = "Add a note about this station..."
+            ph.font = UIFont.systemFont(ofSize: 14)
+            ph.textColor = StationDetailsTableViewCell.mutedText.withAlphaComponent(0.5)
+            ph.translatesAutoresizingMaskIntoConstraints = false
+            tv.addSubview(ph)
+            NSLayoutConstraint.activate([
+                ph.topAnchor.constraint(equalTo: tv.topAnchor, constant: 10),
+                ph.leadingAnchor.constraint(equalTo: tv.leadingAnchor, constant: 12)
+            ])
+            placeholderLabel = ph
+        }
     }
-    
+
+    func updatePlaceholder() {
+        let isEmpty = stationCommentTextView?.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true
+        placeholderLabel?.isHidden = !isEmpty
+    }
+
     override func prepareForReuse() {
         super.prepareForReuse()
         weatherLabel?.text = nil
@@ -126,25 +180,30 @@ class StationDetailsTableViewCell: UITableViewCell {
     }
     
     @IBAction func saveCommentbutton(_ sender: UIButton) {
-        
+
         if let stationId = stationDetails.id, let stationComment = stationCommentTextView.text {
             StationsController.shared.updateStationComment(stationId: stationId, newComment: stationComment)
             stationCommentTextView.text = stationComment
-            
-            // create the alert
-            let alert = UIAlertController(title: "Station Comments", message: "Your comment has been saved for this station.", preferredStyle: UIAlertController.Style.alert)
-            
-            // add an action (button)
-            alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
-            
-            // show the alert
+
+            let alert = UIAlertController(title: "Station Comments", message: "Your comment has been saved for this station.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
             UIApplication.shared.keyWindow?.rootViewController?.present(alert, animated: true, completion: nil)
-            
-        }
-        else {
+        } else {
             print("nothing to update")
         }
-        
     }
-    
+}
+
+extension StationDetailsTableViewCell: UITextViewDelegate {
+    func textViewDidChange(_ textView: UITextView) {
+        updatePlaceholder()
+    }
+
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        updatePlaceholder()
+    }
+
+    func textViewDidEndEditing(_ textView: UITextView) {
+        updatePlaceholder()
+    }
 }

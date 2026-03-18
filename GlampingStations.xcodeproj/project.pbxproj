@@ -38,6 +38,7 @@
 		D23714FA2DCA89F000C0BBC3 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D23714F92DCA89F000C0BBC3 /* FirebaseCore */; };
 		D23714FC2DCA89F000C0BBC3 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = D23714FB2DCA89F000C0BBC3 /* FirebaseDatabase */; };
 		D2AFB33F2F52548B003735AD /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AFB33E2F52548A003735AD /* WeatherService.swift */; };
+		D2BB00012F60000000000001 /* FilterSortViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00002F60000000000001 /* FilterSortViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -69,6 +70,7 @@
 		D236AF8426CE0734009FD4BE /* DumpStationViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DumpStationViewCell.swift; sourceTree = "<group>"; };
 		D23714F02DCA88A100C0BBC3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		D2AFB33E2F52548A003735AD /* WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherService.swift; sourceTree = "<group>"; };
+		D2BB00002F60000000000001 /* FilterSortViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterSortViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +135,7 @@
 				16C70A7A210AA5FD00806321 /* StationDetailsTableViewCell.swift */,
 				16F5BDD82106789800A93A03 /* StationsInfo.swift */,
 				D2AFB33E2F52548A003735AD /* WeatherService.swift */,
+				D2BB00002F60000000000001 /* FilterSortViewController.swift */,
 			);
 			path = GlampingStations;
 			sourceTree = "<group>";
@@ -236,6 +239,7 @@
 				D236AF8026CB5870009FD4BE /* DumpStationCD+CoreDataClass.swift in Sources */,
 				D236AF7A26CB51A3009FD4BE /* DumpStationsController.swift in Sources */,
 				16F5BDCF2106332600A93A03 /* ListTableViewCell.swift in Sources */,
+				D2BB00012F60000000000001 /* FilterSortViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

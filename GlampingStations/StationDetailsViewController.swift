@@ -29,22 +29,44 @@ class StationDetailsViewController: UIViewController {
     var stepByStepDirections:String = ""
     var stationCoords = [CLLocationCoordinate2D()]
     
+    private let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
+    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
+
     override func viewDidLoad() {
         super.viewDidLoad()
-  
+
+        view.backgroundColor = primaryBg
+
+        // Navigation bar dark styling
+        let navAppearance = UINavigationBarAppearance()
+        navAppearance.configureWithOpaqueBackground()
+        navAppearance.backgroundColor = primaryBg
+        navAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.standardAppearance = navAppearance
+        navigationController?.navigationBar.scrollEdgeAppearance = navAppearance
+        navigationController?.navigationBar.tintColor = accentGold
+
+        stationsDetailsTableView.backgroundColor = primaryBg
+        stationsDetailsTableView.separatorStyle = .none
         stationsDetailsTableView.tableFooterView = UIView()
-        
-        placeAnnotation()
-//        if let station = stationDetails {
-//                saveStation(station)
-//            }
-//        
-        self.stationsDetailsTableView.rowHeight = UITableView.automaticDimension
-        self.stationsDetailsTableView.estimatedRowHeight = 800
-        self.stationsDetailsTableView.isScrollEnabled = true
-        if let navController = self.navigationController, navController.viewControllers.count >= 2 {
-            _ = navController.viewControllers[navController.viewControllers.count - 2]
+        stationsDetailsTableView.rowHeight = UITableView.automaticDimension
+        stationsDetailsTableView.estimatedRowHeight = 800
+        stationsDetailsTableView.isScrollEnabled = true
+
+        // Map rounded corners + horizontal inset (16pt each side)
+        stationDetailMapView.layer.cornerRadius = 16
+        stationDetailMapView.clipsToBounds = true
+        if let sv = stationDetailMapView.superview {
+            for c in sv.constraints {
+                if c.firstItem as? MKMapView == stationDetailMapView {
+                    if c.firstAttribute == .leading  { c.constant = 16 }
+                    if c.firstAttribute == .trailing { c.constant = -16 }
+                    if c.firstAttribute == .bottom   { c.constant = -16 }
+                }
+            }
         }
+
+        placeAnnotation()
         print("NAVIGATION CONTROLLER \(navigationController!)")
     }
     
@@ -232,7 +254,8 @@ extension StationDetailsViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         let renderer = MKPolylineRenderer(overlay: overlay)
-        renderer.strokeColor = UIColor(red: 0, green: 1.0, blue: 0, alpha: 0.7)
+        renderer.strokeColor = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 0.85)
+        renderer.lineWidth = 3
         return renderer
     }
     
@@ -281,8 +304,6 @@ extension StationDetailsViewController: UITableViewDataSource {
         }
 //        cell.backgroundColor = UIColor(red: 120/255, green: 135/255, blue: 171/255, alpha: 1)
         
-        cell.stationCommentTextView.layer.borderWidth = 1
-        
         if let details = stationDetails { cell.stationDetails = details }
         
         if let stationName = displayName, let rating = displayRating {
@@ -292,6 +313,7 @@ extension StationDetailsViewController: UITableViewDataSource {
         if let stationId = displayId {
             cell.stationCommentTextView.text = StationsController.shared.commentForStation(stationId: stationId)
         }
+        cell.updatePlaceholder()
         
         
         let stationLat = displayLatitude
@@ -322,11 +344,16 @@ extension StationDetailsViewController: UITableViewDataSource {
                 // Clear old content (safety)
                 container.subviews.forEach { $0.removeFromSuperview() }
 
+                // Style the container as a dark card
+                container.backgroundColor = UIColor(red: 22/255, green: 38/255, blue: 62/255, alpha: 1)
+                container.layer.cornerRadius = 14
+                container.clipsToBounds = true
+
                 let vStack = UIStackView()
                 vStack.axis = .vertical
                 vStack.alignment = .fill
                 vStack.distribution = .fill
-                vStack.spacing = 12
+                vStack.spacing = 14
                 vStack.translatesAutoresizingMaskIntoConstraints = false
 
                 // Cost (shown when available, e.g. dump stations)
@@ -343,8 +370,8 @@ extension StationDetailsViewController: UITableViewDataSource {
 
                     let costLabel = UILabel()
                     costLabel.text = cost
-                    costLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
-                    costLabel.textColor = .label
+                    costLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+                    costLabel.textColor = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
 
                     costRow.addArrangedSubview(costIcon)
                     costRow.addArrangedSubview(costLabel)
@@ -355,8 +382,8 @@ extension StationDetailsViewController: UITableViewDataSource {
                 if let comment = self.displayComment, !comment.isEmpty {
                     let commentLabel = UILabel()
                     commentLabel.text = comment
-                    commentLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
-                    commentLabel.textColor = .secondaryLabel
+                    commentLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+                    commentLabel.textColor = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
                     commentLabel.numberOfLines = 0
                     vStack.addArrangedSubview(commentLabel)
                 }
@@ -364,8 +391,8 @@ extension StationDetailsViewController: UITableViewDataSource {
                 // Amenities header
                 let header = UILabel()
                 header.text = "Amenities"
-                header.font = UIFont.preferredFont(forTextStyle: .headline)
-                header.textColor = .label
+                header.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+                header.textColor = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
                 vStack.addArrangedSubview(header)
 
                 // Grid (2 columns)
@@ -385,23 +412,31 @@ extension StationDetailsViewController: UITableViewDataSource {
                 col2.alignment = .leading
                 col2.spacing = 6
 
+                let mutedTextColor = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+
                 func row(title: String, value: Bool) -> UIStackView {
                     let h = UIStackView()
                     h.axis = .horizontal
                     h.alignment = .center
-                    h.spacing = 6
+                    h.spacing = 8
 
                     let icon = UIImageView()
                     let symbolName = value ? "checkmark.circle.fill" : "xmark.circle"
                     icon.image = UIImage(systemName: symbolName)
-                    icon.tintColor = value ? UIColor.systemGreen : UIColor.systemRed
+                    icon.tintColor = value
+                        ? UIColor(red: 52/255, green: 199/255, blue: 89/255, alpha: 1)
+                        : UIColor(red: 100/255, green: 115/255, blue: 140/255, alpha: 1)
                     icon.setContentCompressionResistancePriority(.required, for: .horizontal)
                     icon.setContentHuggingPriority(.required, for: .horizontal)
+                    NSLayoutConstraint.activate([
+                        icon.widthAnchor.constraint(equalToConstant: 18),
+                        icon.heightAnchor.constraint(equalToConstant: 18)
+                    ])
 
                     let label = UILabel()
                     label.text = title
-                    label.font = UIFont.preferredFont(forTextStyle: .subheadline)
-                    label.textColor = .secondaryLabel
+                    label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+                    label.textColor = value ? UIColor.white : mutedTextColor
 
                     h.addArrangedSubview(icon)
                     h.addArrangedSubview(label)
@@ -453,10 +488,10 @@ extension StationDetailsViewController: UITableViewDataSource {
                 container.addSubview(vStack)
 
                 NSLayoutConstraint.activate([
-                    vStack.topAnchor.constraint(equalTo: container.topAnchor),
-                    vStack.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-                    vStack.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-                    vStack.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+                    vStack.topAnchor.constraint(equalTo: container.topAnchor, constant: 16),
+                    vStack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
+                    vStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
+                    vStack.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -16)
                 ])
             }
             // Fetch and display weather for this station

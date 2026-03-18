@@ -160,5 +160,42 @@
       "vending": false,
       "evCharging": false
     }
+  },
+  {
+    "id": "WA-101-01",
+    "name": "William M. Tugman State Park",
+    "latitude": 43.60135,
+    "longitude": -124.17782,
+    "cost": "Free",
+    "rating": "Excellent",
+    "comment": "$10 - $15 donation appreciated.",
+    "canopyHeight": "Open",
+    "amenities": {
+      "potableWater": true,
+      "rinseWater": true,
+      "trailerParking": false,
+      "restrooms": false,
+      "vending": false,
+      "evCharging": false
+    }
+  },
+  {
+    "id": "WA-101-02",
+    "name": "Reedsport",
+    "latitude": 43.704032,
+    "longitude": -124.106538,
+    "cost": "$10",
+    "rating": "Excellent",
+    "comment": "$10 donation appreciated. Usually empty",
+    "canopyHeight": "Open",
+    "amenities": {
+      "potableWater": true,
+      "rinseWater": true,
+      "trailerParking": false,
+      "restrooms": false,
+      "vending": false,
+      "evCharging": false
+    }
   }
+
 ]

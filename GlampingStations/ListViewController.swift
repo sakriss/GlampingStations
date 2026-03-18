@@ -9,406 +9,399 @@
 import UIKit
 import CoreLocation
 import Firebase
-//import FirebaseFirestore
 
 class ListViewController: UIViewController {
-    
+
     static let shared = ListViewController()
-    
+
     private let refreshControl = UIRefreshControl()
-    
+
     @IBOutlet weak var stationsTableView: UITableView!
     var userLocation = CLLocation()
-    var currentlySelectedRow:Int?
-    
+    var currentlySelectedRow: Int?
+
     let locationManager = CLLocationManager()
     var locationAuthStatus: CLAuthorizationStatus = .notDetermined
-    
-    private func sortStationsByDistance() {
-        guard let stations = StationsController.shared.stations else { return }
-        let userLoc = self.userLocation
-        StationsController.shared.stations = stations.sorted { a, b in
-            let alat = a.latitude
-            let along = a.longitude
-            let blat = b.latitude
-            let blong = b.longitude
 
-            let aLoc = CLLocation(latitude: alat, longitude: along)
-            let bLoc = CLLocation(latitude: blat, longitude: blong)
-            return aLoc.distance(from: userLoc) < bLoc.distance(from: userLoc)
-        }
-    }
-    
-//    override var preferredStatusBarStyle: UIStatusBarStyle {
-//        return .lightContent
-//    }
-//    
-//    override func viewDidAppear(_ animated: Bool) {
-//        navigationController?.navigationBar.barStyle = .black
-//    }
+    // MARK: - Filter / Sort State
+    private var activeFilters: Set<String> = []
+    private var activeSortOrder: StationSortOrder = .distance
+    private var displayedStations: [Station] = []
+    private var inlineSortButton: UIButton?
+    private var inlineFilterButton: UIButton?
+
+    // MARK: - Colors
+    private let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
+    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
+    private let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        if #available(iOS 13.0, *) {
-            let appearance = UINavigationBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark ? .black : .white
-            }
-            appearance.largeTitleTextAttributes = [
-                .foregroundColor: UIColor { traitCollection in
-                    return traitCollection.userInterfaceStyle == .dark ? .white : .black
-                }
-            ]
-            appearance.titleTextAttributes = [
-                .foregroundColor: UIColor { traitCollection in
-                    return traitCollection.userInterfaceStyle == .dark ? .white : .black
-                }
-            ]
 
-            navigationController?.navigationBar.standardAppearance = appearance
-            navigationController?.navigationBar.scrollEdgeAppearance = appearance
-            navigationController?.navigationBar.compactAppearance = appearance
-        } else {
-            // Fallback for earlier versions (light mode only)
-            navigationController?.navigationBar.barTintColor = .white
-            navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.black]
-            navigationController?.navigationBar.largeTitleTextAttributes = [.foregroundColor: UIColor.black]
-        }
-        
-        if #available(iOS 13.0, *) {
-            let appearance = UITabBarAppearance()
-            appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark ? .black : .white
-            }
+        title = "Gas Stations"
+        view.backgroundColor = primaryBg
 
-            // Normal state (unselected icons)
-//            appearance.stackedLayoutAppearance.normal.iconColor = .orange.withAlphaComponent(0.5)
-//            appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
-//                .foregroundColor: UIColor.black.withAlphaComponent(0.5)
-//            ]
+        // Navigation bar dark styling
+        let navAppearance = UINavigationBarAppearance()
+        navAppearance.configureWithOpaqueBackground()
+        navAppearance.backgroundColor = primaryBg
+        navAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        navAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.standardAppearance = navAppearance
+        navigationController?.navigationBar.scrollEdgeAppearance = navAppearance
+        navigationController?.navigationBar.tintColor = accentGold
 
-            // Selected state
-            appearance.stackedLayoutAppearance.selected.iconColor = .orange
-            appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-                .foregroundColor: UIColor.orange
-            ]
+        // Inline filter/sort bar (nav bar buttons don't work when Nav wraps TabBar)
+        setupFilterSortBar()
 
-            tabBarController?.tabBar.standardAppearance = appearance
-            if #available(iOS 15.0, *) {
-                tabBarController?.tabBar.scrollEdgeAppearance = appearance
-            }
-        }
-        
-        self.stationsTableView.rowHeight = UITableView.automaticDimension
-        self.stationsTableView.estimatedRowHeight = 110
-        
+        // Table view dark styling
+        stationsTableView.backgroundColor = primaryBg
+        stationsTableView.separatorStyle = .none
+        stationsTableView.rowHeight = UITableView.automaticDimension
+        stationsTableView.estimatedRowHeight = 110
+
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        //        locationManager.requestWhenInUseAuthorization()
-        
+
         let authStatus = CLLocationManager.authorizationStatus()
-        
         if authStatus == .notDetermined {
             locationManager.requestWhenInUseAuthorization()
         } else {
             locationManager.requestLocation()
         }
-        
+
         loadingDataAnimation()
-        
-        // Define alternating colors for light/dark modes
-        let refreshControlTextColor: UIColor
-        let refreshControlTintColor: UIColor
-        let refreshControlBackgroundColor: UIColor
 
-        if #available(iOS 13.0, *) {
-            // Light Mode and Dark Mode Color Logic
-            refreshControlTextColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark
-                    ? UIColor(red: 1.0, green: 0.7, blue: 0.4, alpha: 1.0) // Lighter orange
-                    : UIColor(red: 0.9, green: 0.5, blue: 0.1, alpha: 1.0) // Soft orange
-            }
-            
-            refreshControlTintColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark
-                    ? UIColor(red: 1.0, green: 0.6, blue: 0.3, alpha: 1.0) // Vibrant orange
-                    : UIColor(red: 1.0, green: 0.5, blue: 0.2, alpha: 1.0) // Bright orange
-            }
-            
-            refreshControlBackgroundColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark
-                    ? UIColor(red: 0.6, green: 0.4, blue: 0.2, alpha: 1.0) // Darker muted orange
-                    : UIColor(red: 1.0, green: 0.9, blue: 0.8, alpha: 1.0) // Light peach background
-            }
-        } else {
-            // Fallback colors for earlier versions
-            refreshControlTextColor = UIColor.orange // Soft orange text color
-            refreshControlTintColor = UIColor.orange // Bright orange
-            refreshControlBackgroundColor = UIColor(red: 1.0, green: 0.9, blue: 0.8, alpha: 1.0) // Light peach background
-        }
-
-        // Set up pull-to-refresh
-        let attributes = [NSAttributedString.Key.foregroundColor: refreshControlTextColor]
-        refreshControl.tintColor = refreshControlTintColor
-        refreshControl.backgroundColor = refreshControlBackgroundColor
-        refreshControl.attributedTitle = NSAttributedString(string: "Refreshing Stations...", attributes: attributes)
+        // Pull-to-refresh with dark styling
+        let attrs: [NSAttributedString.Key: Any] = [.foregroundColor: accentGold]
+        refreshControl.tintColor = accentGold
+        refreshControl.backgroundColor = UIColor(red: 22/255, green: 38/255, blue: 62/255, alpha: 1)
+        refreshControl.attributedTitle = NSAttributedString(string: "Refreshing Stations...", attributes: attrs)
         refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
-        self.stationsTableView.addSubview(refreshControl)
-        
-        // StationsController.shared.fetchStations()
-        NotificationCenter.default.addObserver(self, selector: #selector(stationDataFetched) , name: StationsController.stationsDataParseComplete, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(stationDataFailed) , name: StationsController.stationsDataParseFailed, object: nil)
-    }
-    
-    func loadingDataAnimation() {
-        // Create blur background
-        let blurEffect = UIBlurEffect(style: .light)
-        let blurEffectView = UIVisualEffectView(effect: blurEffect)
-        blurEffectView.frame = view.bounds
-        view.addSubview(blurEffectView)
-        
-        // Create alert
-        let alert = UIAlertController(title: nil, message: "Finding Stations...", preferredStyle: .alert)
-        
-        // Create and configure spinner
-        let loadingIndicator = UIActivityIndicatorView(style: .medium)
-        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
-        loadingIndicator.startAnimating()
-        
-        alert.view.addSubview(loadingIndicator)
-        
-        // Center spinner in alert
-        NSLayoutConstraint.activate([
-            loadingIndicator.centerXAnchor.constraint(equalTo: alert.view.centerXAnchor),
-            loadingIndicator.bottomAnchor.constraint(equalTo: alert.view.bottomAnchor, constant: -10)
-        ])
-        
-        present(alert, animated: true)
-    }
-    
-    @objc func refreshData(sender:AnyObject) {
-        DispatchQueue.main.async {
-            self.refreshControl.beginRefreshing()
-        }
-        locationManager.requestLocation()
-    }
-    
-    
-    @objc func stationDataFetched () {
-        
-        //now that data is parsed, we can display it
-        DispatchQueue.main.async {
-            
-            self.dismiss(animated: false, completion: nil)
-            self.view.subviews.compactMap {  $0 as? UIVisualEffectView }.forEach {
-                $0.removeFromSuperview()
-            }
-            self.sortStationsByDistance()
-            self.stationsTableView.reloadData()
-            self.refreshControl.endRefreshing()
-            
-        }
-    }
-    
-    @objc func stationDataFailed () {
-        //now that data fetch failed, do something about it
-        DispatchQueue.main.async {
-            //dismiss the alert
-            self.dismiss(animated: false, completion: nil)
-            
-            //display the alert
-            let alert = UIAlertController(title: "Error gathering locations", message: "Please make sure you're connected to the internet and tap Try Again", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Try Again", style: .default, handler: { action in
-                                            switch action.style{
-                                            case .default:
-                                                
-                                                //remove the UIViews
-                                                self.view.subviews.compactMap {  $0 as? UIVisualEffectView }.forEach {
-                                                    $0.removeFromSuperview()
-                                                }
-                                                
-                                                //initiate the refreshdata call and start the animation
-                                                self.refreshData(sender: AnyObject.self as AnyObject)
-                                                self.loadingDataAnimation()
-                                                
-                                                print("default")
-                                                
-                                            case .cancel:
-                                                print("cancel")
-                                                
-                                            case .destructive:
-                                                print("destructive")
-                                                
-                                                
-                                            }}))
-            self.present(alert, animated: true, completion: nil)
-            //            self.view.subviews.compactMap {  $0 as? UIVisualEffectView }.forEach {
-            //                $0.removeFromSuperview()
-            //            }
-            
-            self.stationsTableView.reloadData()
-            
-            self.refreshControl.endRefreshing()
-        }
-    }
-    
-    func getPlacemark(forLocation location: CLLocation, completionHandler: @escaping (CLPlacemark?, String?) -> ()) {
-        let geocoder = CLGeocoder()
-        
-        geocoder.reverseGeocodeLocation(location, completionHandler: {
-            placemarks, error in
-            
-            if let err = error {
-                completionHandler(nil, err.localizedDescription)
-            } else if let placemarkArray = placemarks {
-                if let placemark = placemarkArray.first {
-                    completionHandler(placemark, nil)
-                } else {
-                    completionHandler(nil, "Placemark was nil")
-                }
-            } else {
-                completionHandler(nil, "Unknown error")
-            }
-        })
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
-        if segue.identifier == "stationDetailsSegue", let vc = segue.destination as? StationDetailsViewController {
-            if let row = currentlySelectedRow {
-                vc.stationDetails = StationsController.shared.stationArray[row]
-                vc.userLocation = userLocation
-            }
-        }
-    }
-}
+        stationsTableView.addSubview(refreshControl)
 
-extension ListViewController: CLLocationManagerDelegate {
-    
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        self.locationAuthStatus = status
-        if status == .authorizedWhenInUse {
-            print("We can now get your location")
-            manager.requestLocation()
-        }
+        NotificationCenter.default.addObserver(self, selector: #selector(stationDataFetched), name: StationsController.stationsDataParseComplete, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(stationDataFailed), name: StationsController.stationsDataParseFailed, object: nil)
     }
-    
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        
-        for location in locations {
-            print("\(location.coordinate.latitude), \(location.coordinate.longitude)")
-            userLocation = location
-            
-            self.sortStationsByDistance()
-            self.stationsTableView.reloadData()
-            
-            StationsController.shared.fetchStations()
-//            fetchStationsFromFirestore()
-            
-            let geocoder = CLGeocoder()
-            geocoder.reverseGeocodeLocation(location) { (placemarks:[CLPlacemark]?, error: Error?) in
-                if let error = error {
-                    print(error)
-                    return
-                }
-                if let placemarks = placemarks {
-                    for placemark in placemarks {
-                        var addressString = placemark.subThoroughfare ?? ""
-                        addressString.append(" ")
-                        addressString.append(placemark.thoroughfare ?? "")
-                        addressString.append(", ")
-                        addressString.append(placemark.locality ?? "")
-                        
+
+    // MARK: - Filter / Sort Bar
+
+    private func setupFilterSortBar() {
+        let cardColor = UIColor(red: 22/255, green: 38/255, blue: 62/255, alpha: 1)
+
+        let bar = UIView()
+        bar.backgroundColor = cardColor
+        bar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(bar)
+
+        // Sort button — left side
+        let sortBtn = UIButton(type: .system)
+        sortBtn.translatesAutoresizingMaskIntoConstraints = false
+        sortBtn.tintColor = accentGold
+        sortBtn.setTitleColor(.white, for: .normal)
+        sortBtn.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        sortBtn.addTarget(self, action: #selector(showFilterSort), for: .touchUpInside)
+        inlineSortButton = sortBtn
+
+        // Filter button — right side
+        let filterBtn = UIButton(type: .system)
+        filterBtn.translatesAutoresizingMaskIntoConstraints = false
+        filterBtn.tintColor = mutedText
+        filterBtn.setTitleColor(mutedText, for: .normal)
+        filterBtn.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        filterBtn.addTarget(self, action: #selector(showFilterSort), for: .touchUpInside)
+        inlineFilterButton = filterBtn
+
+        // Bottom separator
+        let sep = UIView()
+        sep.backgroundColor = UIColor.white.withAlphaComponent(0.08)
+        sep.translatesAutoresizingMaskIntoConstraints = false
+
+        bar.addSubview(sortBtn)
+        bar.addSubview(filterBtn)
+        bar.addSubview(sep)
+
+        NSLayoutConstraint.activate([
+            bar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            bar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            bar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            bar.heightAnchor.constraint(equalToConstant: 48),
+
+            sortBtn.leadingAnchor.constraint(equalTo: bar.leadingAnchor, constant: 16),
+            sortBtn.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
+
+            filterBtn.trailingAnchor.constraint(equalTo: bar.trailingAnchor, constant: -16),
+            filterBtn.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
+
+            sep.leadingAnchor.constraint(equalTo: bar.leadingAnchor),
+            sep.trailingAnchor.constraint(equalTo: bar.trailingAnchor),
+            sep.bottomAnchor.constraint(equalTo: bar.bottomAnchor),
+            sep.heightAnchor.constraint(equalToConstant: 1)
+        ])
+
+        // Push table content below the bar
+        stationsTableView.contentInset.top = 48
+        stationsTableView.verticalScrollIndicatorInsets.top = 48
+
+        updateFilterButton()
+    }
+
+    @objc private func showFilterSort() {
+        let vc = FilterSortViewController()
+        vc.amenityOptions = ["Shower", "Bathroom", "Trailer Parking", "DEF at Pump", "Repair Shop", "CAT Scale"]
+        vc.activeAmenities = activeFilters
+        vc.currentSort = activeSortOrder
+        vc.delegate = self
+
+        vc.modalPresentationStyle = .pageSheet
+        if #available(iOS 15.0, *) {
+            if let sheet = vc.sheetPresentationController {
+                sheet.detents = [.medium(), .large()]
+                sheet.prefersGrabberVisible = true
+                sheet.preferredCornerRadius = 20
+            }
+        }
+        present(vc, animated: true)
+    }
+
+    /// Applies current sort order and active filters to produce `displayedStations`, then reloads the table.
+    private func applyDisplayedStations() {
+        guard let all = StationsController.shared.stations else {
+            displayedStations = []
+            stationsTableView.reloadData()
+            updateFilterButton()
+            return
+        }
+
+        // 1. Sort
+        let userLoc = userLocation
+        var sorted: [Station]
+        switch activeSortOrder {
+        case .distance:
+            sorted = all.sorted {
+                CLLocation(latitude: $0.latitude, longitude: $0.longitude).distance(from: userLoc) <
+                CLLocation(latitude: $1.latitude, longitude: $1.longitude).distance(from: userLoc)
+            }
+        case .nameAZ:
+            sorted = all.sorted { ($0.name ?? "") < ($1.name ?? "") }
+        case .rating:
+            sorted = all.sorted {
+                (Double($0.rating ?? "0") ?? 0) > (Double($1.rating ?? "0") ?? 0)
+            }
+        }
+
+        // 2. Filter
+        if activeFilters.isEmpty {
+            displayedStations = sorted
+        } else {
+            displayedStations = sorted.filter { station in
+                guard let a = station.amenity else { return false }
+                return activeFilters.allSatisfy { filter in
+                    switch filter {
+                    case "Shower":          return a.shower
+                    case "Bathroom":        return a.bathroom
+                    case "Trailer Parking": return a.trailerParking
+                    case "DEF at Pump":     return a.defAtPump
+                    case "Repair Shop":     return a.repairShop
+                    case "CAT Scale":       return a.catScale
+                    default:                return false
                     }
                 }
             }
         }
+
+        stationsTableView.reloadData()
+        updateFilterButton()
     }
-    
+
+    /// Updates the inline sort/filter buttons to reflect current state.
+    private func updateFilterButton() {
+        // Sort button: show current sort order with icon
+        let sortIcon = UIImage(systemName: "arrow.up.arrow.down")
+        inlineSortButton?.setImage(sortIcon, for: .normal)
+        inlineSortButton?.setTitle("  \(activeSortOrder.title)", for: .normal)
+
+        // Filter button: filled + gold when active, muted when inactive
+        let hasFilters = !activeFilters.isEmpty
+        let filterIconName = hasFilters
+            ? "line.3.horizontal.decrease.circle.fill"
+            : "line.3.horizontal.decrease.circle"
+        let filterTitle = hasFilters ? "  Filter (\(activeFilters.count))" : "  Filter"
+        inlineFilterButton?.setImage(UIImage(systemName: filterIconName), for: .normal)
+        inlineFilterButton?.setTitle(filterTitle, for: .normal)
+        inlineFilterButton?.tintColor = hasFilters ? accentGold : mutedText
+        inlineFilterButton?.setTitleColor(hasFilters ? accentGold : mutedText, for: .normal)
+    }
+
+    // MARK: - Data Loading
+
+    func loadingDataAnimation() {
+        let blurEffect = UIBlurEffect(style: .light)
+        let blurEffectView = UIVisualEffectView(effect: blurEffect)
+        blurEffectView.frame = view.bounds
+        view.addSubview(blurEffectView)
+
+        let alert = UIAlertController(title: nil, message: "Finding Stations...", preferredStyle: .alert)
+        let loadingIndicator = UIActivityIndicatorView(style: .medium)
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.startAnimating()
+        alert.view.addSubview(loadingIndicator)
+        NSLayoutConstraint.activate([
+            loadingIndicator.centerXAnchor.constraint(equalTo: alert.view.centerXAnchor),
+            loadingIndicator.bottomAnchor.constraint(equalTo: alert.view.bottomAnchor, constant: -10)
+        ])
+        present(alert, animated: true)
+    }
+
+    @objc func refreshData(sender: AnyObject) {
+        DispatchQueue.main.async { self.refreshControl.beginRefreshing() }
+        locationManager.requestLocation()
+    }
+
+    @objc func stationDataFetched() {
+        DispatchQueue.main.async {
+            self.dismiss(animated: false)
+            self.view.subviews.compactMap { $0 as? UIVisualEffectView }.forEach { $0.removeFromSuperview() }
+            self.applyDisplayedStations()
+            self.refreshControl.endRefreshing()
+        }
+    }
+
+    @objc func stationDataFailed() {
+        DispatchQueue.main.async {
+            self.dismiss(animated: false)
+
+            let alert = UIAlertController(
+                title: "Error gathering locations",
+                message: "Please make sure you're connected to the internet and tap Try Again",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "Try Again", style: .default) { _ in
+                self.view.subviews.compactMap { $0 as? UIVisualEffectView }.forEach { $0.removeFromSuperview() }
+                self.refreshData(sender: AnyObject.self as AnyObject)
+                self.loadingDataAnimation()
+            })
+            self.present(alert, animated: true)
+            self.stationsTableView.reloadData()
+            self.refreshControl.endRefreshing()
+        }
+    }
+
+    // MARK: - Geocode Helper
+
+    func getPlacemark(forLocation location: CLLocation, completionHandler: @escaping (CLPlacemark?, String?) -> ()) {
+        CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
+            if let err = error {
+                completionHandler(nil, err.localizedDescription)
+            } else if let placemark = placemarks?.first {
+                completionHandler(placemark, nil)
+            } else {
+                completionHandler(nil, "Placemark was nil")
+            }
+        }
+    }
+
+    // MARK: - Segue
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "stationDetailsSegue",
+           let vc = segue.destination as? StationDetailsViewController,
+           let row = currentlySelectedRow,
+           row < displayedStations.count {
+            vc.stationDetails = displayedStations[row]
+            vc.userLocation = userLocation
+        }
+    }
+}
+
+// MARK: - FilterSortDelegate
+
+extension ListViewController: FilterSortDelegate {
+    func filterSortDidApply(activeAmenities: Set<String>, sortOrder: StationSortOrder) {
+        activeFilters = activeAmenities
+        activeSortOrder = sortOrder
+        applyDisplayedStations()
+    }
+
+    func filterSortDidReset() {
+        activeFilters = []
+        activeSortOrder = .distance
+        applyDisplayedStations()
+    }
+}
+
+// MARK: - CLLocationManagerDelegate
+
+extension ListViewController: CLLocationManagerDelegate {
+
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        self.locationAuthStatus = status
+        if status == .authorizedWhenInUse {
+            manager.requestLocation()
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        for location in locations {
+            userLocation = location
+            applyDisplayedStations()
+            StationsController.shared.fetchStations()
+
+            CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
+                if let error = error { print(error); return }
+                _ = placemarks?.first
+            }
+        }
+    }
+
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
     }
 }
 
+// MARK: - UITableViewDelegate
+
 extension ListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 110
+        return 96
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        self.currentlySelectedRow = indexPath.row
-        self.performSegue(withIdentifier: "stationDetailsSegue", sender: self)
+        currentlySelectedRow = indexPath.row
+        performSegue(withIdentifier: "stationDetailsSegue", sender: self)
     }
 }
 
+// MARK: - UITableViewDataSource
+
 extension ListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return StationsController.shared.stationArray.count
-        
+        return displayedStations.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "ListTableViewCell", for: indexPath) as? ListTableViewCell else {
             return UITableViewCell()
         }
-        
-        // Define alternating colors
-        let evenRowColor: UIColor
-        let oddRowColor: UIColor
 
-        if #available(iOS 13.0, *) {
-            evenRowColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark
-                    ? UIColor(red: 0.5, green: 0.3, blue: 0.2, alpha: 1.0) // Darker muted orange
-                    : UIColor(red: 1.0, green: 0.9, blue: 0.8, alpha: 1.0) // Light peach
-            }
-            oddRowColor = UIColor { traitCollection in
-                return traitCollection.userInterfaceStyle == .dark
-                    ? UIColor(red: 0.6, green: 0.4, blue: 0.2, alpha: 1.0) // Dark orange
-                    : UIColor(red: 1.0, green: 0.8, blue: 0.6, alpha: 1.0) // Soft orange
-            }
-        } else {
-            // Fallback colors for earlier versions
-            evenRowColor = UIColor(red: 1.0, green: 0.9, blue: 0.8, alpha: 1.0) // Light peach
-            oddRowColor = UIColor(red: 1.0, green: 0.8, blue: 0.6, alpha: 1.0) // Soft orange
+        cell.accessoryType = .none
+        let station = displayedStations[indexPath.row]
+
+        cell.stationNameLabel.text = station.name
+
+        let originLocation = CLLocation(latitude: station.latitude, longitude: station.longitude)
+        getPlacemark(forLocation: originLocation) { placemark, _ in
+            guard let placemark = placemark else { return }
+            var addr = [placemark.subThoroughfare, placemark.thoroughfare].compactMap { $0 }.joined(separator: " ")
+            if !addr.isEmpty { addr += ", " }
+            addr += [placemark.locality, placemark.administrativeArea].compactMap { $0 }.joined(separator: ", ")
+            cell.stationAddressLabel.text = addr
+            let miles = originLocation.distance(from: self.userLocation) * 0.000621371
+            cell.stationDistanceLabel.text = String(format: "%.0f miles from you", miles)
         }
 
-        // Apply alternating colors
-        cell.backgroundColor = indexPath.row % 2 == 0 ? evenRowColor : oddRowColor
-        
-        cell.accessoryType = .disclosureIndicator
-        let data = StationsController.shared.stations
-        
-        if let stationName = data?[indexPath.row].name {
-            cell.stationNameLabel.text = stationName
-        }
-        
-        if let lat = data?[indexPath.row].latitude, let long = data?[indexPath.row].longitude {
-            let originLocation = CLLocation(latitude: lat, longitude: long)
-            
-            getPlacemark(forLocation: originLocation) {
-                (originPlacemark, error) in
-                if let err = error {
-                    print(err)
-                } else if let placemark = originPlacemark {
-                    var addressString = placemark.subThoroughfare ?? ""
-                    addressString.append(" ")
-                    addressString.append(placemark.thoroughfare ?? "")
-                    addressString.append(", ")
-                    addressString.append(placemark.locality ?? "")
-                    addressString.append(", ")
-                    addressString.append(placemark.administrativeArea ?? "")
-                    cell.stationAddressLabel.text = addressString
-                    let distanceFrom = (originLocation.distance(from: self.userLocation) * 0.000621371)
-                    cell.stationDistanceLabel.text = String(format: "%.0f", distanceFrom) + " miles from you"
-                    
-                }
-            }
-        }
         return cell
     }
 }
-
