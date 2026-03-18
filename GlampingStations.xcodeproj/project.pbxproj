@@ -37,8 +37,10 @@
 		D23714F82DCA89F000C0BBC3 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = D23714F72DCA89F000C0BBC3 /* FirebaseAuth */; };
 		D23714FA2DCA89F000C0BBC3 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D23714F92DCA89F000C0BBC3 /* FirebaseCore */; };
 		D23714FC2DCA89F000C0BBC3 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = D23714FB2DCA89F000C0BBC3 /* FirebaseDatabase */; };
+		D23714FE2DCA89F000C0BBC3 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D23714FD2DCA89F000C0BBC3 /* FirebaseFirestore */; };
 		D2AFB33F2F52548B003735AD /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AFB33E2F52548A003735AD /* WeatherService.swift */; };
 		D2BB00012F60000000000001 /* FilterSortViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00002F60000000000001 /* FilterSortViewController.swift */; };
+		D2BB00022F60000000000002 /* AddStationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00032F60000000000002 /* AddStationViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -71,6 +73,7 @@
 		D23714F02DCA88A100C0BBC3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		D2AFB33E2F52548A003735AD /* WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherService.swift; sourceTree = "<group>"; };
 		D2BB00002F60000000000001 /* FilterSortViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterSortViewController.swift; sourceTree = "<group>"; };
+		D2BB00032F60000000000002 /* AddStationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddStationViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +82,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D23714FC2DCA89F000C0BBC3 /* FirebaseDatabase in Frameworks */,
+				D23714FE2DCA89F000C0BBC3 /* FirebaseFirestore in Frameworks */,
 				D23714F42DCA89F000C0BBC3 /* FirebaseAnalytics in Frameworks */,
 				D23714F82DCA89F000C0BBC3 /* FirebaseAuth in Frameworks */,
 				D23714FA2DCA89F000C0BBC3 /* FirebaseCore in Frameworks */,
@@ -136,6 +140,7 @@
 				16F5BDD82106789800A93A03 /* StationsInfo.swift */,
 				D2AFB33E2F52548A003735AD /* WeatherService.swift */,
 				D2BB00002F60000000000001 /* FilterSortViewController.swift */,
+				D2BB00032F60000000000002 /* AddStationViewController.swift */,
 			);
 			path = GlampingStations;
 			sourceTree = "<group>";
@@ -240,6 +245,7 @@
 				D236AF7A26CB51A3009FD4BE /* DumpStationsController.swift in Sources */,
 				16F5BDCF2106332600A93A03 /* ListTableViewCell.swift in Sources */,
 				D2BB00012F60000000000001 /* FilterSortViewController.swift in Sources */,
+				D2BB00022F60000000000002 /* AddStationViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -486,6 +492,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D23714F22DCA89F000C0BBC3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseDatabase;
+		};
+		D23714FD2DCA89F000C0BBC3 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D23714F22DCA89F000C0BBC3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
 		};
 /* End XCSwiftPackageProductDependency section */
 

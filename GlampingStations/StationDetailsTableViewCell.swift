@@ -48,8 +48,24 @@ class StationDetailsTableViewCell: UITableViewCell {
         stationsDistanceLabel?.textColor = StationDetailsTableViewCell.accentGold
 
         weatherLabel?.text = nil
-        weatherLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
-        weatherLabel?.textColor = .white
+        weatherLabel?.font = UIFont.systemFont(ofSize: 13, weight: .medium)
+        weatherLabel?.textColor = StationDetailsTableViewCell.mutedText
+        weatherLabel?.textAlignment = .right
+        weatherLabel?.numberOfLines = 2
+        weatherLabel?.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        weatherLabel?.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        // Fix name/weather overlap: weather label uses fixedFrame with no real constraints.
+        // Pin it to the trailing edge and cap the name label's trailing before it.
+        if let nameLabel = stationNameLabel, let weather = weatherLabel {
+            weather.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                weather.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 6),
+                weather.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -15),
+                weather.widthAnchor.constraint(lessThanOrEqualToConstant: 150),
+                nameLabel.trailingAnchor.constraint(lessThanOrEqualTo: weather.leadingAnchor, constant: -8)
+            ])
+        }
 
         stationCommentLabel?.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
         stationCommentLabel?.textColor = .white

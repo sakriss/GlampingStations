@@ -84,6 +84,7 @@ class DumpStationViewController: UIViewController {
 
         NotificationCenter.default.addObserver(self, selector: #selector(stationDataFetched), name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(stationDataFailed), name: DumpStationsController.dumpStationsDataParseFailed, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(stationDataFetched), name: DumpStationsController.dumpStationAdded, object: nil)
     }
 
     // MARK: - Filter / Sort Bar
@@ -115,12 +116,20 @@ class DumpStationViewController: UIViewController {
         filterBtn.addTarget(self, action: #selector(showFilterSort), for: .touchUpInside)
         inlineFilterButton = filterBtn
 
+        // Add button — center
+        let addBtn = UIButton(type: .system)
+        addBtn.translatesAutoresizingMaskIntoConstraints = false
+        addBtn.setImage(UIImage(systemName: "plus.circle.fill"), for: .normal)
+        addBtn.tintColor = accentGold
+        addBtn.addTarget(self, action: #selector(showAddStation), for: .touchUpInside)
+
         // Bottom separator
         let sep = UIView()
         sep.backgroundColor = UIColor.white.withAlphaComponent(0.08)
         sep.translatesAutoresizingMaskIntoConstraints = false
 
         bar.addSubview(sortBtn)
+        bar.addSubview(addBtn)
         bar.addSubview(filterBtn)
         bar.addSubview(sep)
 
@@ -132,6 +141,9 @@ class DumpStationViewController: UIViewController {
 
             sortBtn.leadingAnchor.constraint(equalTo: bar.leadingAnchor, constant: 16),
             sortBtn.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
+
+            addBtn.centerXAnchor.constraint(equalTo: bar.centerXAnchor),
+            addBtn.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
 
             filterBtn.trailingAnchor.constraint(equalTo: bar.trailingAnchor, constant: -16),
             filterBtn.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
@@ -165,6 +177,18 @@ class DumpStationViewController: UIViewController {
             }
         }
         present(vc, animated: true)
+    }
+
+    @objc func showAddStation() {
+        let addVC = AddStationViewController()
+        addVC.stationType = .dump
+        addVC.userLocation = userLocation
+        addVC.onSave = { [weak self] in
+            DispatchQueue.main.async { self?.applyDisplayedStations() }
+        }
+        let nav = UINavigationController(rootViewController: addVC)
+        nav.modalPresentationStyle = .formSheet
+        present(nav, animated: true)
     }
 
     /// Applies current sort order and active filters to produce `displayedDumpStations`, then reloads the table.
@@ -259,8 +283,12 @@ class DumpStationViewController: UIViewController {
 
     @objc func refreshData(sender: AnyObject) {
         DispatchQueue.main.async { self.refreshControl.beginRefreshing() }
-        hasFetchedStations = false
         locationManager.requestLocation()
+        // The snapshot listener keeps data live, so just re-sort and end the spinner
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.applyDisplayedStations()
+            self.refreshControl.endRefreshing()
+        }
     }
 
     @objc func stationDataFetched() {

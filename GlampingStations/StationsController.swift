@@ -9,145 +9,195 @@
 import Foundation
 import CoreLocation
 import CoreData
-//import FirebaseFirestore  ✅ Firestore import
+import FirebaseFirestore
 
-class StationsController: Codable {
-    
+class StationsController {
+
     static let shared = StationsController()
-    
+
     static let stationsDataParseComplete = Notification.Name("stationsDataParseComplete")
-    static let stationsDataParseFailed = Notification.Name("stationsDataParseFailed")
-    
+    static let stationsDataParseFailed   = Notification.Name("stationsDataParseFailed")
+    static let stationAdded              = Notification.Name("stationAdded")
+
+    private let db = Firestore.firestore()
+    private var listener: ListenerRegistration?
+
     var stations: [Station]?
-    
-    var stationArray: [Station] {
-        return stations ?? []
-    }
-    
+
+    var stationArray: [Station] { stations ?? [] }
+
+    // MARK: - Live Listener
+
+    /// Attaches a real-time snapshot listener to the "stations" collection.
+    /// First call loads from cache instantly, then receives server deltas.
+    /// Safe to call multiple times — only the first call creates the listener.
     func fetchStations() {
-        let baseURL = Bundle.main.path(forResource: "stations", ofType: "json")
-        
-        URLSession.shared.dataTask(with: URL(fileURLWithPath: baseURL!)) { (data: Data?, response: URLResponse?, error: Error?) in
+        // Don't attach a second listener
+        guard listener == nil else { return }
+
+        listener = db.collection("stations").addSnapshotListener { [weak self] snapshot, error in
+            guard let self = self else { return }
+
+            if let error = error {
+                print("Firestore listener error (stations): \(error)")
+                // Only fall back to JSON if we have no data at all yet
+                if self.stations == nil {
+                    self.fetchFromLocalJSON()
+                }
+                return
+            }
+
+            guard let documents = snapshot?.documents, !documents.isEmpty else {
+                if self.stations == nil {
+                    self.fetchFromLocalJSON()
+                }
+                return
+            }
+
+            var fetched = [Station]()
+            for doc in documents {
+                let d = doc.data()
+                let a = d["amenity"] as? [String: Bool] ?? [:]
+                let amenity = Amenity(
+                    shower:         a["shower"]         ?? false,
+                    bathroom:       a["bathroom"]       ?? false,
+                    trailerParking: a["trailerParking"] ?? false,
+                    defAtPump:      a["defAtPump"]      ?? false,
+                    repairShop:     a["repairShop"]     ?? false,
+                    catScale:       a["catScale"]       ?? false
+                )
+                let station = Station(
+                    id:           doc.documentID,
+                    latitude:     d["latitude"]     as? Double ?? 0.0,
+                    longitude:    d["longitude"]    as? Double ?? 0.0,
+                    name:         d["name"]         as? String ?? "",
+                    rating:       d["rating"]       as? String ?? "",
+                    comment:      d["comment"]      as? String ?? "",
+                    canopyHeight: d["canopyHeight"] as? String,
+                    amenity:      amenity
+                )
+                fetched.append(station)
+            }
+
+            self.stations = fetched
+            self.saveToCoreData()
+            NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
+        }
+    }
+
+    /// Removes the listener. Call if you ever need to stop listening (e.g. sign-out).
+    func stopListening() {
+        listener?.remove()
+        listener = nil
+    }
+
+    // MARK: - Local JSON Fallback
+
+    private func fetchFromLocalJSON() {
+        guard let baseURL = Bundle.main.path(forResource: "stations", ofType: "json") else {
+            NotificationCenter.default.post(name: StationsController.stationsDataParseFailed, object: nil)
+            return
+        }
+        URLSession.shared.dataTask(with: URL(fileURLWithPath: baseURL)) { data, _, error in
             if let data = data {
-                self.stations = (try? JSONDecoder().decode([Station].self, from: data))
+                self.stations = try? JSONDecoder().decode([Station].self, from: data)
                 self.saveToCoreData()
                 NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
             } else {
-                print("ERROR: \(error!)")
+                print("Local JSON fallback also failed: \(error?.localizedDescription ?? "unknown")")
                 NotificationCenter.default.post(name: StationsController.stationsDataParseFailed, object: nil)
             }
         }.resume()
     }
-    
-    // ✅ NEW METHOD: Fetch stations from Firestore
-//    func fetchStationsFromFirestore() {
-//        let db = Firestore.firestore()
-//        
-//        db.collection("stations").getDocuments { (snapshot, error) in
-//            if let error = error {
-//                print("Error getting documents: \(error)")
-//                NotificationCenter.default.post(name: StationsController.stationsDataParseFailed, object: nil)
-//                return
-//            }
-//            
-//            guard let documents = snapshot?.documents else {
-//                NotificationCenter.default.post(name: StationsController.stationsDataParseFailed, object: nil)
-//                return
-//            }
-//            
-//            var fetchedStations = [Station]()
-//            
-//            for doc in documents {
-//                let data = doc.data()
-//                
-//                let id = doc.documentID
-//                let name = data["name"] as? String ?? "Unnamed"
-//                let latitude = data["latitude"] as? CLLocationDegrees ?? 0.0
-//                let longitude = data["longitude"] as? CLLocationDegrees ?? 0.0
-//                let rating = data["rating"] as? Double // Optional
-//                
-//                let station = Station(id: id, name: name, latitude: latitude, longitude: longitude, rating: rating, comment: nil)
-//                fetchedStations.append(station)
-//            }
-//            
-//            self.stations = fetchedStations
-//            self.saveToCoreData()
-//            NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
-//        }
-//    }
-    
+
+    // MARK: - Add (writes to Firestore — listener auto-updates the list)
+
+    func addUserStation(_ station: Station) {
+        let amenityData: [String: Any] = [
+            "shower":         station.amenity?.shower         ?? false,
+            "bathroom":       station.amenity?.bathroom       ?? false,
+            "trailerParking": station.amenity?.trailerParking ?? false,
+            "defAtPump":      station.amenity?.defAtPump      ?? false,
+            "repairShop":     station.amenity?.repairShop     ?? false,
+            "catScale":       station.amenity?.catScale       ?? false
+        ]
+        let data: [String: Any] = [
+            "name":         station.name         ?? "",
+            "latitude":     station.latitude,
+            "longitude":    station.longitude,
+            "rating":       station.rating       ?? "",
+            "comment":      station.comment      ?? "",
+            "canopyHeight": station.canopyHeight ?? "",
+            "amenity":      amenityData
+        ]
+
+        let docId = station.id ?? UUID().uuidString
+        db.collection("stations").document(docId).setData(data) { error in
+            if let error = error {
+                print("Error saving station to Firestore: \(error)")
+            }
+        }
+
+        // The snapshot listener will automatically fire and refresh the list.
+        // Post stationAdded for any UI that needs an immediate signal (e.g. dismiss the add sheet).
+        NotificationCenter.default.post(name: StationsController.stationAdded, object: nil)
+    }
+
+    // MARK: - Core Data (local comment persistence)
+
     func saveToCoreData() {
         for station in stationArray {
             guard let id = station.id else { continue }
             let fetchRequest = NSFetchRequest<StationCD>(entityName: "StationCD")
             fetchRequest.predicate = NSPredicate(format: "id = %@", id)
-            
-            var results: [StationCD] = []
-            
             do {
-                results = try AppDelegate.moc.fetch(fetchRequest)
-                if results.first != nil {
-                    // Already exists
-                } else {
-                    let stationCD = NSEntityDescription.insertNewObject(forEntityName: "StationCD", into: AppDelegate.moc) as! StationCD
-                    stationCD.id = station.id
-                    stationCD.latitude = station.latitude ?? 0.0
-                    stationCD.longitude = station.longitude ?? 0.0
-                    stationCD.name = station.name
-                    stationCD.rating = station.rating
-                    
-                    // New fields from JSON structure
-                    stationCD.comment = station.comment
-                    stationCD.canopyHeight = station.canopyHeight
+                let results = try AppDelegate.moc.fetch(fetchRequest)
+                if results.first == nil {
+                    let cd = NSEntityDescription.insertNewObject(forEntityName: "StationCD", into: AppDelegate.moc) as! StationCD
+                    cd.id        = station.id
+                    cd.latitude  = station.latitude
+                    cd.longitude = station.longitude
+                    cd.name      = station.name
+                    cd.rating    = station.rating
+                    cd.comment   = station.comment
+                    cd.canopyHeight = station.canopyHeight
                     if let amenity = station.amenity {
-                        stationCD.amenityShower = amenity.shower
-                        stationCD.amenityBathroom = amenity.bathroom
-                        stationCD.amenityTrailerParking = amenity.trailerParking
-                        stationCD.amenityDefAtPump = amenity.defAtPump
-                        stationCD.amenityRepairShop = amenity.repairShop
-                        stationCD.amenityCatScale = amenity.catScale
+                        cd.amenityShower         = amenity.shower
+                        cd.amenityBathroom       = amenity.bathroom
+                        cd.amenityTrailerParking = amenity.trailerParking
+                        cd.amenityDefAtPump      = amenity.defAtPump
+                        cd.amenityRepairShop     = amenity.repairShop
+                        cd.amenityCatScale       = amenity.catScale
                     }
-                    
                     AppDelegate.saveContext()
                 }
             } catch {
-                print("error executing fetch request: \(error)")
+                print("Core Data fetch error: \(error)")
             }
         }
     }
-    
+
     func updateStationComment(stationId: String, newComment: String) {
         let fetchRequest = NSFetchRequest<StationCD>(entityName: "StationCD")
         fetchRequest.predicate = NSPredicate(format: "id = %@", stationId)
-        
-        var results: [StationCD] = []
-        
         do {
-            results = try AppDelegate.moc.fetch(fetchRequest)
-            if let stationCD = results.first {
-                stationCD.comment = newComment
+            if let cd = try AppDelegate.moc.fetch(fetchRequest).first {
+                cd.comment = newComment
                 AppDelegate.saveContext()
             }
         } catch {
-            print("error executing fetch request: \(error)")
+            print("Core Data update error: \(error)")
         }
     }
-    
+
     func commentForStation(stationId: String) -> String? {
         let fetchRequest = NSFetchRequest<StationCD>(entityName: "StationCD")
         fetchRequest.predicate = NSPredicate(format: "id = %@", stationId)
-        
-        var results: [StationCD] = []
-        
         do {
-            results = try AppDelegate.moc.fetch(fetchRequest)
-            if let stationCD = results.first {
-                return stationCD.comment
-            }
+            return try AppDelegate.moc.fetch(fetchRequest).first?.comment
         } catch {
-            print("error executing fetch request: \(error)")
+            print("Core Data fetch error: \(error)")
+            return nil
         }
-        return nil
     }
 }
-

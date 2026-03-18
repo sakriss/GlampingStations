@@ -9,152 +9,180 @@
 import Foundation
 import CoreLocation
 import CoreData
+import FirebaseFirestore
 
-class DumpStationsController: Codable {
-    
+class DumpStationsController {
+
     static let shared = DumpStationsController()
-    
+
     static let dumpStationsDataParseComplete = Notification.Name("dumpStationsDataParseComplete")
-    static let dumpStationsDataParseFailed = Notification.Name("dumpStationsDataParseFailed")
-    
+    static let dumpStationsDataParseFailed   = Notification.Name("dumpStationsDataParseFailed")
+    static let dumpStationAdded              = Notification.Name("dumpStationAdded")
+
+    private let db = Firestore.firestore()
+    private var listener: ListenerRegistration?
+
     var dumpStation: [DumpStation]?
-    
-    var dumpStationArray:[DumpStation] {
-        if let theArray = self.dumpStation {
-            return theArray
-        }
-        return []
-    }
-    
+
+    var dumpStationArray: [DumpStation] { dumpStation ?? [] }
+
+    // MARK: - Live Listener
+
+    /// Attaches a real-time snapshot listener to the "dumpStations" collection.
+    /// Safe to call multiple times — only the first call creates the listener.
     func fetchStations() {
-        
-        let baseURL = Bundle.main.path(forResource: "dumpstations", ofType: "json")
-        
-        URLSession.shared.dataTask(with: URL(fileURLWithPath: baseURL!)) { (data:Data?, response:URLResponse?, error:Error?) in
-            if let data = data {
-                self.dumpStation = ( try? JSONDecoder().decode([DumpStation].self, from: data))
-                print("DUMPSTATIONS \(self.dumpStation?.count)")
-                //self.saveToCoreData()
-                NotificationCenter.default.post(name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
-            } else {
-                print("ERROR: \(error!)")
-                NotificationCenter.default.post(name: DumpStationsController.dumpStationsDataParseFailed, object: nil)
+        guard listener == nil else { return }
+
+        listener = db.collection("dumpStations").addSnapshotListener { [weak self] snapshot, error in
+            guard let self = self else { return }
+
+            if let error = error {
+                print("Firestore listener error (dumpStations): \(error)")
+                if self.dumpStation == nil {
+                    self.fetchFromLocalJSON()
+                }
+                return
             }
 
-        }.resume()
-        
-//        let configuration = URLSessionConfiguration.default
-//        configuration.timeoutIntervalForRequest = TimeInterval(5)
-//        configuration.timeoutIntervalForResource = TimeInterval(5)
-//
-//        let session = URLSession(configuration: configuration)
-//        var request: URLRequest? = nil
-//        let task = URLSession.shared.dataTask(
-//                    with: session!,
-//                    completionHandler: { data, response, error in
-//                        DispatchQueue.main.async(execute: {
-//
-//            if error != nil || data == nil {
-//                print("Client error!")
-//                NotificationCenter.default.post(name: NetworkManager.dataParseFailed, object: nil)
-//                return
-//            }
-//
-//            guard let response = response as? HTTPURLResponse, (200...299).contains(response.statusCode) else {
-//                print("Server error!")
-//                NotificationCenter.default.post(name: NetworkManager.dataParseFailed, object: nil)
-//                return
-//            }
-//
-//            guard let mime = response.mimeType, mime == "application/json" else {
-//                print("Wrong MIME type!")
-//                return
-//            }
-//
-//            do {
-//                let json = try JSONSerialization.jsonObject(with: data!, options: [])
-//                print(json)
-//                let dataString = String(data: data!, encoding: .utf8)
-//                print(dataString ?? "")
-//                self.dumpStation = ( try! JSONDecoder().decode(DumpStation.self, from: data!))
-//                NotificationCenter.default.post(name: NetworkManager.dataParseComplete, object: nil)
-//            } catch {
-//                print("JSON error: \(error.localizedDescription)")
-//                NotificationCenter.default.post(name: NetworkManager.dataParseFailed, object: nil)
-//            }
-//        })
-//        })
-//        task.resume()
-        
+            guard let documents = snapshot?.documents, !documents.isEmpty else {
+                if self.dumpStation == nil {
+                    self.fetchFromLocalJSON()
+                }
+                return
+            }
+
+            var fetched = [DumpStation]()
+            for doc in documents {
+                let d = doc.data()
+                let a = d["amenities"] as? [String: Bool] ?? [:]
+                let amenities = DumpAmenities(
+                    potableWater:   a["potableWater"]   ?? false,
+                    rinseWater:     a["rinseWater"]     ?? false,
+                    trailerParking: a["trailerParking"] ?? false,
+                    restrooms:      a["restrooms"]      ?? false,
+                    vending:        a["vending"]        ?? false,
+                    evCharging:     a["evCharging"]     ?? false
+                )
+                let station = DumpStation(
+                    id:           doc.documentID,
+                    latitude:     d["latitude"]     as? Double ?? 0.0,
+                    longitude:    d["longitude"]    as? Double ?? 0.0,
+                    name:         d["name"]         as? String ?? "",
+                    rating:       d["rating"]       as? String ?? "",
+                    comment:      d["comment"]      as? String ?? "",
+                    cost:         d["cost"]         as? String,
+                    canopyHeight: d["canopyHeight"] as? String,
+                    amenities:    amenities
+                )
+                fetched.append(station)
+            }
+
+            self.dumpStation = fetched
+            NotificationCenter.default.post(name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
+        }
     }
-    
+
+    /// Removes the listener.
+    func stopListening() {
+        listener?.remove()
+        listener = nil
+    }
+
+    // MARK: - Local JSON Fallback
+
+    private func fetchFromLocalJSON() {
+        guard let baseURL = Bundle.main.path(forResource: "dumpstations", ofType: "json") else {
+            NotificationCenter.default.post(name: DumpStationsController.dumpStationsDataParseFailed, object: nil)
+            return
+        }
+        URLSession.shared.dataTask(with: URL(fileURLWithPath: baseURL)) { data, _, error in
+            if let data = data {
+                self.dumpStation = try? JSONDecoder().decode([DumpStation].self, from: data)
+                NotificationCenter.default.post(name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
+            } else {
+                print("Local JSON fallback also failed: \(error?.localizedDescription ?? "unknown")")
+                NotificationCenter.default.post(name: DumpStationsController.dumpStationsDataParseFailed, object: nil)
+            }
+        }.resume()
+    }
+
+    // MARK: - Add (writes to Firestore — listener auto-updates the list)
+
+    func addUserDumpStation(_ station: DumpStation) {
+        let amenitiesData: [String: Any] = [
+            "potableWater":   station.amenities?.potableWater   ?? false,
+            "rinseWater":     station.amenities?.rinseWater     ?? false,
+            "trailerParking": station.amenities?.trailerParking ?? false,
+            "restrooms":      station.amenities?.restrooms      ?? false,
+            "vending":        station.amenities?.vending        ?? false,
+            "evCharging":     station.amenities?.evCharging     ?? false
+        ]
+        let data: [String: Any] = [
+            "name":         station.name         ?? "",
+            "latitude":     station.latitude,
+            "longitude":    station.longitude,
+            "rating":       station.rating       ?? "",
+            "comment":      station.comment      ?? "",
+            "cost":         station.cost         ?? "",
+            "canopyHeight": station.canopyHeight ?? "",
+            "amenities":    amenitiesData
+        ]
+
+        let docId = station.id ?? UUID().uuidString
+        db.collection("dumpStations").document(docId).setData(data) { error in
+            if let error = error {
+                print("Error saving dump station to Firestore: \(error)")
+            }
+        }
+
+        NotificationCenter.default.post(name: DumpStationsController.dumpStationAdded, object: nil)
+    }
+
+    // MARK: - Core Data (local comment persistence)
+
     func saveToCoreData() {
-        
         for station in dumpStationArray {
             guard let id = station.id else { continue }
             let fetchRequest = NSFetchRequest<DumpStationCD>(entityName: "DumpStationCD")
             fetchRequest.predicate = NSPredicate(format: "id = %@", id)
-            
-            var results: [DumpStationCD] = []
-            
             do {
-                results = try AppDelegate.moc.fetch(fetchRequest)
-                if results.first != nil {
-                    //Do nothing for now...
-                }
-                else {
-                    let stationCD = NSEntityDescription.insertNewObject(forEntityName: "DumpStationCD", into: AppDelegate.moc) as! DumpStationCD
-                    
-                    stationCD.id = station.id
-                    stationCD.latitude = station.latitude ?? 0.0
-                    stationCD.longitude = station.longitude ?? 0.0
-                    stationCD.name = station.name
-                    stationCD.rating = station.rating
-                    
+                let results = try AppDelegate.moc.fetch(fetchRequest)
+                if results.first == nil {
+                    let cd = NSEntityDescription.insertNewObject(forEntityName: "DumpStationCD", into: AppDelegate.moc) as! DumpStationCD
+                    cd.id        = station.id
+                    cd.latitude  = station.latitude
+                    cd.longitude = station.longitude
+                    cd.name      = station.name
+                    cd.rating    = station.rating
                     AppDelegate.saveContext()
                 }
-            }
-            catch {
-                print("error executing fetch request: \(error)")
+            } catch {
+                print("Core Data fetch error: \(error)")
             }
         }
     }
-    
+
     func updateStationComment(stationId: String, newComment: String) {
-        
         let fetchRequest = NSFetchRequest<DumpStationCD>(entityName: "DumpStationCD")
         fetchRequest.predicate = NSPredicate(format: "id = %@", stationId)
-        
-        var results: [DumpStationCD] = []
-        
         do {
-            results = try AppDelegate.moc.fetch(fetchRequest)
-            if let dumpStationCD = results.first {
-                dumpStationCD.comment = newComment
+            if let cd = try AppDelegate.moc.fetch(fetchRequest).first {
+                cd.comment = newComment
                 AppDelegate.saveContext()
             }
-        }
-        catch {
-            print("error executing fetch request: \(error)")
+        } catch {
+            print("Core Data update error: \(error)")
         }
     }
-    
+
     func commentForStation(stationId: String) -> String? {
-        
         let fetchRequest = NSFetchRequest<DumpStationCD>(entityName: "DumpStationCD")
         fetchRequest.predicate = NSPredicate(format: "id = %@", stationId)
-        
-        var results: [DumpStationCD] = []
-        
         do {
-            results = try AppDelegate.moc.fetch(fetchRequest)
-            if let stationCD = results.first {
-                return stationCD.comment
-            }
+            return try AppDelegate.moc.fetch(fetchRequest).first?.comment
+        } catch {
+            print("Core Data fetch error: \(error)")
+            return nil
         }
-        catch {
-            print("error executing fetch request: \(error)")
-        }
-        return nil
     }
 }

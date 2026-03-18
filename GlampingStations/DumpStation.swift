@@ -34,5 +34,21 @@ class DumpStation: Codable {
 
     // For the shared details view, DumpStation does not provide Station-style amenities
     var amenity: Amenity? { nil }
+
+    init() {}
+
+    init(id: String, latitude: Double, longitude: Double, name: String,
+         rating: String, comment: String, cost: String?, canopyHeight: String?,
+         amenities: DumpAmenities?) {
+        self.id = id
+        self.latitude = latitude
+        self.longitude = longitude
+        self.name = name
+        self.rating = rating
+        self.comment = comment
+        self.cost = cost
+        self.canopyHeight = canopyHeight
+        self.amenities = amenities
+    }
 }
 

@@ -28,36 +28,37 @@ class MapViewController: UIViewController {
     var stepByStepDirections = [String]()
     var imageOfRoute = UIImage()
     
+    private var hasSetInitialRegion = false
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         title = "Map"
 
-        locationManager.startUpdatingLocation()
-        
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
-        
+        locationManager.startUpdatingLocation()
+
         mapView.translatesAutoresizingMaskIntoConstraints = false
         mapView.delegate = self
-        
-        if let location = locationManager.location {
-            userLocation = location
-        }
-        
-        let center = CLLocationCoordinate2D(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude)
-        let span = MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.2)
-        
-        mapView.setRegion(MKCoordinateRegion(center: center, span: span), animated: false)
-        
+
+        // Explicitly enable all interactions
+        mapView.isZoomEnabled     = true
+        mapView.isScrollEnabled   = true
+        mapView.isRotateEnabled   = true
+        mapView.isPitchEnabled    = true
+        mapView.showsUserLocation = true
+        mapView.showsCompass      = true
+        mapView.showsScale        = true
+
         view.addSubview(mapView)
-        
-        let safeArea = view.safeAreaLayoutGuide
-        
-        mapView.topAnchor.constraint(equalTo: safeArea.topAnchor).isActive = true
-        mapView.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor).isActive = true
-        mapView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor).isActive = true
-        mapView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor).isActive = true
+
+        NSLayoutConstraint.activate([
+            mapView.topAnchor.constraint(equalTo: view.topAnchor),
+            mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
         
         if let stations = StationsController.shared.stations {
             for station in stations {
@@ -208,21 +209,15 @@ extension MapViewController: MKMapViewDelegate {
         
         let directions = MKDirections(request: request)
         directions.calculate { (response: MKDirections.Response?, error: Error?) in
-            guard let response = response else {
+            guard let response = response, let route = response.routes.first else {
                 print(error ?? "No Response and no error!")
                 return
             }
-            
-            guard let route = response.routes.first else { return }
-            
             for step in route.steps {
                 self.stepByStepDirections.append(step.instructions)
-                print(step.instructions)
             }
-            self.setVisibleMapArea(polyline: route.polyline, edgeInsets: UIEdgeInsets.init(top: 90, left: 40, bottom: 40, right: 40))
+            // Add the route overlay without changing the user's zoom level
             self.mapView.addOverlay(route.polyline, level: .aboveRoads)
-            
-            
         }
 
         
@@ -248,15 +243,18 @@ extension MapViewController: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        mapView.showsUserLocation = true
-        
-        for location in locations {
-            print("\(location.coordinate.latitude), \(location.coordinate.longitude)")
-            userLocation = location
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            //self.fetchDirectionsToFirstPin()
+        guard let location = locations.last else { return }
+        userLocation = location
+
+        // Center the map on the user's real location the first time we get it
+        if !hasSetInitialRegion {
+            hasSetInitialRegion = true
+            let region = MKCoordinateRegion(
+                center: location.coordinate,
+                latitudinalMeters: 50_000,
+                longitudinalMeters: 50_000
+            )
+            mapView.setRegion(region, animated: false)
         }
     }
     
