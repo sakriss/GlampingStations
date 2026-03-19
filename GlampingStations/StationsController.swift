@@ -85,6 +85,7 @@ class StationsController {
 
             self.stations = fetched
             self.saveToCoreData()
+            self.writeOfflineCache(fetched)
             NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
         }
     }
@@ -95,9 +96,39 @@ class StationsController {
         listener = nil
     }
 
+    // MARK: - Offline Cache
+
+    static let offlineCacheFile = "cached_stations.json"
+
+    private var cacheURL: URL? {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?
+            .appendingPathComponent(Self.offlineCacheFile)
+    }
+
+    private func writeOfflineCache(_ stations: [Station]) {
+        guard let url = cacheURL else { return }
+        do {
+            let data = try JSONEncoder().encode(stations)
+            try data.write(to: url, options: .atomic)
+        } catch {
+            print("Failed to write stations offline cache: \(error)")
+        }
+    }
+
     // MARK: - Local JSON Fallback
 
     private func fetchFromLocalJSON() {
+        // 1. Try Documents-directory offline cache written from last Firestore fetch
+        if let url = cacheURL,
+           let data = try? Data(contentsOf: url),
+           let cached = try? JSONDecoder().decode([Station].self, from: data),
+           !cached.isEmpty {
+            stations = cached
+            saveToCoreData()
+            NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
+            return
+        }
+        // 2. Fall back to the bundle JSON
         guard let baseURL = Bundle.main.path(forResource: "stations", ofType: "json") else {
             NotificationCenter.default.post(name: StationsController.stationsDataParseFailed, object: nil)
             return

@@ -19,6 +19,8 @@ class AboutViewController: UIViewController {
     private let accentGold  = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
     private let mutedText   = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
 
+    private var demoBadgeLabel: UILabel?
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -37,6 +39,7 @@ class AboutViewController: UIViewController {
         logoContainer.backgroundColor = accentGold
         logoContainer.layer.cornerRadius = 44
         logoContainer.translatesAutoresizingMaskIntoConstraints = false
+        logoContainer.isUserInteractionEnabled = true
 
         let logoEmoji = UILabel()
         logoEmoji.text = "⛺"
@@ -44,6 +47,20 @@ class AboutViewController: UIViewController {
         logoEmoji.textAlignment = .center
         logoEmoji.translatesAutoresizingMaskIntoConstraints = false
         logoContainer.addSubview(logoEmoji)
+
+        // Long-press gesture (5 seconds) to toggle demo mode
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLogoPressGesture(_:)))
+        longPress.minimumPressDuration = 5.0
+        logoContainer.addGestureRecognizer(longPress)
+
+        // DEMO badge (shown below logo when demo mode is active)
+        let demoBadge = UILabel()
+        demoBadge.text = "DEMO MODE"
+        demoBadge.font = UIFont.systemFont(ofSize: 11, weight: .bold)
+        demoBadge.textColor = accentGold
+        demoBadge.textAlignment = .center
+        demoBadge.isHidden = !PremiumManager.shared.isDemoModeEnabled
+        demoBadgeLabel = demoBadge
 
         // App name
         let appNameLabel = UILabel()
@@ -60,7 +77,7 @@ class AboutViewController: UIViewController {
         taglineLabel.textAlignment = .center
 
         // Header stack
-        let headerStack = UIStackView(arrangedSubviews: [logoContainer, appNameLabel, taglineLabel])
+        let headerStack = UIStackView(arrangedSubviews: [logoContainer, demoBadge, appNameLabel, taglineLabel])
         headerStack.axis = .vertical
         headerStack.alignment = .center
         headerStack.spacing = 12
@@ -110,6 +127,31 @@ class AboutViewController: UIViewController {
             mainStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             mainStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24)
         ])
+    }
+
+    // MARK: - Demo Mode Toggle
+
+    @objc private func handleLogoPressGesture(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+
+        let isCurrentlyEnabled = PremiumManager.shared.isDemoModeEnabled
+        PremiumManager.shared.isDemoModeEnabled = !isCurrentlyEnabled
+
+        let newState = PremiumManager.shared.isDemoModeEnabled
+        demoBadgeLabel?.isHidden = !newState
+
+        let stateText = newState ? "ON" : "OFF"
+        let message = newState
+            ? "Premium features are now unlocked for testing."
+            : "Premium Demo Mode has been disabled."
+
+        let alert = UIAlertController(
+            title: "Premium Demo Mode \(stateText)",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
 
     private func makeInfoCard(icon: String, title: String, value: String) -> UIView {

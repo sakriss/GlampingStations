@@ -58,6 +58,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UITabBar.appearance().scrollEdgeAppearance = AppDelegate.tabBarAppearance
         UITabBar.appearance().isTranslucent = false
 
+        // Start listening for StoreKit 2 transaction updates
+        PremiumManager.shared.startTransactionListener()
+
         return true
     }
 

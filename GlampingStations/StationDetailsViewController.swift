@@ -83,6 +83,15 @@ class StationDetailsViewController: UIViewController {
     }
 
     @objc private func favoriteTapped() {
+        // If already favorited → allow un-favoriting freely
+        // If not favorited → check premium / free limit
+        if !isFavorite && !PremiumManager.shared.canAddFavorite {
+            let paywall = PaywallViewController()
+            paywall.modalPresentationStyle = .formSheet
+            present(paywall, animated: true)
+            return
+        }
+
         if let id = stationDetails?.id {
             StationsController.shared.toggleFavorite(stationId: id)
         } else if let id = dumpStationDetails?.id {

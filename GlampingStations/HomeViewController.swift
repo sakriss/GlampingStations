@@ -27,6 +27,9 @@ class HomeViewController: UIViewController {
     private var gasCollectionView: UICollectionView!
     private var dumpCollectionView: UICollectionView!
 
+    // Premium upsell
+    private var premiumBannerContainer: UIView?
+
     // Data
     private var favoriteGasStations: [Station] = []
     private var favoriteDumpStations: [DumpStation] = []
@@ -50,6 +53,8 @@ class HomeViewController: UIViewController {
                                                name: StationsController.stationsDataParseComplete, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(dataUpdated),
                                                name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(premiumStatusChanged),
+                                               name: PremiumManager.premiumStatusChanged, object: nil)
 
         // Kick off data fetch (will be a no-op if listeners already running)
         StationsController.shared.fetchStations()
@@ -115,6 +120,16 @@ class HomeViewController: UIViewController {
         // Quick stats card
         let statsCard = buildStatsCard()
         stackView.addArrangedSubview(statsCard)
+
+        // Premium upsell banner (only visible for free users)
+        let banner = buildPremiumBanner()
+        premiumBannerContainer = banner
+        stackView.addArrangedSubview(banner)
+        banner.isHidden = PremiumManager.shared.isPremium
+
+        // Trip Planner card
+        let tripCard = buildTripPlannerCard()
+        stackView.addArrangedSubview(tripCard)
 
         // Favorite Gas Stations section
         let gasSection = buildFavoritesSection(
@@ -288,6 +303,203 @@ class HomeViewController: UIViewController {
         gasCountLabel?.text = "\(gasTotal)"
         dumpCountLabel?.text = "\(dumpTotal)"
         favCountLabel?.text = "\(favTotal)"
+    }
+
+    // MARK: - Premium Banner
+
+    private func buildPremiumBanner() -> UIView {
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+
+        let card = UIView()
+        card.backgroundColor = UIColor(red: 35/255, green: 28/255, blue: 10/255, alpha: 1)
+        card.layer.cornerRadius = 16
+        card.layer.borderWidth = 1
+        card.layer.borderColor = accentGold.withAlphaComponent(0.4).cgColor
+        card.translatesAutoresizingMaskIntoConstraints = false
+        card.isUserInteractionEnabled = true
+        container.addSubview(card)
+
+        let crownIcon = UIImageView(image: UIImage(systemName: "crown.fill"))
+        crownIcon.tintColor = accentGold
+        crownIcon.contentMode = .scaleAspectFit
+        crownIcon.translatesAutoresizingMaskIntoConstraints = false
+
+        let titleLbl = UILabel()
+        titleLbl.text = "Unlock Premium"
+        titleLbl.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        titleLbl.textColor = accentGold
+
+        let subtitleLbl = UILabel()
+        subtitleLbl.text = "Unlimited favorites, offline mode & trip planner — one-time $4.99"
+        subtitleLbl.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        subtitleLbl.textColor = mutedText
+        subtitleLbl.numberOfLines = 0
+
+        let textStack = UIStackView(arrangedSubviews: [titleLbl, subtitleLbl])
+        textStack.axis = .vertical
+        textStack.spacing = 4
+        textStack.translatesAutoresizingMaskIntoConstraints = false
+
+        let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
+        chevron.tintColor = accentGold.withAlphaComponent(0.7)
+        chevron.contentMode = .scaleAspectFit
+        chevron.translatesAutoresizingMaskIntoConstraints = false
+        chevron.setContentHuggingPriority(.required, for: .horizontal)
+
+        card.addSubview(crownIcon)
+        card.addSubview(textStack)
+        card.addSubview(chevron)
+
+        NSLayoutConstraint.activate([
+            card.topAnchor.constraint(equalTo: container.topAnchor),
+            card.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
+            card.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
+            card.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+
+            crownIcon.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
+            crownIcon.centerYAnchor.constraint(equalTo: card.centerYAnchor),
+            crownIcon.widthAnchor.constraint(equalToConstant: 28),
+            crownIcon.heightAnchor.constraint(equalToConstant: 28),
+
+            textStack.leadingAnchor.constraint(equalTo: crownIcon.trailingAnchor, constant: 12),
+            textStack.trailingAnchor.constraint(equalTo: chevron.leadingAnchor, constant: -8),
+            textStack.topAnchor.constraint(equalTo: card.topAnchor, constant: 16),
+            textStack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -16),
+
+            chevron.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
+            chevron.centerYAnchor.constraint(equalTo: card.centerYAnchor),
+            chevron.widthAnchor.constraint(equalToConstant: 14),
+            chevron.heightAnchor.constraint(equalToConstant: 14)
+        ])
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(premiumBannerTapped))
+        card.addGestureRecognizer(tap)
+
+        return container
+    }
+
+    @objc private func premiumBannerTapped() {
+        let paywall = PaywallViewController()
+        paywall.modalPresentationStyle = .formSheet
+        present(paywall, animated: true)
+    }
+
+    @objc private func premiumStatusChanged() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.premiumBannerContainer?.isHidden = PremiumManager.shared.isPremium
+        }
+    }
+
+    // MARK: - Trip Planner Card
+
+    private func buildTripPlannerCard() -> UIView {
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+
+        let card = UIView()
+        card.backgroundColor = cardColor
+        card.layer.cornerRadius = 16
+        card.translatesAutoresizingMaskIntoConstraints = false
+        card.isUserInteractionEnabled = true
+        container.addSubview(card)
+
+        let mapIcon = UIImageView(image: UIImage(systemName: "map.fill"))
+        mapIcon.tintColor = accentGold
+        mapIcon.contentMode = .scaleAspectFit
+        mapIcon.translatesAutoresizingMaskIntoConstraints = false
+
+        let titleLbl = UILabel()
+        titleLbl.text = "Plan a Trip"
+        titleLbl.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        titleLbl.textColor = .white
+
+        let subtitleLbl = UILabel()
+        subtitleLbl.text = "Find fuel and dump stations along your route"
+        subtitleLbl.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        subtitleLbl.textColor = mutedText
+        subtitleLbl.numberOfLines = 0
+
+        let lockIcon = UIImageView(image: UIImage(systemName: "crown.fill"))
+        lockIcon.tintColor = accentGold
+        lockIcon.contentMode = .scaleAspectFit
+        lockIcon.translatesAutoresizingMaskIntoConstraints = false
+        lockIcon.isHidden = PremiumManager.shared.isPremium
+
+        let premiumLabel = UILabel()
+        premiumLabel.text = "Premium"
+        premiumLabel.font = UIFont.systemFont(ofSize: 11, weight: .bold)
+        premiumLabel.textColor = accentGold
+        premiumLabel.isHidden = PremiumManager.shared.isPremium
+
+        let badgeStack = UIStackView(arrangedSubviews: [lockIcon, premiumLabel])
+        badgeStack.axis = .horizontal
+        badgeStack.spacing = 4
+        badgeStack.alignment = .center
+        badgeStack.translatesAutoresizingMaskIntoConstraints = false
+
+        let textStack = UIStackView(arrangedSubviews: [titleLbl, subtitleLbl, badgeStack])
+        textStack.axis = .vertical
+        textStack.spacing = 4
+        textStack.translatesAutoresizingMaskIntoConstraints = false
+
+        let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
+        chevron.tintColor = mutedText
+        chevron.contentMode = .scaleAspectFit
+        chevron.translatesAutoresizingMaskIntoConstraints = false
+        chevron.setContentHuggingPriority(.required, for: .horizontal)
+
+        card.addSubview(mapIcon)
+        card.addSubview(textStack)
+        card.addSubview(chevron)
+
+        NSLayoutConstraint.activate([
+            card.topAnchor.constraint(equalTo: container.topAnchor),
+            card.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
+            card.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
+            card.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+
+            mapIcon.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
+            mapIcon.centerYAnchor.constraint(equalTo: card.centerYAnchor),
+            mapIcon.widthAnchor.constraint(equalToConstant: 30),
+            mapIcon.heightAnchor.constraint(equalToConstant: 30),
+
+            textStack.leadingAnchor.constraint(equalTo: mapIcon.trailingAnchor, constant: 14),
+            textStack.trailingAnchor.constraint(equalTo: chevron.leadingAnchor, constant: -8),
+            textStack.topAnchor.constraint(equalTo: card.topAnchor, constant: 16),
+            textStack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -16),
+
+            lockIcon.widthAnchor.constraint(equalToConstant: 14),
+            lockIcon.heightAnchor.constraint(equalToConstant: 14),
+
+            chevron.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
+            chevron.centerYAnchor.constraint(equalTo: card.centerYAnchor),
+            chevron.widthAnchor.constraint(equalToConstant: 14),
+            chevron.heightAnchor.constraint(equalToConstant: 14)
+        ])
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(tripPlannerTapped))
+        card.addGestureRecognizer(tap)
+
+        return container
+    }
+
+    @objc private func tripPlannerTapped() {
+        if !PremiumManager.shared.isPremium {
+            let paywall = PaywallViewController()
+            paywall.modalPresentationStyle = .formSheet
+            present(paywall, animated: true)
+            return
+        }
+
+        let tripVC = TripPlannerViewController()
+        tripVC.userLocation = userLocation
+        let nav = UINavigationController(rootViewController: tripVC)
+        nav.navigationBar.standardAppearance   = AppDelegate.navBarAppearance
+        nav.navigationBar.scrollEdgeAppearance = AppDelegate.navBarAppearance
+        nav.modalPresentationStyle = .fullScreen
+        present(nav, animated: true)
     }
 
     // MARK: - Favorites Section

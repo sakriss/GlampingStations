@@ -42,6 +42,9 @@
 		D2BB00012F60000000000001 /* FilterSortViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00002F60000000000001 /* FilterSortViewController.swift */; };
 		D2BB00022F60000000000002 /* AddStationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00032F60000000000002 /* AddStationViewController.swift */; };
 		D2BB00042F60000000000003 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00052F60000000000003 /* HomeViewController.swift */; };
+		D2BB00062F60000000000004 /* PremiumManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00072F60000000000005 /* PremiumManager.swift */; };
+		D2BB00082F60000000000006 /* PaywallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00092F60000000000007 /* PaywallViewController.swift */; };
+		D2BB000A2F60000000000008 /* TripPlannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB000B2F60000000000009 /* TripPlannerViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +79,9 @@
 		D2BB00002F60000000000001 /* FilterSortViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterSortViewController.swift; sourceTree = "<group>"; };
 		D2BB00032F60000000000002 /* AddStationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddStationViewController.swift; sourceTree = "<group>"; };
 		D2BB00052F60000000000003 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		D2BB00072F60000000000005 /* PremiumManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumManager.swift; sourceTree = "<group>"; };
+		D2BB00092F60000000000007 /* PaywallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewController.swift; sourceTree = "<group>"; };
+		D2BB000B2F60000000000009 /* TripPlannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripPlannerViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,6 +150,9 @@
 				D2BB00002F60000000000001 /* FilterSortViewController.swift */,
 				D2BB00032F60000000000002 /* AddStationViewController.swift */,
 				D2BB00052F60000000000003 /* HomeViewController.swift */,
+				D2BB00072F60000000000005 /* PremiumManager.swift */,
+				D2BB00092F60000000000007 /* PaywallViewController.swift */,
+				D2BB000B2F60000000000009 /* TripPlannerViewController.swift */,
 			);
 			path = GlampingStations;
 			sourceTree = "<group>";
@@ -250,6 +259,9 @@
 				D2BB00012F60000000000001 /* FilterSortViewController.swift in Sources */,
 				D2BB00022F60000000000002 /* AddStationViewController.swift in Sources */,
 				D2BB00042F60000000000003 /* HomeViewController.swift in Sources */,
+				D2BB00062F60000000000004 /* PremiumManager.swift in Sources */,
+				D2BB00082F60000000000006 /* PaywallViewController.swift in Sources */,
+				D2BB000A2F60000000000008 /* TripPlannerViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
