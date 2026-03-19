@@ -39,6 +39,13 @@ class DumpStationViewCell: UITableViewCell {
         dumpStationDistanceLbl?.textColor = DumpStationViewCell.accentGold
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        dumpStationName?.text = nil
+        dumpStationAddressLbl?.text = nil
+        dumpStationDistanceLbl?.text = nil
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 6, left: 16, bottom: 6, right: 16))

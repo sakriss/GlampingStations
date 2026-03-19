@@ -7,6 +7,7 @@
         "rating": "Good",
         "comment": "Not too bad",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
             "shower": false,
             "bathroom": true,
@@ -24,6 +25,7 @@
         "rating": "Good",
         "comment": "Not too bad",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
             "shower": false,
             "bathroom": true,
@@ -32,7 +34,6 @@
             "repairShop": false,
             "catScale": false
         }
-        
     },
     {
         "id": "3",
@@ -42,6 +43,7 @@
         "rating": "Ideal",
         "comment": "Ideal for big trailers",
         "canopyHeight": "14ft",
+        "favorite": true,
         "amenity": {
             "shower": false,
             "bathroom": true,
@@ -59,6 +61,7 @@
         "rating": "Good",
         "comment": "Not too bad",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
             "shower": false,
             "bathroom": true,
@@ -67,7 +70,6 @@
             "repairShop": false,
             "catScale": false
         }
-        
     },
     {
         "id": "5",
@@ -77,6 +79,7 @@
         "rating": "Good",
         "comment": "Not too bad",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
             "shower": false,
             "bathroom": true,
@@ -94,6 +97,7 @@
         "rating": "Good",
         "comment": "Not too bad",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
             "shower": false,
             "bathroom": true,
@@ -111,6 +115,7 @@
         "rating": "Good",
         "comment": "Not too bad",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
             "shower": false,
             "bathroom": true,
@@ -128,6 +133,7 @@
         "rating": "Bad",
         "comment": "Not easy to get in and out of",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
             "shower": false,
             "bathroom": true,
@@ -145,6 +151,7 @@
         "rating": "Good",
         "comment": "Not too bad",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
             "shower": false,
             "bathroom": true,
@@ -162,6 +169,7 @@
         "rating": "Good",
         "comment": "Not too bad",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
             "shower": false,
             "bathroom": true,
@@ -179,6 +187,7 @@
         "rating": "Ok",
         "comment": "Not too bad, but tight",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
             "shower": false,
             "bathroom": false,
@@ -196,6 +205,7 @@
         "rating": "Bad",
         "comment": "No longer has gas pumps",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
             "shower": false,
             "bathroom": false,
@@ -213,6 +223,7 @@
         "rating": "Good",
         "comment": "Tight but works",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
             "shower": false,
             "bathroom": true,
@@ -230,6 +241,7 @@
         "rating": "Perfect",
         "comment": "Perfect - easy in and out. Lots of parking",
         "canopyHeight": "14ft",
+        "favorite": true,
         "amenity": {
             "shower": true,
             "bathroom": true,
@@ -247,16 +259,17 @@
         "rating": "Good",
         "comment": "Good for big rigs",
         "canopyHeight": "14ft",
+        "favorite": true,
         "amenity": {
-          "shower": true,
-          "bathroom": true,
-          "trailerParking": true,
-          "defAtPump": true,
-          "repairShop": true,
-          "catScale": true
+            "shower": true,
+            "bathroom": true,
+            "trailerParking": true,
+            "defAtPump": true,
+            "repairShop": true,
+            "catScale": true
         }
-      },
-      {
+    },
+    {
         "id": "16",
         "name": "Flying J",
         "latitude": 46.9521,
@@ -264,115 +277,122 @@
         "rating": "Good",
         "comment": "Good for big rigs",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
-          "shower": true,
-          "bathroom": true,
-          "trailerParking": true,
-          "defAtPump": true,
-          "repairShop": false,
-          "catScale": true
+            "shower": true,
+            "bathroom": true,
+            "trailerParking": true,
+            "defAtPump": true,
+            "repairShop": false,
+            "catScale": true
         }
-      },
-      {
-          "id": "17",
+    },
+    {
+        "id": "17",
         "name": "TA Seattle East",
         "latitude": 47.4871,
         "longitude": -121.7675,
         "rating": "Good",
         "comment": "Good for big rigs",
         "canopyHeight": "14ft",
+        "favorite": true,
         "amenity": {
-          "shower": true,
-          "bathroom": true,
-          "trailerParking": true,
-          "defAtPump": true,
-          "repairShop": true,
-          "catScale": true
+            "shower": true,
+            "bathroom": true,
+            "trailerParking": true,
+            "defAtPump": true,
+            "repairShop": true,
+            "catScale": true
         }
-      },
-      {
-          "id": "18",
+    },
+    {
+        "id": "18",
         "name": "Petro",
         "latitude": 47.62,
         "longitude": -117.51,
         "rating": "Good",
         "comment": "Good for big rigs",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
-          "shower": true,
-          "bathroom": true,
-          "trailerParking": true,
-          "defAtPump": true,
-          "repairShop": true,
-          "catScale": true
+            "shower": true,
+            "bathroom": true,
+            "trailerParking": true,
+            "defAtPump": true,
+            "repairShop": true,
+            "catScale": true
         }
-      },
-      {
-          "id": "19",
+    },
+    {
+        "id": "19",
         "name": "Gee Cee's",
         "latitude": 46.3926,
         "longitude": -122.9052,
         "rating": "Good",
         "comment": "Good for big rigs",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
-          "shower": true,
-          "bathroom": true,
-          "trailerParking": true,
-          "defAtPump": true,
-          "repairShop": true,
-          "catScale": true
+            "shower": true,
+            "bathroom": true,
+            "trailerParking": true,
+            "defAtPump": true,
+            "repairShop": true,
+            "catScale": true
         }
-      },
-      {
-          "id": "20",
+    },
+    {
+        "id": "20",
         "name": "Donna's",
         "latitude": 48.1,
         "longitude": -122.19,
         "rating": "Good",
         "comment": "Good for big rigs",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
-          "shower": true,
-          "bathroom": true,
-          "trailerParking": true,
-          "defAtPump": true,
-          "repairShop": false,
-          "catScale": true
+            "shower": true,
+            "bathroom": true,
+            "trailerParking": true,
+            "defAtPump": true,
+            "repairShop": false,
+            "catScale": true
         }
-      },
-      {
-          "id": "21",
+    },
+    {
+        "id": "21",
         "name": "Ernie's",
         "latitude": 47.1,
         "longitude": -119.25,
         "rating": "Good",
         "comment": "Good for big rigs",
         "canopyHeight": "14ft",
+        "favorite": false,
         "amenity": {
-          "shower": true,
-          "bathroom": true,
-          "trailerParking": true,
-          "defAtPump": true,
-          "repairShop": false,
-          "catScale": false
+            "shower": true,
+            "bathroom": true,
+            "trailerParking": true,
+            "defAtPump": true,
+            "repairShop": false,
+            "catScale": false
         }
-      },
-      {
-          "id": "22",
+    },
+    {
+        "id": "22",
         "name": "Pilot Travel",
         "latitude": 46.993,
         "longitude": -120.547,
         "rating": "Good",
         "comment": "Good for big rigs",
         "canopyHeight": "14ft",
+        "favorite": true,
         "amenity": {
-          "shower": true,
-          "bathroom": true,
-          "trailerParking": true,
-          "defAtPump": true,
-          "repairShop": false,
-          "catScale": true
+            "shower": true,
+            "bathroom": true,
+            "trailerParking": true,
+            "defAtPump": true,
+            "repairShop": false,
+            "catScale": true
         }
-      }
+    }
 ]

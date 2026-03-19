@@ -28,15 +28,6 @@ class AboutViewController: UIViewController {
 
         view.backgroundColor = primaryBg
 
-        // Navigation bar styling
-        let navAppearance = UINavigationBarAppearance()
-        navAppearance.configureWithOpaqueBackground()
-        navAppearance.backgroundColor = primaryBg
-        navAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
-        navigationController?.navigationBar.standardAppearance = navAppearance
-        navigationController?.navigationBar.scrollEdgeAppearance = navAppearance
-        navigationController?.navigationBar.tintColor = accentGold
-
         setupUI()
     }
 

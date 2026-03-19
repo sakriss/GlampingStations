@@ -27,9 +27,10 @@ class DumpStation: Codable {
     private(set) var cost: String? = ""
     private(set) var canopyHeight: String? = nil
     private(set) var amenities: DumpAmenities? = nil
+    var favorite: Bool = false
 
     private enum CodingKeys: String, CodingKey {
-        case id, latitude, longitude, name, rating, comment, cost, canopyHeight, amenities
+        case id, latitude, longitude, name, rating, comment, cost, canopyHeight, amenities, favorite
     }
 
     // For the shared details view, DumpStation does not provide Station-style amenities
@@ -39,7 +40,7 @@ class DumpStation: Codable {
 
     init(id: String, latitude: Double, longitude: Double, name: String,
          rating: String, comment: String, cost: String?, canopyHeight: String?,
-         amenities: DumpAmenities?) {
+         amenities: DumpAmenities?, favorite: Bool = false) {
         self.id = id
         self.latitude = latitude
         self.longitude = longitude
@@ -49,6 +50,7 @@ class DumpStation: Codable {
         self.cost = cost
         self.canopyHeight = canopyHeight
         self.amenities = amenities
+        self.favorite = favorite
     }
 }
 

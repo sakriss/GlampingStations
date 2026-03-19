@@ -38,6 +38,13 @@ class ListTableViewCell: UITableViewCell {
         stationDistanceLabel?.textColor = ListTableViewCell.accentGold
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        stationNameLabel?.text = nil
+        stationAddressLabel?.text = nil
+        stationDistanceLabel?.text = nil
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 6, left: 16, bottom: 6, right: 16))

@@ -37,21 +37,19 @@ class DumpStationViewController: UIViewController {
 
     // MARK: - Lifecycle
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tabBarController?.tabBar.standardAppearance = AppDelegate.tabBarAppearance
+        tabBarController?.tabBar.scrollEdgeAppearance = AppDelegate.tabBarAppearance
+        navigationController?.navigationBar.standardAppearance = AppDelegate.navBarAppearance
+        navigationController?.navigationBar.scrollEdgeAppearance = AppDelegate.navBarAppearance
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Dump Stations"
+        title = "Dump"
         view.backgroundColor = primaryBg
-
-        // Navigation bar dark styling
-        let navAppearance = UINavigationBarAppearance()
-        navAppearance.configureWithOpaqueBackground()
-        navAppearance.backgroundColor = primaryBg
-        navAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
-        navAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        navigationController?.navigationBar.standardAppearance = navAppearance
-        navigationController?.navigationBar.scrollEdgeAppearance = navAppearance
-        navigationController?.navigationBar.tintColor = accentGold
 
         // Inline filter/sort bar (nav bar buttons don't work when Nav wraps TabBar)
         setupFilterSortBar()
@@ -72,8 +70,6 @@ class DumpStationViewController: UIViewController {
             locationManager.requestLocation()
         }
 
-        loadingDataAnimation()
-
         // Pull-to-refresh with dark styling
         let attrs: [NSAttributedString.Key: Any] = [.foregroundColor: accentGold]
         refreshControl.tintColor = accentGold
@@ -85,6 +81,14 @@ class DumpStationViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(stationDataFetched), name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(stationDataFailed), name: DumpStationsController.dumpStationsDataParseFailed, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(stationDataFetched), name: DumpStationsController.dumpStationAdded, object: nil)
+
+        // If data already loaded (e.g. HomeViewController started the listener first),
+        // skip the spinner and display immediately. Otherwise show loading animation.
+        if !DumpStationsController.shared.dumpStationArray.isEmpty {
+            applyDisplayedStations()
+        } else {
+            loadingDataAnimation()
+        }
     }
 
     // MARK: - Filter / Sort Bar
@@ -425,15 +429,25 @@ extension DumpStationViewController: UITableViewDataSource {
 
         cell.dumpStationName.text = station.name
 
+        // Set distance immediately — no need to wait for geocoding
         let originLocation = CLLocation(latitude: station.latitude, longitude: station.longitude)
-        getPlacemark(forLocation: originLocation) { placemark, _ in
+        let miles = originLocation.distance(from: userLocation) * 0.000621371
+        cell.dumpStationDistanceLbl.text = String(format: "%.0f miles from you", miles)
+
+        // Reset address while geocoding loads (prevents stale data from reused cell)
+        cell.dumpStationAddressLbl.text = ""
+
+        // Async geocode — guard against cell reuse
+        getPlacemark(forLocation: originLocation) { [weak tableView] placemark, _ in
             guard let placemark = placemark else { return }
-            var addr = [placemark.subThoroughfare, placemark.thoroughfare].compactMap { $0 }.joined(separator: " ")
-            if !addr.isEmpty { addr += ", " }
-            addr += [placemark.locality, placemark.administrativeArea].compactMap { $0 }.joined(separator: ", ")
-            cell.dumpStationAddressLbl.text = addr
-            let miles = originLocation.distance(from: self.userLocation) * 0.000621371
-            cell.dumpStationDistanceLbl.text = String(format: "%.0f miles from you", miles)
+            DispatchQueue.main.async {
+                guard let currentIndexPath = tableView?.indexPath(for: cell),
+                      currentIndexPath == indexPath else { return }
+                var addr = [placemark.subThoroughfare, placemark.thoroughfare].compactMap { $0 }.joined(separator: " ")
+                if !addr.isEmpty { addr += ", " }
+                addr += [placemark.locality, placemark.administrativeArea].compactMap { $0 }.joined(separator: ", ")
+                cell.dumpStationAddressLbl.text = addr
+            }
         }
 
         return cell

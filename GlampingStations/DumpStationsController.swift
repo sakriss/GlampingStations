@@ -72,7 +72,8 @@ class DumpStationsController {
                     comment:      d["comment"]      as? String ?? "",
                     cost:         d["cost"]         as? String,
                     canopyHeight: d["canopyHeight"] as? String,
-                    amenities:    amenities
+                    amenities:    amenities,
+                    favorite:     d["favorite"]     as? Bool   ?? false
                 )
                 fetched.append(station)
             }
@@ -125,7 +126,8 @@ class DumpStationsController {
             "comment":      station.comment      ?? "",
             "cost":         station.cost         ?? "",
             "canopyHeight": station.canopyHeight ?? "",
-            "amenities":    amenitiesData
+            "amenities":    amenitiesData,
+            "favorite":     station.favorite
         ]
 
         let docId = station.id ?? UUID().uuidString
@@ -136,6 +138,19 @@ class DumpStationsController {
         }
 
         NotificationCenter.default.post(name: DumpStationsController.dumpStationAdded, object: nil)
+    }
+
+    // MARK: - Toggle Favorite
+
+    func toggleFavorite(stationId: String) {
+        guard let station = dumpStation?.first(where: { $0.id == stationId }) else { return }
+        station.favorite.toggle()
+        db.collection("dumpStations").document(stationId).updateData(["favorite": station.favorite]) { error in
+            if let error = error {
+                print("Error updating favorite: \(error)")
+            }
+        }
+        NotificationCenter.default.post(name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
     }
 
     // MARK: - Core Data (local comment persistence)

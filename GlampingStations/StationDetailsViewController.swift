@@ -37,21 +37,15 @@ class StationDetailsViewController: UIViewController {
 
         view.backgroundColor = primaryBg
 
-        // Navigation bar dark styling
-        let navAppearance = UINavigationBarAppearance()
-        navAppearance.configureWithOpaqueBackground()
-        navAppearance.backgroundColor = primaryBg
-        navAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
-        navigationController?.navigationBar.standardAppearance = navAppearance
-        navigationController?.navigationBar.scrollEdgeAppearance = navAppearance
-        navigationController?.navigationBar.tintColor = accentGold
-
         stationsDetailsTableView.backgroundColor = primaryBg
         stationsDetailsTableView.separatorStyle = .none
         stationsDetailsTableView.tableFooterView = UIView()
         stationsDetailsTableView.rowHeight = UITableView.automaticDimension
         stationsDetailsTableView.estimatedRowHeight = 800
         stationsDetailsTableView.isScrollEnabled = true
+
+        // Favorite star button in nav bar
+        updateFavoriteButton()
 
         // Map rounded corners + horizontal inset (16pt each side)
         stationDetailMapView.layer.cornerRadius = 16
@@ -70,6 +64,33 @@ class StationDetailsViewController: UIViewController {
         print("NAVIGATION CONTROLLER \(navigationController!)")
     }
     
+    // MARK: - Favorite Toggle
+
+    private var isFavorite: Bool {
+        stationDetails?.favorite ?? dumpStationDetails?.favorite ?? false
+    }
+
+    private func updateFavoriteButton() {
+        let imageName = isFavorite ? "star.fill" : "star"
+        let starBtn = UIBarButtonItem(
+            image: UIImage(systemName: imageName),
+            style: .plain,
+            target: self,
+            action: #selector(favoriteTapped)
+        )
+        starBtn.tintColor = accentGold
+        navigationItem.rightBarButtonItem = starBtn
+    }
+
+    @objc private func favoriteTapped() {
+        if let id = stationDetails?.id {
+            StationsController.shared.toggleFavorite(stationId: id)
+        } else if let id = dumpStationDetails?.id {
+            DumpStationsController.shared.toggleFavorite(stationId: id)
+        }
+        updateFavoriteButton()
+    }
+
     // Convenience accessors that work for either Station or DumpStation
     private var displayName: String? { stationDetails?.name ?? dumpStationDetails?.name }
     private var displayLatitude: Double { stationDetails?.latitude ?? dumpStationDetails?.latitude ?? 0.0 }

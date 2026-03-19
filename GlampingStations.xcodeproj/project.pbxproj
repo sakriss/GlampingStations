@@ -41,6 +41,7 @@
 		D2AFB33F2F52548B003735AD /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2AFB33E2F52548A003735AD /* WeatherService.swift */; };
 		D2BB00012F60000000000001 /* FilterSortViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00002F60000000000001 /* FilterSortViewController.swift */; };
 		D2BB00022F60000000000002 /* AddStationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00032F60000000000002 /* AddStationViewController.swift */; };
+		D2BB00042F60000000000003 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00052F60000000000003 /* HomeViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -74,6 +75,7 @@
 		D2AFB33E2F52548A003735AD /* WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherService.swift; sourceTree = "<group>"; };
 		D2BB00002F60000000000001 /* FilterSortViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterSortViewController.swift; sourceTree = "<group>"; };
 		D2BB00032F60000000000002 /* AddStationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddStationViewController.swift; sourceTree = "<group>"; };
+		D2BB00052F60000000000003 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +143,7 @@
 				D2AFB33E2F52548A003735AD /* WeatherService.swift */,
 				D2BB00002F60000000000001 /* FilterSortViewController.swift */,
 				D2BB00032F60000000000002 /* AddStationViewController.swift */,
+				D2BB00052F60000000000003 /* HomeViewController.swift */,
 			);
 			path = GlampingStations;
 			sourceTree = "<group>";
@@ -246,6 +249,7 @@
 				16F5BDCF2106332600A93A03 /* ListTableViewCell.swift in Sources */,
 				D2BB00012F60000000000001 /* FilterSortViewController.swift in Sources */,
 				D2BB00022F60000000000002 /* AddStationViewController.swift in Sources */,
+				D2BB00042F60000000000003 /* HomeViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

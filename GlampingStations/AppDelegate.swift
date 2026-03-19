@@ -14,41 +14,49 @@ import FirebaseCore
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    
+
     static private(set) var moc:NSManagedObjectContext! = nil
+
+    // MARK: - Shared Appearance Objects
+
+    static let primaryBg  = UIColor(red: 10/255, green: 25/255, blue: 47/255, alpha: 1)
+    static let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    static let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+
+    static let navBarAppearance: UINavigationBarAppearance = {
+        let a = UINavigationBarAppearance()
+        a.configureWithOpaqueBackground()
+        a.backgroundColor = primaryBg
+        a.titleTextAttributes = [.foregroundColor: UIColor.white]
+        a.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        return a
+    }()
+
+    static let tabBarAppearance: UITabBarAppearance = {
+        let a = UITabBarAppearance()
+        a.configureWithOpaqueBackground()
+        a.backgroundColor = primaryBg
+        a.stackedLayoutAppearance.selected.iconColor = accentGold
+        a.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: accentGold]
+        a.stackedLayoutAppearance.normal.iconColor = mutedText
+        a.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: mutedText]
+        return a
+    }()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         AppDelegate.moc = persistentContainer.viewContext
         FirebaseApp.configure()
 
-        let primaryBg = UIColor(red: 10/255, green: 25/255, blue: 47/255, alpha: 1)
-        let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
-        let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+        // Global appearance proxies
+        UINavigationBar.appearance().standardAppearance = AppDelegate.navBarAppearance
+        UINavigationBar.appearance().scrollEdgeAppearance = AppDelegate.navBarAppearance
+        UINavigationBar.appearance().compactAppearance = AppDelegate.navBarAppearance
+        UINavigationBar.appearance().tintColor = AppDelegate.accentGold
+        UINavigationBar.appearance().isTranslucent = false
 
-        // MARK: - Global Navigation Bar Appearance
-        let navAppearance = UINavigationBarAppearance()
-        navAppearance.configureWithOpaqueBackground()
-        navAppearance.backgroundColor = primaryBg
-        navAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
-        navAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        UINavigationBar.appearance().standardAppearance = navAppearance
-        UINavigationBar.appearance().scrollEdgeAppearance = navAppearance
-        UINavigationBar.appearance().tintColor = accentGold
-
-        // MARK: - Global Tab Bar Appearance
-        let tabAppearance = UITabBarAppearance()
-        tabAppearance.configureWithOpaqueBackground()
-        tabAppearance.backgroundColor = primaryBg
-
-        tabAppearance.stackedLayoutAppearance.selected.iconColor = accentGold
-        tabAppearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: accentGold]
-        tabAppearance.stackedLayoutAppearance.normal.iconColor = mutedText
-        tabAppearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: mutedText]
-
-        UITabBar.appearance().standardAppearance = tabAppearance
-        if #available(iOS 15.0, *) {
-            UITabBar.appearance().scrollEdgeAppearance = tabAppearance
-        }
+        UITabBar.appearance().standardAppearance = AppDelegate.tabBarAppearance
+        UITabBar.appearance().scrollEdgeAppearance = AppDelegate.tabBarAppearance
+        UITabBar.appearance().isTranslucent = false
 
         return true
     }

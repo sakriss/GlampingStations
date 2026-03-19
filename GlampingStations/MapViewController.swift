@@ -30,6 +30,14 @@ class MapViewController: UIViewController {
     
     private var hasSetInitialRegion = false
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tabBarController?.tabBar.standardAppearance = AppDelegate.tabBarAppearance
+        tabBarController?.tabBar.scrollEdgeAppearance = AppDelegate.tabBarAppearance
+        navigationController?.navigationBar.standardAppearance = AppDelegate.navBarAppearance
+        navigationController?.navigationBar.scrollEdgeAppearance = AppDelegate.navBarAppearance
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 

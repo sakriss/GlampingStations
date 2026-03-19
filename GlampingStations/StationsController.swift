@@ -74,7 +74,8 @@ class StationsController {
                     rating:       d["rating"]       as? String ?? "",
                     comment:      d["comment"]      as? String ?? "",
                     canopyHeight: d["canopyHeight"] as? String,
-                    amenity:      amenity
+                    amenity:      amenity,
+                    favorite:     d["favorite"]     as? Bool   ?? false
                 )
                 fetched.append(station)
             }
@@ -128,7 +129,8 @@ class StationsController {
             "rating":       station.rating       ?? "",
             "comment":      station.comment      ?? "",
             "canopyHeight": station.canopyHeight ?? "",
-            "amenity":      amenityData
+            "amenity":      amenityData,
+            "favorite":     station.favorite
         ]
 
         let docId = station.id ?? UUID().uuidString
@@ -141,6 +143,19 @@ class StationsController {
         // The snapshot listener will automatically fire and refresh the list.
         // Post stationAdded for any UI that needs an immediate signal (e.g. dismiss the add sheet).
         NotificationCenter.default.post(name: StationsController.stationAdded, object: nil)
+    }
+
+    // MARK: - Toggle Favorite
+
+    func toggleFavorite(stationId: String) {
+        guard let station = stations?.first(where: { $0.id == stationId }) else { return }
+        station.favorite.toggle()
+        db.collection("stations").document(stationId).updateData(["favorite": station.favorite]) { error in
+            if let error = error {
+                print("Error updating favorite: \(error)")
+            }
+        }
+        NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
     }
 
     // MARK: - Core Data (local comment persistence)

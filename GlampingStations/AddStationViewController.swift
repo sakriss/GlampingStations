@@ -137,6 +137,20 @@ class AddStationViewController: UIViewController {
     // MARK: - Form Building
 
     private func buildForm() {
+        // Required fields legend
+        let legendLabel = UILabel()
+        legendLabel.translatesAutoresizingMaskIntoConstraints = false
+        let legend = NSMutableAttributedString(
+            string: "* ",
+            attributes: [.foregroundColor: accentGold, .font: UIFont.systemFont(ofSize: 13, weight: .semibold)]
+        )
+        legend.append(NSAttributedString(
+            string: "Required field",
+            attributes: [.foregroundColor: mutedText, .font: UIFont.systemFont(ofSize: 13, weight: .regular)]
+        ))
+        legendLabel.attributedText = legend
+        stackView.addArrangedSubview(legendLabel)
+
         stackView.addArrangedSubview(buildLocationCard())
         stackView.addArrangedSubview(buildDetailsCard())
         stackView.addArrangedSubview(buildTypeSpecificCard())
@@ -161,7 +175,7 @@ class AddStationViewController: UIViewController {
         ])
 
         // Title
-        let titleLabel = makeLabel("Location", size: 16, weight: .semibold, color: .white)
+        let titleLabel = makeRequiredLabel("Location")
 
         // "Use My Location" button
         let useLocationBtn = UIButton(type: .system)
@@ -257,7 +271,7 @@ class AddStationViewController: UIViewController {
 
         let titleLabel = makeLabel("Details", size: 16, weight: .semibold, color: .white)
 
-        styleTextField(nameField, placeholder: "Station name")
+        styleTextField(nameField, placeholder: "Station name *", required: true)
         nameField.returnKeyType = .next
         nameField.delegate = self
 
@@ -401,7 +415,7 @@ class AddStationViewController: UIViewController {
         return label
     }
 
-    private func styleTextField(_ field: UITextField, placeholder: String) {
+    private func styleTextField(_ field: UITextField, placeholder: String, required: Bool = false) {
         field.translatesAutoresizingMaskIntoConstraints = false
         field.backgroundColor = UIColor.white.withAlphaComponent(0.07)
         field.textColor = .white
@@ -412,10 +426,39 @@ class AddStationViewController: UIViewController {
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 1))
         field.leftViewMode = .always
         field.heightAnchor.constraint(equalToConstant: 44).isActive = true
-        field.attributedPlaceholder = NSAttributedString(
-            string: placeholder,
-            attributes: [.foregroundColor: UIColor.white.withAlphaComponent(0.3)]
+
+        if required, placeholder.hasSuffix(" *") {
+            let base = String(placeholder.dropLast(2))
+            let attr = NSMutableAttributedString(
+                string: base,
+                attributes: [.foregroundColor: UIColor.white.withAlphaComponent(0.3), .font: UIFont.systemFont(ofSize: 15)]
+            )
+            attr.append(NSAttributedString(
+                string: " *",
+                attributes: [.foregroundColor: accentGold.withAlphaComponent(0.7), .font: UIFont.systemFont(ofSize: 15, weight: .semibold)]
+            ))
+            field.attributedPlaceholder = attr
+        } else {
+            field.attributedPlaceholder = NSAttributedString(
+                string: placeholder,
+                attributes: [.foregroundColor: UIColor.white.withAlphaComponent(0.3)]
+            )
+        }
+    }
+
+    private func makeRequiredLabel(_ text: String) -> UILabel {
+        let label = UILabel()
+        let attr = NSMutableAttributedString(
+            string: text,
+            attributes: [.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 16, weight: .semibold)]
         )
+        attr.append(NSAttributedString(
+            string: " *",
+            attributes: [.foregroundColor: accentGold, .font: UIFont.systemFont(ofSize: 16, weight: .semibold)]
+        ))
+        label.attributedText = attr
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }
 
     // MARK: - Keyboard Dismiss
@@ -508,11 +551,27 @@ class AddStationViewController: UIViewController {
         view.endEditing(true)
 
         let name = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        guard !name.isEmpty, selectedLocation != nil else {
-            showAlert(message: "Please enter a station name and select a location.")
+        var missing: [String] = []
+        if selectedLocation == nil { missing.append("location (long press the map or tap Use My Location)") }
+        if name.isEmpty { missing.append("station name") }
+
+        guard missing.isEmpty else {
+            // Flash red border on empty name field
+            if name.isEmpty { flashFieldError(nameField) }
+            showAlert(message: "Please provide the following:\n• " + missing.joined(separator: "\n• "))
             return
         }
         saveStation()
+    }
+
+    private func flashFieldError(_ field: UITextField) {
+        let originalColor = field.layer.borderColor
+        field.layer.borderColor = UIColor.systemRed.cgColor
+        field.layer.borderWidth = 2
+        UIView.animate(withDuration: 0.3, delay: 1.5, options: [], animations: {
+            field.layer.borderColor = originalColor
+            field.layer.borderWidth = 1
+        })
     }
 
     // MARK: - Save Logic

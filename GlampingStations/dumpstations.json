@@ -1,201 +1,211 @@
 [
-  {
-    "id": "WA-I5-01",
-    "name": "Gee Creek Rest Area (I-5 NB)",
-    "latitude": 45.8354,
-    "longitude": -122.6845,
-    "cost": "Free",
-    "rating": "Excellent",
-    "comment": "Easy access right at the exit. Multiple lanes, very popular.",
-    "canopyHeight": "Open",
-    "amenities": {
-      "potableWater": true,
-      "rinseWater": true,
-      "trailerParking": true,
-      "restrooms": true,
-      "vending": true,
-      "evCharging": true
+    {
+        "id": "WA-I5-01",
+        "name": "Gee Creek Rest Area (I-5 NB)",
+        "latitude": 45.8354,
+        "longitude": -122.6845,
+        "cost": "Free",
+        "rating": "Excellent",
+        "comment": "Easy access right at the exit. Multiple lanes, very popular.",
+        "canopyHeight": "Open",
+        "favorite": true,
+        "amenities": {
+            "potableWater": true,
+            "rinseWater": true,
+            "trailerParking": true,
+            "restrooms": true,
+            "vending": true,
+            "evCharging": true
+        }
+    },
+    {
+        "id": "WA-I5-02",
+        "name": "Scatter Creek Rest Area (I-5 NB)",
+        "latitude": 46.8202,
+        "longitude": -122.9904,
+        "cost": "Free",
+        "rating": "Perfect",
+        "comment": "Milepost 90. Has 3 dump stations and over 20 trailer spots.",
+        "canopyHeight": "Open",
+        "favorite": true,
+        "amenities": {
+            "potableWater": true,
+            "rinseWater": true,
+            "trailerParking": true,
+            "restrooms": true,
+            "vending": true,
+            "evCharging": false
+        }
+    },
+    {
+        "id": "WA-I5-03",
+        "name": "SeaTac Rest Area (I-5 NB)",
+        "latitude": 47.3385,
+        "longitude": -122.3114,
+        "cost": "Free",
+        "rating": "Good",
+        "comment": "Milepost 140. Critical stop between Tacoma and Seattle.",
+        "canopyHeight": "Open",
+        "favorite": true,
+        "amenities": {
+            "potableWater": true,
+            "rinseWater": true,
+            "trailerParking": true,
+            "restrooms": true,
+            "vending": true,
+            "evCharging": true
+        }
+    },
+    {
+        "id": "OR-I5-01",
+        "name": "Pilot Flying J #584 (Aurora)",
+        "latitude": 45.2411,
+        "longitude": -122.8270,
+        "cost": "$10.00",
+        "rating": "Great",
+        "comment": "$5 with Pilot RV Plus card. 24/7 access.",
+        "canopyHeight": "14ft 6in",
+        "favorite": false,
+        "amenities": {
+            "potableWater": true,
+            "rinseWater": true,
+            "trailerParking": true,
+            "restrooms": true,
+            "vending": true,
+            "evCharging": false
+        }
+    },
+    {
+        "id": "WA-I90-01",
+        "name": "Indian John Hill Rest Area (I-90 EB/WB)",
+        "latitude": 47.1642,
+        "longitude": -120.8431,
+        "cost": "Free",
+        "rating": "Excellent",
+        "comment": "Milepost 89 near Cle Elum. Iconic mountain views.",
+        "canopyHeight": "Open",
+        "favorite": true,
+        "amenities": {
+            "potableWater": true,
+            "rinseWater": true,
+            "trailerParking": true,
+            "restrooms": true,
+            "vending": true,
+            "evCharging": false
+        }
+    },
+    {
+        "id": "WA-I90-02",
+        "name": "Winchester Rest Area (I-90 EB)",
+        "latitude": 47.1034,
+        "longitude": -119.6287,
+        "cost": "Free",
+        "rating": "Good",
+        "comment": "Milepost 161. Important desert stop before Moses Lake.",
+        "canopyHeight": "Open",
+        "favorite": false,
+        "amenities": {
+            "potableWater": true,
+            "rinseWater": true,
+            "trailerParking": true,
+            "restrooms": true,
+            "vending": true,
+            "evCharging": false
+        }
+    },
+    {
+        "id": "WA-I90-03",
+        "name": "Schrag Rest Area (I-90 WB)",
+        "latitude": 47.1350,
+        "longitude": -118.6750,
+        "cost": "Free",
+        "rating": "Average",
+        "comment": "Milepost 198. Basic station, good for a quick stop.",
+        "canopyHeight": "Open",
+        "favorite": false,
+        "amenities": {
+            "potableWater": true,
+            "rinseWater": true,
+            "trailerParking": true,
+            "restrooms": true,
+            "vending": true,
+            "evCharging": false
+        }
+    },
+    {
+        "id": "OR-PARK-01",
+        "name": "Memaloose State Park (I-84 WB)",
+        "latitude": 45.7001,
+        "longitude": -121.3400,
+        "cost": "$10.00",
+        "rating": "Excellent",
+        "comment": "New $10 fee as of March 2026. Very clean facility.",
+        "canopyHeight": "Open",
+        "favorite": false,
+        "amenities": {
+            "potableWater": true,
+            "rinseWater": true,
+            "trailerParking": true,
+            "restrooms": true,
+            "vending": false,
+            "evCharging": false
+        }
+    },
+    {
+        "id": "WA-410-01",
+        "name": "Eagles Club",
+        "latitude": 47.159193,
+        "longitude": -122.042109,
+        "cost": "$10.00",
+        "rating": "Excellent",
+        "comment": "$10 - $15 donation appreciated.",
+        "canopyHeight": "Open",
+        "favorite": true,
+        "amenities": {
+            "potableWater": true,
+            "rinseWater": true,
+            "trailerParking": false,
+            "restrooms": false,
+            "vending": false,
+            "evCharging": false
+        }
+    },
+    {
+        "id": "WA-101-01",
+        "name": "William M. Tugman State Park",
+        "latitude": 43.60135,
+        "longitude": -124.17782,
+        "cost": "Free",
+        "rating": "Excellent",
+        "comment": "$10 - $15 donation appreciated.",
+        "canopyHeight": "Open",
+        "favorite": false,
+        "amenities": {
+            "potableWater": true,
+            "rinseWater": true,
+            "trailerParking": false,
+            "restrooms": false,
+            "vending": false,
+            "evCharging": false
+        }
+    },
+    {
+        "id": "WA-101-02",
+        "name": "Reedsport",
+        "latitude": 43.704032,
+        "longitude": -124.106538,
+        "cost": "$10",
+        "rating": "Excellent",
+        "comment": "$10 donation appreciated. Usually empty",
+        "canopyHeight": "Open",
+        "favorite": false,
+        "amenities": {
+            "potableWater": true,
+            "rinseWater": true,
+            "trailerParking": false,
+            "restrooms": false,
+            "vending": false,
+            "evCharging": false
+        }
     }
-  },
-  {
-    "id": "WA-I5-02",
-    "name": "Scatter Creek Rest Area (I-5 NB)",
-    "latitude": 46.8202,
-    "longitude": -122.9904,
-    "cost": "Free",
-    "rating": "Perfect",
-    "comment": "Milepost 90. Has 3 dump stations and over 20 trailer spots.",
-    "canopyHeight": "Open",
-    "amenities": {
-      "potableWater": true,
-      "rinseWater": true,
-      "trailerParking": true,
-      "restrooms": true,
-      "vending": true,
-      "evCharging": false
-    }
-  },
-  {
-    "id": "WA-I5-03",
-    "name": "SeaTac Rest Area (I-5 NB)",
-    "latitude": 47.3385,
-    "longitude": -122.3114,
-    "cost": "Free",
-    "rating": "Good",
-    "comment": "Milepost 140. Critical stop between Tacoma and Seattle.",
-    "canopyHeight": "Open",
-    "amenities": {
-      "potableWater": true,
-      "rinseWater": true,
-      "trailerParking": true,
-      "restrooms": true,
-      "vending": true,
-      "evCharging": true
-    }
-  },
-  {
-    "id": "OR-I5-01",
-    "name": "Pilot Flying J #584 (Aurora)",
-    "latitude": 45.2411,
-    "longitude": -122.8270,
-    "cost": "$10.00",
-    "rating": "Great",
-    "comment": "$5 with Pilot RV Plus card. 24/7 access.",
-    "canopyHeight": "14ft 6in",
-    "amenities": {
-      "potableWater": true,
-      "rinseWater": true,
-      "trailerParking": true,
-      "restrooms": true,
-      "vending": true,
-      "evCharging": false
-    }
-  },
-  {
-    "id": "WA-I90-01",
-    "name": "Indian John Hill Rest Area (I-90 EB/WB)",
-    "latitude": 47.1642,
-    "longitude": -120.8431,
-    "cost": "Free",
-    "rating": "Excellent",
-    "comment": "Milepost 89 near Cle Elum. Iconic mountain views.",
-    "canopyHeight": "Open",
-    "amenities": {
-      "potableWater": true,
-      "rinseWater": true,
-      "trailerParking": true,
-      "restrooms": true,
-      "vending": true,
-      "evCharging": false
-    }
-  },
-  {
-    "id": "WA-I90-02",
-    "name": "Winchester Rest Area (I-90 EB)",
-    "latitude": 47.1034,
-    "longitude": -119.6287,
-    "cost": "Free",
-    "rating": "Good",
-    "comment": "Milepost 161. Important desert stop before Moses Lake.",
-    "canopyHeight": "Open",
-    "amenities": {
-      "potableWater": true,
-      "rinseWater": true,
-      "trailerParking": true,
-      "restrooms": true,
-      "vending": true,
-      "evCharging": false
-    }
-  },
-  {
-    "id": "WA-I90-03",
-    "name": "Schrag Rest Area (I-90 WB)",
-    "latitude": 47.1350,
-    "longitude": -118.6750,
-    "cost": "Free",
-    "rating": "Average",
-    "comment": "Milepost 198. Basic station, good for a quick stop.",
-    "canopyHeight": "Open",
-    "amenities": {
-      "potableWater": true,
-      "rinseWater": true,
-      "trailerParking": true,
-      "restrooms": true,
-      "vending": true,
-      "evCharging": false
-    }
-  },
-  {
-    "id": "OR-PARK-01",
-    "name": "Memaloose State Park (I-84 WB)",
-    "latitude": 45.7001,
-    "longitude": -121.3400,
-    "cost": "$10.00",
-    "rating": "Excellent",
-    "comment": "New $10 fee as of March 2026. Very clean facility.",
-    "canopyHeight": "Open",
-    "amenities": {
-      "potableWater": true,
-      "rinseWater": true,
-      "trailerParking": true,
-      "restrooms": true,
-      "vending": false,
-      "evCharging": false
-    }
-  },
-  {
-    "id": "WA-410-01",
-    "name": "Eagles Club",
-    "latitude": 47.159193,
-    "longitude": -122.042109,
-    "cost": "$10.00",
-    "rating": "Excellent",
-    "comment": "$10 - $15 donation appreciated.",
-    "canopyHeight": "Open",
-    "amenities": {
-      "potableWater": true,
-      "rinseWater": true,
-      "trailerParking": false,
-      "restrooms": false,
-      "vending": false,
-      "evCharging": false
-    }
-  },
-  {
-    "id": "WA-101-01",
-    "name": "William M. Tugman State Park",
-    "latitude": 43.60135,
-    "longitude": -124.17782,
-    "cost": "Free",
-    "rating": "Excellent",
-    "comment": "$10 - $15 donation appreciated.",
-    "canopyHeight": "Open",
-    "amenities": {
-      "potableWater": true,
-      "rinseWater": true,
-      "trailerParking": false,
-      "restrooms": false,
-      "vending": false,
-      "evCharging": false
-    }
-  },
-  {
-    "id": "WA-101-02",
-    "name": "Reedsport",
-    "latitude": 43.704032,
-    "longitude": -124.106538,
-    "cost": "$10",
-    "rating": "Excellent",
-    "comment": "$10 donation appreciated. Usually empty",
-    "canopyHeight": "Open",
-    "amenities": {
-      "potableWater": true,
-      "rinseWater": true,
-      "trailerParking": false,
-      "restrooms": false,
-      "vending": false,
-      "evCharging": false
-    }
-  }
-
 ]
