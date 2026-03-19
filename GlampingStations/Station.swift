@@ -27,12 +27,15 @@ class Station: Codable {
     private(set) var canopyHeight: String? = nil
     private(set) var amenity: Amenity? = nil
     var favorite: Bool = false
+    private(set) var state: String? = nil
+    private(set) var city: String? = nil
+    private(set) var address: String? = nil
 
     init() {}
 
     init(id: String, latitude: Double, longitude: Double, name: String,
          rating: String, comment: String, canopyHeight: String?, amenity: Amenity?,
-         favorite: Bool = false) {
+         favorite: Bool = false, state: String? = nil, city: String? = nil, address: String? = nil) {
         self.id = id
         self.latitude = latitude
         self.longitude = longitude
@@ -42,5 +45,8 @@ class Station: Codable {
         self.canopyHeight = canopyHeight
         self.amenity = amenity
         self.favorite = favorite
+        self.state = state
+        self.city = city
+        self.address = address
     }
 }

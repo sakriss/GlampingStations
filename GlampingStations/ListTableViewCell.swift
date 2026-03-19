@@ -17,6 +17,15 @@ class ListTableViewCell: UITableViewCell {
     private static let accentGold  = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
     private static let mutedText   = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
 
+    let favoriteIcon: UIImageView = {
+        let iv = UIImageView()
+        iv.image = UIImage(systemName: "star.fill")
+        iv.tintColor = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        iv.isHidden = true
+        return iv
+    }()
+
     override func awakeFromNib() {
         super.awakeFromNib()
 
@@ -36,6 +45,15 @@ class ListTableViewCell: UITableViewCell {
 
         stationDistanceLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
         stationDistanceLabel?.textColor = ListTableViewCell.accentGold
+
+        // Favorite star — top-right of content view
+        contentView.addSubview(favoriteIcon)
+        NSLayoutConstraint.activate([
+            favoriteIcon.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            favoriteIcon.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
+            favoriteIcon.widthAnchor.constraint(equalToConstant: 14),
+            favoriteIcon.heightAnchor.constraint(equalToConstant: 14)
+        ])
     }
 
     override func prepareForReuse() {
@@ -43,6 +61,7 @@ class ListTableViewCell: UITableViewCell {
         stationNameLabel?.text = nil
         stationAddressLabel?.text = nil
         stationDistanceLabel?.text = nil
+        favoriteIcon.isHidden = true
     }
 
     override func layoutSubviews() {

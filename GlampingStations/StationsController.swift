@@ -75,7 +75,10 @@ class StationsController {
                     comment:      d["comment"]      as? String ?? "",
                     canopyHeight: d["canopyHeight"] as? String,
                     amenity:      amenity,
-                    favorite:     d["favorite"]     as? Bool   ?? false
+                    favorite:     d["favorite"]     as? Bool   ?? false,
+                    state:        d["state"]        as? String,
+                    city:         d["city"]         as? String,
+                    address:      d["address"]      as? String
                 )
                 fetched.append(station)
             }
@@ -130,7 +133,10 @@ class StationsController {
             "comment":      station.comment      ?? "",
             "canopyHeight": station.canopyHeight ?? "",
             "amenity":      amenityData,
-            "favorite":     station.favorite
+            "favorite":     station.favorite,
+            "state":        station.state        ?? "",
+            "city":         station.city         ?? "",
+            "address":      station.address      ?? ""
         ]
 
         let docId = station.id ?? UUID().uuidString

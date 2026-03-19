@@ -579,6 +579,35 @@ class AddStationViewController: UIViewController {
     private func saveStation() {
         guard let location = selectedLocation else { return }
 
+        // Disable save button to prevent double-tap
+        navigationItem.rightBarButtonItem?.isEnabled = false
+
+        // Reverse-geocode once to get address/city/state, then write to Firestore
+        CLGeocoder().reverseGeocodeLocation(location) { [weak self] placemarks, error in
+            guard let self = self else { return }
+
+            let placemark = placemarks?.first
+            let stateStr  = placemark?.administrativeArea
+            let cityStr   = placemark?.locality
+
+            // Build a readable address: "123 Main St, Seattle, WA"
+            var addrParts = [String]()
+            if let sub = placemark?.subThoroughfare, let street = placemark?.thoroughfare {
+                addrParts.append("\(sub) \(street)")
+            } else if let street = placemark?.thoroughfare {
+                addrParts.append(street)
+            }
+            if let city = cityStr { addrParts.append(city) }
+            if let state = stateStr { addrParts.append(state) }
+            let addressStr = addrParts.isEmpty ? nil : addrParts.joined(separator: ", ")
+
+            DispatchQueue.main.async {
+                self.commitSave(location: location, state: stateStr, city: cityStr, address: addressStr)
+            }
+        }
+    }
+
+    private func commitSave(location: CLLocation, state: String?, city: String?, address: String?) {
         let name    = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let rating  = ratingField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let comment = commentView.text ?? ""
@@ -602,7 +631,10 @@ class AddStationViewController: UIViewController {
                 rating:       rating,
                 comment:      comment,
                 canopyHeight: extra?.isEmpty == false ? extra : nil,
-                amenity:      amenity
+                amenity:      amenity,
+                state:        state,
+                city:         city,
+                address:      address
             )
             StationsController.shared.addUserStation(station)
 
@@ -624,7 +656,10 @@ class AddStationViewController: UIViewController {
                 comment:      comment,
                 cost:         extra?.isEmpty == false ? extra : nil,
                 canopyHeight: nil,
-                amenities:    amenities
+                amenities:    amenities,
+                state:        state,
+                city:         city,
+                address:      address
             )
             DumpStationsController.shared.addUserDumpStation(station)
         }

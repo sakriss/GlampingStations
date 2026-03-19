@@ -73,7 +73,10 @@ class DumpStationsController {
                     cost:         d["cost"]         as? String,
                     canopyHeight: d["canopyHeight"] as? String,
                     amenities:    amenities,
-                    favorite:     d["favorite"]     as? Bool   ?? false
+                    favorite:     d["favorite"]     as? Bool   ?? false,
+                    state:        d["state"]        as? String,
+                    city:         d["city"]         as? String,
+                    address:      d["address"]      as? String
                 )
                 fetched.append(station)
             }
@@ -127,7 +130,10 @@ class DumpStationsController {
             "cost":         station.cost         ?? "",
             "canopyHeight": station.canopyHeight ?? "",
             "amenities":    amenitiesData,
-            "favorite":     station.favorite
+            "favorite":     station.favorite,
+            "state":        station.state        ?? "",
+            "city":         station.city         ?? "",
+            "address":      station.address      ?? ""
         ]
 
         let docId = station.id ?? UUID().uuidString

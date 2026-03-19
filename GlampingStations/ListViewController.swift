@@ -26,9 +26,13 @@ class ListViewController: UIViewController {
     // MARK: - Filter / Sort State
     private var activeFilters: Set<String> = []
     private var activeSortOrder: StationSortOrder = .distance
+    private var activeRadius: Double? = nil          // nil = All
+    private var activeStateFilter: String? = nil     // nil = All
+    private var searchText: String = ""
     private var displayedStations: [Station] = []
     private var inlineSortButton: UIButton?
     private var inlineFilterButton: UIButton?
+    private var searchBar: UITextField?
 
     // MARK: - Colors
     private let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
@@ -48,7 +52,7 @@ class ListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Gas"
+        title = "Fuel"
         view.backgroundColor = primaryBg
 
         // Inline filter/sort bar (nav bar buttons don't work when Nav wraps TabBar)
@@ -157,11 +161,51 @@ class ListViewController: UIViewController {
             sep.heightAnchor.constraint(equalToConstant: 1)
         ])
 
-        // Push table content below the bar
-        stationsTableView.contentInset.top = 48
-        stationsTableView.verticalScrollIndicatorInsets.top = 48
+        // Search bar below the filter bar
+        let search = UITextField()
+        search.translatesAutoresizingMaskIntoConstraints = false
+        search.backgroundColor = UIColor.white.withAlphaComponent(0.07)
+        search.textColor = .white
+        search.font = UIFont.systemFont(ofSize: 14)
+        search.layer.cornerRadius = 8
+        search.attributedPlaceholder = NSAttributedString(
+            string: "Search by name, city, or state...",
+            attributes: [.foregroundColor: UIColor.white.withAlphaComponent(0.3)]
+        )
+        search.returnKeyType = .search
+        search.clearButtonMode = .whileEditing
+        search.addTarget(self, action: #selector(searchTextChanged), for: .editingChanged)
+        search.delegate = self
+
+        // Left icon
+        let searchIcon = UIImageView(image: UIImage(systemName: "magnifyingglass"))
+        searchIcon.tintColor = mutedText
+        searchIcon.frame = CGRect(x: 8, y: 0, width: 20, height: 20)
+        let iconContainer = UIView(frame: CGRect(x: 0, y: 0, width: 32, height: 20))
+        iconContainer.addSubview(searchIcon)
+        search.leftView = iconContainer
+        search.leftViewMode = .always
+
+        view.addSubview(search)
+        searchBar = search
+
+        NSLayoutConstraint.activate([
+            search.topAnchor.constraint(equalTo: bar.bottomAnchor, constant: 6),
+            search.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            search.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            search.heightAnchor.constraint(equalToConstant: 36)
+        ])
+
+        // Push table content below bar + search
+        stationsTableView.contentInset.top = 90
+        stationsTableView.verticalScrollIndicatorInsets.top = 90
 
         updateFilterButton()
+    }
+
+    @objc private func searchTextChanged() {
+        searchText = searchBar?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        applyDisplayedStations()
     }
 
     @objc private func showFilterSort() {
@@ -169,6 +213,10 @@ class ListViewController: UIViewController {
         vc.amenityOptions = ["Shower", "Bathroom", "Trailer Parking", "DEF at Pump", "Repair Shop", "CAT Scale"]
         vc.activeAmenities = activeFilters
         vc.currentSort = activeSortOrder
+        vc.currentRadius = activeRadius
+        vc.currentStateFilter = activeStateFilter
+        // Collect unique states from all stations
+        vc.availableStates = Array(Set(StationsController.shared.stationArray.compactMap { $0.state }.filter { !$0.isEmpty })).sorted()
         vc.delegate = self
 
         vc.modalPresentationStyle = .pageSheet
@@ -220,11 +268,10 @@ class ListViewController: UIViewController {
             }
         }
 
-        // 2. Filter
-        if activeFilters.isEmpty {
-            displayedStations = sorted
-        } else {
-            displayedStations = sorted.filter { station in
+        // 2. Filter by amenities
+        var filtered = sorted
+        if !activeFilters.isEmpty {
+            filtered = filtered.filter { station in
                 guard let a = station.amenity else { return false }
                 return activeFilters.allSatisfy { filter in
                     switch filter {
@@ -240,6 +287,35 @@ class ListViewController: UIViewController {
             }
         }
 
+        // 3. Filter by radius
+        if let maxMiles = activeRadius {
+            filtered = filtered.filter { station in
+                let loc = CLLocation(latitude: station.latitude, longitude: station.longitude)
+                let miles = loc.distance(from: userLoc) * 0.000621371
+                return miles <= maxMiles
+            }
+        }
+
+        // 4. Filter by state
+        if let stateFilter = activeStateFilter, !stateFilter.isEmpty {
+            filtered = filtered.filter { ($0.state ?? "").localizedCaseInsensitiveContains(stateFilter) }
+        }
+
+        // 5. Search text
+        if !searchText.isEmpty {
+            filtered = filtered.filter { station in
+                let name  = station.name    ?? ""
+                let city  = station.city    ?? ""
+                let state = station.state   ?? ""
+                let addr  = station.address ?? ""
+                return name.localizedCaseInsensitiveContains(searchText)
+                    || city.localizedCaseInsensitiveContains(searchText)
+                    || state.localizedCaseInsensitiveContains(searchText)
+                    || addr.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+
+        displayedStations = filtered
         stationsTableView.reloadData()
         updateFilterButton()
     }
@@ -324,17 +400,6 @@ class ListViewController: UIViewController {
 
     // MARK: - Geocode Helper
 
-    func getPlacemark(forLocation location: CLLocation, completionHandler: @escaping (CLPlacemark?, String?) -> ()) {
-        CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
-            if let err = error {
-                completionHandler(nil, err.localizedDescription)
-            } else if let placemark = placemarks?.first {
-                completionHandler(placemark, nil)
-            } else {
-                completionHandler(nil, "Placemark was nil")
-            }
-        }
-    }
 
     // MARK: - Segue
 
@@ -352,15 +417,19 @@ class ListViewController: UIViewController {
 // MARK: - FilterSortDelegate
 
 extension ListViewController: FilterSortDelegate {
-    func filterSortDidApply(activeAmenities: Set<String>, sortOrder: StationSortOrder) {
+    func filterSortDidApply(activeAmenities: Set<String>, sortOrder: StationSortOrder, radius: Double?, stateFilter: String?) {
         activeFilters = activeAmenities
         activeSortOrder = sortOrder
+        activeRadius = radius
+        activeStateFilter = stateFilter
         applyDisplayedStations()
     }
 
     func filterSortDidReset() {
         activeFilters = []
         activeSortOrder = .distance
+        activeRadius = nil
+        activeStateFilter = nil
         applyDisplayedStations()
     }
 }
@@ -423,29 +492,31 @@ extension ListViewController: UITableViewDataSource {
         let station = displayedStations[indexPath.row]
 
         cell.stationNameLabel.text = station.name
+        cell.favoriteIcon.isHidden = !station.favorite
 
-        // Set distance immediately — no need to wait for geocoding
+        // Address stored at write time — no async geocoding needed
+        cell.stationAddressLabel.text = station.address ?? ""
+
+        // Distance computed synchronously
         let originLocation = CLLocation(latitude: station.latitude, longitude: station.longitude)
         let miles = originLocation.distance(from: userLocation) * 0.000621371
         cell.stationDistanceLabel.text = String(format: "%.0f miles from you", miles)
 
-        // Reset address while geocoding loads (prevents stale data from reused cell)
-        cell.stationAddressLabel.text = ""
-
-        // Async geocode — guard against cell reuse
-        getPlacemark(forLocation: originLocation) { [weak tableView] placemark, _ in
-            guard let placemark = placemark else { return }
-            DispatchQueue.main.async {
-                // Only update if the cell is still showing the same indexPath
-                guard let currentIndexPath = tableView?.indexPath(for: cell),
-                      currentIndexPath == indexPath else { return }
-                var addr = [placemark.subThoroughfare, placemark.thoroughfare].compactMap { $0 }.joined(separator: " ")
-                if !addr.isEmpty { addr += ", " }
-                addr += [placemark.locality, placemark.administrativeArea].compactMap { $0 }.joined(separator: ", ")
-                cell.stationAddressLabel.text = addr
-            }
-        }
-
         return cell
+    }
+}
+
+// MARK: - UITextFieldDelegate
+
+extension ListViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        searchText = ""
+        applyDisplayedStations()
+        return true
     }
 }

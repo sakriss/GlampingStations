@@ -38,7 +38,7 @@ class HomeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Glamping Stations"
+        title = "Home"
         view.backgroundColor = primaryBg
 
         setupLocationManager()

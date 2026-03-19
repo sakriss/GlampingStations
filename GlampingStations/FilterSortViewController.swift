@@ -29,7 +29,7 @@ enum StationSortOrder {
 // MARK: - Delegate
 
 protocol FilterSortDelegate: AnyObject {
-    func filterSortDidApply(activeAmenities: Set<String>, sortOrder: StationSortOrder)
+    func filterSortDidApply(activeAmenities: Set<String>, sortOrder: StationSortOrder, radius: Double?, stateFilter: String?)
     func filterSortDidReset()
 }
 
@@ -41,6 +41,9 @@ class FilterSortViewController: UIViewController {
     var amenityOptions: [String] = []
     var activeAmenities: Set<String> = []
     var currentSort: StationSortOrder = .distance
+    var currentRadius: Double? = nil           // nil = All
+    var currentStateFilter: String? = nil      // nil = All
+    var availableStates: [String] = []         // populated by parent VC
     weak var delegate: FilterSortDelegate?
 
     // MARK: Colors
@@ -52,6 +55,8 @@ class FilterSortViewController: UIViewController {
     // MARK: Tracked UI
     private var sortRowViews: [(container: UIView, order: StationSortOrder)] = []
     private var amenityToggles: [(button: UIButton, name: String)] = []
+    private var radiusButtons: [(button: UIButton, value: Double?)] = []
+    private var stateButtons: [(button: UIButton, state: String)] = []
 
     // MARK: Lifecycle
 
@@ -152,7 +157,84 @@ class FilterSortViewController: UIViewController {
             }
         }
         content.addArrangedSubview(filterCard)
-        content.setCustomSpacing(32, after: filterCard)
+        content.setCustomSpacing(28, after: filterCard)
+
+        // ── Radius Section ──
+        content.addArrangedSubview(sectionHeader("DISTANCE RADIUS"))
+        content.setCustomSpacing(10, after: content.arrangedSubviews.last!)
+
+        let radiusScroll = UIScrollView()
+        radiusScroll.showsHorizontalScrollIndicator = false
+        radiusScroll.translatesAutoresizingMaskIntoConstraints = false
+        radiusScroll.heightAnchor.constraint(equalToConstant: 40).isActive = true
+
+        let radiusStack = UIStackView()
+        radiusStack.axis = .horizontal
+        radiusStack.spacing = 8
+        radiusStack.translatesAutoresizingMaskIntoConstraints = false
+        radiusScroll.addSubview(radiusStack)
+        NSLayoutConstraint.activate([
+            radiusStack.topAnchor.constraint(equalTo: radiusScroll.topAnchor),
+            radiusStack.leadingAnchor.constraint(equalTo: radiusScroll.leadingAnchor),
+            radiusStack.trailingAnchor.constraint(equalTo: radiusScroll.trailingAnchor),
+            radiusStack.bottomAnchor.constraint(equalTo: radiusScroll.bottomAnchor),
+            radiusStack.heightAnchor.constraint(equalTo: radiusScroll.heightAnchor)
+        ])
+
+        let radiusOptions: [(title: String, value: Double?)] = [
+            ("All", nil), ("25 mi", 25), ("50 mi", 50), ("100 mi", 100), ("200 mi", 200)
+        ]
+        for opt in radiusOptions {
+            let btn = makePillButton(title: opt.title, isSelected: currentRadius == opt.value)
+            btn.addTarget(self, action: #selector(radiusTapped(_:)), for: .touchUpInside)
+            radiusStack.addArrangedSubview(btn)
+            radiusButtons.append((button: btn, value: opt.value))
+        }
+
+        content.addArrangedSubview(radiusScroll)
+        content.setCustomSpacing(28, after: radiusScroll)
+
+        // ── State Section ──
+        if !availableStates.isEmpty {
+            content.addArrangedSubview(sectionHeader("FILTER BY STATE"))
+            content.setCustomSpacing(10, after: content.arrangedSubviews.last!)
+
+            let stateScroll = UIScrollView()
+            stateScroll.showsHorizontalScrollIndicator = false
+            stateScroll.translatesAutoresizingMaskIntoConstraints = false
+            stateScroll.heightAnchor.constraint(equalToConstant: 40).isActive = true
+
+            let stateStack = UIStackView()
+            stateStack.axis = .horizontal
+            stateStack.spacing = 8
+            stateStack.translatesAutoresizingMaskIntoConstraints = false
+            stateScroll.addSubview(stateStack)
+            NSLayoutConstraint.activate([
+                stateStack.topAnchor.constraint(equalTo: stateScroll.topAnchor),
+                stateStack.leadingAnchor.constraint(equalTo: stateScroll.leadingAnchor),
+                stateStack.trailingAnchor.constraint(equalTo: stateScroll.trailingAnchor),
+                stateStack.bottomAnchor.constraint(equalTo: stateScroll.bottomAnchor),
+                stateStack.heightAnchor.constraint(equalTo: stateScroll.heightAnchor)
+            ])
+
+            // "All" pill
+            let allBtn = makePillButton(title: "All", isSelected: currentStateFilter == nil)
+            allBtn.addTarget(self, action: #selector(stateAllTapped), for: .touchUpInside)
+            stateStack.addArrangedSubview(allBtn)
+            stateButtons.append((button: allBtn, state: ""))
+
+            for state in availableStates {
+                let btn = makePillButton(title: state, isSelected: currentStateFilter == state)
+                btn.addTarget(self, action: #selector(stateTapped(_:)), for: .touchUpInside)
+                stateStack.addArrangedSubview(btn)
+                stateButtons.append((button: btn, state: state))
+            }
+
+            content.addArrangedSubview(stateScroll)
+            content.setCustomSpacing(32, after: stateScroll)
+        } else {
+            content.setCustomSpacing(32, after: radiusScroll)
+        }
 
         // ── Buttons ──
         let btnStack = UIStackView()
@@ -348,6 +430,51 @@ class FilterSortViewController: UIViewController {
         toggle.tintColor = isOn ? accentGold : mutedText
     }
 
+    // MARK: - Pill Buttons
+
+    private func makePillButton(title: String, isSelected: Bool) -> UIButton {
+        let btn = UIButton(type: .system)
+        btn.setTitle(title, for: .normal)
+        btn.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
+        btn.layer.cornerRadius = 16
+        btn.contentEdgeInsets = UIEdgeInsets(top: 6, left: 16, bottom: 6, right: 16)
+        stylePill(btn, selected: isSelected)
+        return btn
+    }
+
+    private func stylePill(_ btn: UIButton, selected: Bool) {
+        if selected {
+            btn.backgroundColor = accentGold
+            btn.setTitleColor(.black, for: .normal)
+        } else {
+            btn.backgroundColor = cardColor
+            btn.setTitleColor(mutedText, for: .normal)
+        }
+    }
+
+    @objc private func radiusTapped(_ sender: UIButton) {
+        guard let entry = radiusButtons.first(where: { $0.button === sender }) else { return }
+        currentRadius = entry.value
+        for rb in radiusButtons {
+            stylePill(rb.button, selected: rb.value == currentRadius)
+        }
+    }
+
+    @objc private func stateAllTapped() {
+        currentStateFilter = nil
+        for sb in stateButtons {
+            stylePill(sb.button, selected: sb.state.isEmpty)
+        }
+    }
+
+    @objc private func stateTapped(_ sender: UIButton) {
+        guard let entry = stateButtons.first(where: { $0.button === sender }) else { return }
+        currentStateFilter = entry.state
+        for sb in stateButtons {
+            stylePill(sb.button, selected: sb.state == currentStateFilter)
+        }
+    }
+
     // MARK: - Actions
 
     @objc private func sortRowTapped(_ sender: UIButton) {
@@ -383,17 +510,26 @@ class FilterSortViewController: UIViewController {
     }
 
     @objc private func applyTapped() {
-        delegate?.filterSortDidApply(activeAmenities: activeAmenities, sortOrder: currentSort)
+        delegate?.filterSortDidApply(
+            activeAmenities: activeAmenities,
+            sortOrder: currentSort,
+            radius: currentRadius,
+            stateFilter: currentStateFilter
+        )
         dismiss(animated: true)
     }
 
     @objc private func resetTapped() {
         activeAmenities = []
         currentSort = .distance
+        currentRadius = nil
+        currentStateFilter = nil
         for entry in amenityToggles {
             refreshAmenityToggle(entry.button, name: entry.name)
         }
         refreshSortUI()
+        for rb in radiusButtons { stylePill(rb.button, selected: rb.value == nil) }
+        for sb in stateButtons { stylePill(sb.button, selected: sb.state.isEmpty) }
         delegate?.filterSortDidReset()
         dismiss(animated: true)
     }

@@ -12,7 +12,7 @@
         <!--Station Details-->
         <scene sceneID="2Nd-al-CaT">
             <objects>
-                <viewController title="Station Details" storyboardIdentifier="StationDetailsViewController" id="YR0-Cu-PTZ" customClass="StationDetailsViewController" customModule="GlampingStations" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="StationDetailsViewController" title="Station Details" id="YR0-Cu-PTZ" customClass="StationDetailsViewController" customModule="GlampingStations" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" ambiguous="YES" id="NIU-jY-cAa">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -221,7 +221,7 @@
                             <constraint firstItem="gid-WW-gjO" firstAttribute="trailing" secondItem="9vK-lI-mXp" secondAttribute="trailing" id="uUh-aR-GV8"/>
                         </constraints>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Gas" image="listicon_tab" id="LGl-gh-9wx"/>
+                    <tabBarItem key="tabBarItem" title="Fuel" image="fuelpump.fill" catalog="system" id="LGl-gh-9wx"/>
                     <connections>
                         <outlet property="stationsTableView" destination="gid-WW-gjO" id="pBa-fJ-uwK"/>
                         <segue destination="YR0-Cu-PTZ" kind="show" identifier="stationDetailsSegue" id="BlM-QL-PEX"/>
@@ -253,7 +253,7 @@
                             <constraint firstItem="B5z-6z-9nV" firstAttribute="leading" secondItem="VoW-uh-6Ci" secondAttribute="leading" id="smp-1e-TgC"/>
                         </constraints>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Map" image="mapicon_tab" id="lgD-Ql-w8I"/>
+                    <tabBarItem key="tabBarItem" title="Map" image="map.fill" catalog="system" id="lgD-Ql-w8I"/>
                     <connections>
                         <segue destination="YR0-Cu-PTZ" kind="show" identifier="stationDetailsSegue" id="RcT-aJ-dSb"/>
                     </connections>
@@ -1661,7 +1661,7 @@ Cg
                             <constraint firstItem="dmW-vd-bJz" firstAttribute="trailing" secondItem="Uyt-rZ-fna" secondAttribute="trailing" id="qdZ-qN-Wih"/>
                         </constraints>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Dump" image="trash" catalog="system" id="2FK-SM-zJj" userLabel="Dump"/>
+                    <tabBarItem key="tabBarItem" title="Dump" image="trash.fill" catalog="system" id="2FK-SM-zJj" userLabel="Dump"/>
                     <connections>
                         <outlet property="dumpStationTableView" destination="Uyt-rZ-fna" id="ZU1-c9-F1A"/>
                     </connections>
@@ -1688,13 +1688,14 @@ Cg
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="BlM-QL-PEX"/>
+        <segue reference="RcT-aJ-dSb"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="folder.badge.gear" catalog="system" width="128" height="93"/>
-        <image name="listicon_tab" width="25" height="25"/>
-        <image name="mapicon_tab" width="25" height="25"/>
-        <image name="trash" catalog="system" width="117" height="128"/>
+        <image name="fuelpump.fill" catalog="system" width="128" height="125"/>
+        <image name="house.fill" catalog="system" width="128" height="104"/>
+        <image name="map.fill" catalog="system" width="128" height="110"/>
+        <image name="trash.fill" catalog="system" width="117" height="128"/>
         <namedColor name="DarkModeText">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </namedColor>
