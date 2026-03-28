@@ -61,7 +61,7 @@ class AddStationViewController: UIViewController {
 
     private var amenityNames: [String] {
         switch stationType {
-        case .gas:  return ["Shower", "Bathroom", "Trailer Parking", "DEF at Pump", "Repair Shop", "CAT Scale"]
+        case .gas:  return ["Diesel", "Large Vehicle Access", "DEF at Pump", "Shower", "Bathroom", "Repair Shop", "CAT Scale"]
         case .dump: return ["Potable Water", "Rinse Water", "Trailer Parking", "Restrooms", "Vending", "EV Charging"]
         }
     }
@@ -615,14 +615,18 @@ class AddStationViewController: UIViewController {
 
         switch stationType {
         case .gas:
-            let amenity = Amenity(
-                shower:         amenitySwitch(at: 0),
-                bathroom:       amenitySwitch(at: 1),
-                trailerParking: amenitySwitch(at: 2),
-                defAtPump:      amenitySwitch(at: 3),
-                repairShop:     amenitySwitch(at: 4),
-                catScale:       amenitySwitch(at: 5)
+            // Index order matches amenityNames: Diesel(0), Large Vehicle Access(1),
+            // DEF at Pump(2), Shower(3), Bathroom(4), Repair Shop(5), CAT Scale(6)
+            var amenity = Amenity(
+                shower:         amenitySwitch(at: 3),
+                bathroom:       amenitySwitch(at: 4),
+                trailerParking: amenitySwitch(at: 1),
+                defAtPump:      amenitySwitch(at: 2),
+                repairShop:     amenitySwitch(at: 5),
+                catScale:       amenitySwitch(at: 6)
             )
+            amenity.diesel    = amenitySwitch(at: 0)
+            amenity.hgvAccess = amenitySwitch(at: 1)
             let station = Station(
                 id:           UUID().uuidString,
                 latitude:     location.coordinate.latitude,

@@ -25,7 +25,7 @@ class DumpStationViewController: UIViewController {
     private var hasFetchedStations = false
 
     // MARK: - Filter / Sort State
-    private var activeFilters: Set<String> = []
+    private var activeFilters: Set<String> = ["Customer Added"]
     private var activeSortOrder: StationSortOrder = .distance
     private var activeRadius: Double? = nil
     private var activeStateFilter: String? = nil
@@ -210,7 +210,7 @@ class DumpStationViewController: UIViewController {
 
     @objc private func showFilterSort() {
         let vc = FilterSortViewController()
-        vc.amenityOptions = ["Potable Water", "Rinse Water", "Trailer Parking", "Restrooms", "Vending", "EV Charging"]
+        vc.amenityOptions = ["Potable Water", "Rinse Water", "Trailer Parking", "Restrooms", "Vending", "EV Charging", "Customer Added"]
         vc.activeAmenities = activeFilters
         vc.currentRadius = activeRadius
         vc.currentStateFilter = activeStateFilter
@@ -270,9 +270,20 @@ class DumpStationViewController: UIViewController {
         // 2. Filter by amenities
         var filtered = sorted
         if !activeFilters.isEmpty {
+            let showPersonal   = activeFilters.contains("Customer Added")
+            let amenityFilters = activeFilters.subtracting(["Customer Added"])
             filtered = filtered.filter { station in
+                let isPersonal = station.favorite || station.source != "overpass"
+
+                // Firebase / favorited stations only appear when "Customer Added" is checked
+                if isPersonal { return showPersonal }
+
+                // Pure Overpass — no amenity filters means "Customer Added" was the only one;
+                // hide Overpass so the user sees only their personal stations
+                if amenityFilters.isEmpty { return false }
+
                 guard let a = station.amenities else { return false }
-                return activeFilters.allSatisfy { filter in
+                return amenityFilters.allSatisfy { filter in
                     switch filter {
                     case "Potable Water":    return a.potableWater
                     case "Rinse Water":      return a.rinseWater
@@ -362,6 +373,7 @@ class DumpStationViewController: UIViewController {
     @objc func refreshData(sender: AnyObject) {
         DispatchQueue.main.async { self.refreshControl.beginRefreshing() }
         locationManager.requestLocation()
+        DumpStationsController.shared.fetchOverpassStations(near: userLocation, forceRefresh: true)
         // The snapshot listener keeps data live, so just re-sort and end the spinner
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.applyDisplayedStations()
@@ -433,7 +445,7 @@ extension DumpStationViewController: FilterSortDelegate {
     }
 
     func filterSortDidReset() {
-        activeFilters = []
+        activeFilters = ["Customer Added"]
         activeSortOrder = .distance
         activeRadius = nil
         activeStateFilter = nil
@@ -459,6 +471,7 @@ extension DumpStationViewController: CLLocationManagerDelegate {
         guard !hasFetchedStations else { return }
         hasFetchedStations = true
         DumpStationsController.shared.fetchStations()
+        DumpStationsController.shared.fetchOverpassStations(near: location)
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

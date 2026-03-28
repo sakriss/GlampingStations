@@ -22,9 +22,15 @@ class StationsController {
     private let db = Firestore.firestore()
     private var listener: ListenerRegistration?
 
+    // Merged output — what the UI reads
     var stations: [Station]?
-
     var stationArray: [Station] { stations ?? [] }
+
+    // Dual-source private arrays
+    private var firestoreStations: [Station] = []
+    private var overpassStations: [Station] = []
+    private var lastOverpassLocation: CLLocation?
+    private let overpassMinMove: CLLocationDistance = 5_000  // 5 km
 
     // MARK: - Live Listener
 
@@ -32,7 +38,6 @@ class StationsController {
     /// First call loads from cache instantly, then receives server deltas.
     /// Safe to call multiple times — only the first call creates the listener.
     func fetchStations() {
-        // Don't attach a second listener
         guard listener == nil else { return }
 
         listener = db.collection("stations").addSnapshotListener { [weak self] snapshot, error in
@@ -40,7 +45,6 @@ class StationsController {
 
             if let error = error {
                 print("Firestore listener error (stations): \(error)")
-                // Only fall back to JSON if we have no data at all yet
                 if self.stations == nil {
                     self.fetchFromLocalJSON()
                 }
@@ -58,19 +62,23 @@ class StationsController {
             for doc in documents {
                 let d = doc.data()
                 let a = d["amenity"] as? [String: Bool] ?? [:]
-                let amenity = Amenity(
+                let stationName = d["name"] as? String ?? ""
+                let inferTruckStop = OverpassParser.isTruckStopName(stationName)
+                var amenity = Amenity(
                     shower:         a["shower"]         ?? false,
                     bathroom:       a["bathroom"]       ?? false,
-                    trailerParking: a["trailerParking"] ?? false,
+                    trailerParking: (a["trailerParking"] ?? false) || inferTruckStop,
                     defAtPump:      a["defAtPump"]      ?? false,
                     repairShop:     a["repairShop"]     ?? false,
                     catScale:       a["catScale"]       ?? false
                 )
+                amenity.diesel    = (a["diesel"]    ?? false) || inferTruckStop
+                amenity.hgvAccess = (a["hgvAccess"] ?? false) || inferTruckStop
                 let station = Station(
                     id:           doc.documentID,
                     latitude:     d["latitude"]     as? Double ?? 0.0,
                     longitude:    d["longitude"]    as? Double ?? 0.0,
-                    name:         d["name"]         as? String ?? "",
+                    name:         stationName,
                     rating:       d["rating"]       as? String ?? "",
                     comment:      d["comment"]      as? String ?? "",
                     canopyHeight: d["canopyHeight"] as? String,
@@ -78,15 +86,16 @@ class StationsController {
                     favorite:     d["favorite"]     as? Bool   ?? false,
                     state:        d["state"]        as? String,
                     city:         d["city"]         as? String,
-                    address:      d["address"]      as? String
+                    address:      d["address"]      as? String,
+                    source:       d["source"]       as? String
                 )
+                station.isTruckStop = inferTruckStop
                 fetched.append(station)
             }
 
-            self.stations = fetched
-            self.saveToCoreData()
-            self.writeOfflineCache(fetched)
-            NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
+            self.firestoreStations = fetched
+            self.saveToCoreData(fetched)
+            self.mergeAndPublish()
         }
     }
 
@@ -94,6 +103,47 @@ class StationsController {
     func stopListening() {
         listener?.remove()
         listener = nil
+    }
+
+    // MARK: - Overpass Integration
+
+    func fetchOverpassStations(near location: CLLocation, forceRefresh: Bool = false) {
+        if !forceRefresh, let last = lastOverpassLocation,
+           location.distance(from: last) < overpassMinMove { return }
+        lastOverpassLocation = location
+
+        Task {
+            do {
+                let elements = try await OverpassService.shared.fetchGasStations(near: location)
+                let parsed = elements.compactMap { OverpassParser.toStation($0) }
+                let diesel  = parsed.filter { $0.amenity?.diesel    == true }.count
+                let hgv     = parsed.filter { $0.amenity?.hgvAccess == true }.count
+                let trucks  = parsed.filter { $0.isTruckStop }.count
+                print("Overpass gas: \(elements.count) elements → \(parsed.count) stations | diesel:\(diesel) hgv:\(hgv) truckStop:\(trucks)")
+                await MainActor.run {
+                    self.overpassStations = parsed
+                    self.mergeAndPublish()
+                }
+            } catch {
+                print("Overpass gas fetch error: \(error)")
+            }
+        }
+    }
+
+    // MARK: - Merge
+
+    private func mergeAndPublish() {
+        var merged = firestoreStations
+        for op in overpassStations {
+            let opLoc = CLLocation(latitude: op.latitude, longitude: op.longitude)
+            let isDupe = merged.contains {
+                CLLocation(latitude: $0.latitude, longitude: $0.longitude).distance(from: opLoc) < 100
+            }
+            if !isDupe { merged.append(op) }
+        }
+        stations = merged
+        writeOfflineCache(merged)
+        NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
     }
 
     // MARK: - Offline Cache
@@ -124,7 +174,7 @@ class StationsController {
            let cached = try? JSONDecoder().decode([Station].self, from: data),
            !cached.isEmpty {
             stations = cached
-            saveToCoreData()
+            saveToCoreData(cached)
             NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
             return
         }
@@ -136,7 +186,7 @@ class StationsController {
         URLSession.shared.dataTask(with: URL(fileURLWithPath: baseURL)) { data, _, error in
             if let data = data {
                 self.stations = try? JSONDecoder().decode([Station].self, from: data)
-                self.saveToCoreData()
+                self.saveToCoreData(self.stationArray)
                 NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
             } else {
                 print("Local JSON fallback also failed: \(error?.localizedDescription ?? "unknown")")
@@ -154,7 +204,9 @@ class StationsController {
             "trailerParking": station.amenity?.trailerParking ?? false,
             "defAtPump":      station.amenity?.defAtPump      ?? false,
             "repairShop":     station.amenity?.repairShop     ?? false,
-            "catScale":       station.amenity?.catScale       ?? false
+            "catScale":       station.amenity?.catScale       ?? false,
+            "diesel":         station.amenity?.diesel         ?? false,
+            "hgvAccess":      station.amenity?.hgvAccess      ?? false
         ]
         let data: [String: Any] = [
             "name":         station.name         ?? "",
@@ -177,8 +229,6 @@ class StationsController {
             }
         }
 
-        // The snapshot listener will automatically fire and refresh the list.
-        // Post stationAdded for any UI that needs an immediate signal (e.g. dismiss the add sheet).
         NotificationCenter.default.post(name: StationsController.stationAdded, object: nil)
     }
 
@@ -187,18 +237,58 @@ class StationsController {
     func toggleFavorite(stationId: String) {
         guard let station = stations?.first(where: { $0.id == stationId }) else { return }
         station.favorite.toggle()
-        db.collection("stations").document(stationId).updateData(["favorite": station.favorite]) { error in
-            if let error = error {
-                print("Error updating favorite: \(error)")
+
+        if station.source == "overpass" && station.favorite {
+            // First time favoriting an Overpass station — persist it to Firestore
+            saveOverpassStationToFirestore(station)
+        } else {
+            db.collection("stations").document(stationId).updateData(["favorite": station.favorite]) { error in
+                if let error = error {
+                    print("Error updating favorite: \(error)")
+                }
             }
         }
         NotificationCenter.default.post(name: StationsController.stationsDataParseComplete, object: nil)
     }
 
-    // MARK: - Core Data (local comment persistence)
+    private func saveOverpassStationToFirestore(_ station: Station) {
+        guard let docId = station.id else { return }
+        let amenityData: [String: Any] = [
+            "shower":         station.amenity?.shower         ?? false,
+            "bathroom":       station.amenity?.bathroom       ?? false,
+            "trailerParking": station.amenity?.trailerParking ?? false,
+            "defAtPump":      station.amenity?.defAtPump      ?? false,
+            "repairShop":     station.amenity?.repairShop     ?? false,
+            "catScale":       station.amenity?.catScale       ?? false,
+            "diesel":         station.amenity?.diesel         ?? false,
+            "hgvAccess":      station.amenity?.hgvAccess      ?? false
+        ]
+        let data: [String: Any] = [
+            "name":         station.name         ?? "",
+            "latitude":     station.latitude,
+            "longitude":    station.longitude,
+            "rating":       station.rating       ?? "",
+            "comment":      station.comment      ?? "",
+            "canopyHeight": station.canopyHeight ?? "",
+            "amenity":      amenityData,
+            "favorite":     true,
+            "state":        station.state        ?? "",
+            "city":         station.city         ?? "",
+            "address":      station.address      ?? "",
+            "source":       "overpass"
+        ]
+        db.collection("stations").document(docId).setData(data) { error in
+            if let error = error {
+                print("Error saving Overpass station to Firestore: \(error)")
+            }
+        }
+    }
 
-    func saveToCoreData() {
-        for station in stationArray {
+    // MARK: - Core Data (local comment persistence)
+    // Only called with Firestore stations to avoid bloating Core Data with Overpass results.
+
+    func saveToCoreData(_ stationsToSave: [Station]) {
+        for station in stationsToSave {
             guard let id = station.id else { continue }
             let fetchRequest = NSFetchRequest<StationCD>(entityName: "StationCD")
             fetchRequest.predicate = NSPredicate(format: "id = %@", id)
@@ -228,6 +318,9 @@ class StationsController {
             }
         }
     }
+
+    // Keep old signature for call sites that pass no argument
+    func saveToCoreData() { saveToCoreData(firestoreStations) }
 
     func updateStationComment(stationId: String, newComment: String) {
         let fetchRequest = NSFetchRequest<StationCD>(entityName: "StationCD")

@@ -441,7 +441,16 @@ class TripPlannerViewController: UIViewController {
 
         var result: [TripStation] = []
 
-        for station in StationsController.shared.stationArray {
+        // Apply the same RV filter used in the gas station list:
+        // always include personal/favorited stations; for Overpass stations
+        // require diesel or a confirmed truck-stop brand.
+        let rvGasStations = StationsController.shared.stationArray.filter { station in
+            if station.favorite || station.source != "overpass" { return true }
+            if station.isTruckStop { return true }
+            return station.amenity?.diesel == true
+        }
+
+        for station in rvGasStations {
             let coord = CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude)
             let (dist, progress) = minDistanceAndProgress(coord: coord, points: points, totalLen: totalLen)
             if dist <= corridorMeters {

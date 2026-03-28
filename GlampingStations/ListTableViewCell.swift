@@ -26,6 +26,16 @@ class ListTableViewCell: UITableViewCell {
         return iv
     }()
 
+    // Badge row for RV-relevant quick-glance info
+    private let badgeStack: UIStackView = {
+        let s = UIStackView()
+        s.axis = .horizontal
+        s.spacing = 6
+        s.alignment = .center
+        s.translatesAutoresizingMaskIntoConstraints = false
+        return s
+    }()
+
     override func awakeFromNib() {
         super.awakeFromNib()
 
@@ -54,6 +64,13 @@ class ListTableViewCell: UITableViewCell {
             favoriteIcon.widthAnchor.constraint(equalToConstant: 14),
             favoriteIcon.heightAnchor.constraint(equalToConstant: 14)
         ])
+
+        // Badge row — pinned to the bottom of the card; row height is tall enough to avoid overlap
+        contentView.addSubview(badgeStack)
+        NSLayoutConstraint.activate([
+            badgeStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
+            badgeStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
+        ])
     }
 
     override func prepareForReuse() {
@@ -62,6 +79,33 @@ class ListTableViewCell: UITableViewCell {
         stationAddressLabel?.text = nil
         stationDistanceLabel?.text = nil
         favoriteIcon.isHidden = true
+        badgeStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+    }
+
+    /// Populate the badge row with RV-relevant quick-glance chips.
+    func configureBadges(diesel: Bool, isTruckStop: Bool, canopyHeight: String?) {
+        badgeStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
+        if isTruckStop  { badgeStack.addArrangedSubview(makeBadge("🚛 Truck Stop", color: UIColor(red: 50/255, green: 80/255, blue: 130/255, alpha: 1))) }
+        if diesel       { badgeStack.addArrangedSubview(makeBadge("⛽ Diesel",     color: UIColor(red: 60/255, green: 110/255, blue: 60/255,  alpha: 1))) }
+        if let h = canopyHeight, !h.isEmpty {
+            badgeStack.addArrangedSubview(makeBadge("↕ \(h)", color: UIColor(red: 90/255, green: 60/255, blue: 120/255, alpha: 1)))
+        }
+    }
+
+    private func makeBadge(_ text: String, color: UIColor) -> UILabel {
+        let l = UILabel()
+        l.text = text
+        l.font = UIFont.systemFont(ofSize: 10, weight: .semibold)
+        l.textColor = .white
+        l.backgroundColor = color
+        l.layer.cornerRadius = 6
+        l.clipsToBounds = true
+        l.textAlignment = .center
+        l.setContentHuggingPriority(.required, for: .horizontal)
+        // Padding via edge insets via a container would be complex; use character padding
+        l.text = "  \(text)  "
+        return l
     }
 
     override func layoutSubviews() {

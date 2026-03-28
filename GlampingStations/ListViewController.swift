@@ -24,11 +24,17 @@ class ListViewController: UIViewController {
     var locationAuthStatus: CLAuthorizationStatus = .notDetermined
 
     // MARK: - Filter / Sort State
-    private var activeFilters: Set<String> = []
+    private var activeFilters: Set<String> = ["Diesel", "Customer Added"]
     private var activeSortOrder: StationSortOrder = .distance
     private var activeRadius: Double? = nil          // nil = All
     private var activeStateFilter: String? = nil     // nil = All
     private var searchText: String = ""
+
+    // MARK: - Address Geocode Cache
+    /// Keyed by station.id — stores reverse-geocoded addresses for Overpass stations that lack OSM address tags.
+    private var addressCache: [String: String] = [:]
+    /// Prevents firing duplicate geocode requests for the same station while one is in flight.
+    private var geocodingInProgress: Set<String> = []
     private var displayedStations: [Station] = []
     private var inlineSortButton: UIButton?
     private var inlineFilterButton: UIButton?
@@ -210,7 +216,7 @@ class ListViewController: UIViewController {
 
     @objc private func showFilterSort() {
         let vc = FilterSortViewController()
-        vc.amenityOptions = ["Shower", "Bathroom", "Trailer Parking", "DEF at Pump", "Repair Shop", "CAT Scale"]
+        vc.amenityOptions = ["Diesel", "Large Vehicle Access", "DEF at Pump", "Shower", "Bathroom", "Repair Shop", "CAT Scale", "Customer Added"]
         vc.activeAmenities = activeFilters
         vc.currentSort = activeSortOrder
         vc.currentRadius = activeRadius
@@ -271,17 +277,32 @@ class ListViewController: UIViewController {
         // 2. Filter by amenities
         var filtered = sorted
         if !activeFilters.isEmpty {
+            let showPersonal   = activeFilters.contains("Customer Added")
+            let amenityFilters = activeFilters.subtracting(["Customer Added"])
             filtered = filtered.filter { station in
+                let isPersonal = station.favorite || station.source != "overpass"
+
+                // Firebase / favorited stations only appear when "Customer Added" is checked
+                if isPersonal { return showPersonal }
+
+                // Pure Overpass station — if no amenity filters are active (only "Customer Added"
+                // was selected), hide Overpass so the user sees only their personal stations
+                if amenityFilters.isEmpty { return false }
+
                 guard let a = station.amenity else { return false }
-                return activeFilters.allSatisfy { filter in
+                let ts = station.isTruckStop
+                return amenityFilters.allSatisfy { filter in
                     switch filter {
-                    case "Shower":          return a.shower
-                    case "Bathroom":        return a.bathroom
-                    case "Trailer Parking": return a.trailerParking
-                    case "DEF at Pump":     return a.defAtPump
-                    case "Repair Shop":     return a.repairShop
-                    case "CAT Scale":       return a.catScale
-                    default:                return false
+                    // Truck stops always have diesel, large-vehicle access, and trailer parking
+                    case "Diesel":               return a.diesel    || ts
+                    case "Large Vehicle Access": return a.hgvAccess || ts
+                    // Everything else must come from actual OSM tags
+                    case "DEF at Pump":          return a.defAtPump
+                    case "Shower":               return a.shower
+                    case "Bathroom":             return a.bathroom
+                    case "Repair Shop":          return a.repairShop
+                    case "CAT Scale":            return a.catScale
+                    default:                     return false
                     }
                 }
             }
@@ -362,6 +383,7 @@ class ListViewController: UIViewController {
     @objc func refreshData(sender: AnyObject) {
         DispatchQueue.main.async { self.refreshControl.beginRefreshing() }
         locationManager.requestLocation()
+        StationsController.shared.fetchOverpassStations(near: userLocation, forceRefresh: true)
         // The snapshot listener keeps data live, so just re-sort and end the spinner
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.applyDisplayedStations()
@@ -426,7 +448,7 @@ extension ListViewController: FilterSortDelegate {
     }
 
     func filterSortDidReset() {
-        activeFilters = []
+        activeFilters = ["Diesel", "Customer Added"]
         activeSortOrder = .distance
         activeRadius = nil
         activeStateFilter = nil
@@ -450,6 +472,7 @@ extension ListViewController: CLLocationManagerDelegate {
             userLocation = location
             applyDisplayedStations()
             StationsController.shared.fetchStations()
+            StationsController.shared.fetchOverpassStations(near: location)
 
             CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
                 if let error = error { print(error); return }
@@ -467,7 +490,7 @@ extension ListViewController: CLLocationManagerDelegate {
 
 extension ListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 96
+        return 128
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -494,8 +517,24 @@ extension ListViewController: UITableViewDataSource {
         cell.stationNameLabel.text = station.name
         cell.favoriteIcon.isHidden = !station.favorite
 
-        // Address stored at write time — no async geocoding needed
-        cell.stationAddressLabel.text = station.address ?? ""
+        // RV-relevant badges
+        cell.configureBadges(
+            diesel:       station.amenity?.diesel ?? false,
+            isTruckStop:  station.isTruckStop,
+            canopyHeight: station.canopyHeight
+        )
+
+        // Use OSM address if available; fall back to cached geocode or trigger a new one
+        let stationId = station.id ?? ""
+        let knownAddress = station.address ?? ""
+        if !knownAddress.isEmpty {
+            cell.stationAddressLabel.text = knownAddress
+        } else if let cached = addressCache[stationId] {
+            cell.stationAddressLabel.text = cached
+        } else {
+            cell.stationAddressLabel.text = ""
+            geocodeAddressIfNeeded(for: station, at: indexPath)
+        }
 
         // Distance computed synchronously
         let originLocation = CLLocation(latitude: station.latitude, longitude: station.longitude)
@@ -503,6 +542,36 @@ extension ListViewController: UITableViewDataSource {
         cell.stationDistanceLabel.text = String(format: "%.0f miles from you", miles)
 
         return cell
+    }
+
+    /// Reverse-geocodes a station's lat/lon and updates the visible cell + cache when done.
+    /// Skips if a geocode is already in progress for this station.
+    private func geocodeAddressIfNeeded(for station: Station, at indexPath: IndexPath) {
+        let stationId = station.id ?? ""
+        guard !stationId.isEmpty, !geocodingInProgress.contains(stationId) else { return }
+        geocodingInProgress.insert(stationId)
+
+        let loc = CLLocation(latitude: station.latitude, longitude: station.longitude)
+        CLGeocoder().reverseGeocodeLocation(loc) { [weak self] placemarks, _ in
+            guard let self, let pm = placemarks?.first else {
+                self?.geocodingInProgress.remove(stationId)
+                return
+            }
+            let parts = [pm.subThoroughfare, pm.thoroughfare, pm.locality, pm.administrativeArea]
+                .compactMap { $0 }.filter { !$0.isEmpty }
+            let addr = parts.joined(separator: " ")
+
+            DispatchQueue.main.async {
+                self.geocodingInProgress.remove(stationId)
+                guard !addr.isEmpty else { return }
+                self.addressCache[stationId] = addr
+                // Update the cell only if it's still showing this station
+                if let cell = self.stationsTableView.cellForRow(at: indexPath) as? ListTableViewCell,
+                   self.displayedStations[safe: indexPath.row]?.id == stationId {
+                    cell.stationAddressLabel?.text = addr
+                }
+            }
+        }
     }
 }
 
@@ -518,5 +587,12 @@ extension ListViewController: UITextFieldDelegate {
         searchText = ""
         applyDisplayedStations()
         return true
+    }
+}
+
+// MARK: - Safe collection subscript
+private extension Collection {
+    subscript(safe index: Index) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }

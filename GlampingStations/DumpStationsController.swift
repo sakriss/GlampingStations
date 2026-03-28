@@ -22,9 +22,15 @@ class DumpStationsController {
     private let db = Firestore.firestore()
     private var listener: ListenerRegistration?
 
+    // Merged output — what the UI reads
     var dumpStation: [DumpStation]?
-
     var dumpStationArray: [DumpStation] { dumpStation ?? [] }
+
+    // Dual-source private arrays
+    private var firestoreStations: [DumpStation] = []
+    private var overpassStations: [DumpStation] = []
+    private var lastOverpassLocation: CLLocation?
+    private let overpassMinMove: CLLocationDistance = 5_000  // 5 km
 
     // MARK: - Live Listener
 
@@ -76,14 +82,14 @@ class DumpStationsController {
                     favorite:     d["favorite"]     as? Bool   ?? false,
                     state:        d["state"]        as? String,
                     city:         d["city"]         as? String,
-                    address:      d["address"]      as? String
+                    address:      d["address"]      as? String,
+                    source:       d["source"]       as? String
                 )
                 fetched.append(station)
             }
 
-            self.dumpStation = fetched
-            self.writeOfflineCache(fetched)
-            NotificationCenter.default.post(name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
+            self.firestoreStations = fetched
+            self.mergeAndPublish()
         }
     }
 
@@ -91,6 +97,44 @@ class DumpStationsController {
     func stopListening() {
         listener?.remove()
         listener = nil
+    }
+
+    // MARK: - Overpass Integration
+
+    func fetchOverpassStations(near location: CLLocation, forceRefresh: Bool = false) {
+        if !forceRefresh, let last = lastOverpassLocation,
+           location.distance(from: last) < overpassMinMove { return }
+        lastOverpassLocation = location
+
+        Task {
+            do {
+                let elements = try await OverpassService.shared.fetchDumpStations(near: location)
+                let parsed = elements.compactMap { OverpassParser.toDumpStation($0) }
+                print("Overpass dump: \(elements.count) elements → \(parsed.count) stations")
+                await MainActor.run {
+                    self.overpassStations = parsed
+                    self.mergeAndPublish()
+                }
+            } catch {
+                print("Overpass dump fetch error: \(error)")
+            }
+        }
+    }
+
+    // MARK: - Merge
+
+    private func mergeAndPublish() {
+        var merged = firestoreStations
+        for op in overpassStations {
+            let opLoc = CLLocation(latitude: op.latitude, longitude: op.longitude)
+            let isDupe = merged.contains {
+                CLLocation(latitude: $0.latitude, longitude: $0.longitude).distance(from: opLoc) < 100
+            }
+            if !isDupe { merged.append(op) }
+        }
+        dumpStation = merged
+        writeOfflineCache(merged)
+        NotificationCenter.default.post(name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
     }
 
     // MARK: - Offline Cache
@@ -181,18 +225,57 @@ class DumpStationsController {
     func toggleFavorite(stationId: String) {
         guard let station = dumpStation?.first(where: { $0.id == stationId }) else { return }
         station.favorite.toggle()
-        db.collection("dumpStations").document(stationId).updateData(["favorite": station.favorite]) { error in
-            if let error = error {
-                print("Error updating favorite: \(error)")
+
+        if station.source == "overpass" && station.favorite {
+            // First time favoriting an Overpass station — persist it to Firestore
+            saveOverpassStationToFirestore(station)
+        } else {
+            db.collection("dumpStations").document(stationId).updateData(["favorite": station.favorite]) { error in
+                if let error = error {
+                    print("Error updating favorite: \(error)")
+                }
             }
         }
         NotificationCenter.default.post(name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
     }
 
-    // MARK: - Core Data (local comment persistence)
+    private func saveOverpassStationToFirestore(_ station: DumpStation) {
+        guard let docId = station.id else { return }
+        let amenitiesData: [String: Any] = [
+            "potableWater":   station.amenities?.potableWater   ?? false,
+            "rinseWater":     station.amenities?.rinseWater     ?? false,
+            "trailerParking": station.amenities?.trailerParking ?? false,
+            "restrooms":      station.amenities?.restrooms      ?? false,
+            "vending":        station.amenities?.vending        ?? false,
+            "evCharging":     station.amenities?.evCharging     ?? false
+        ]
+        let data: [String: Any] = [
+            "name":         station.name         ?? "",
+            "latitude":     station.latitude,
+            "longitude":    station.longitude,
+            "rating":       station.rating       ?? "",
+            "comment":      station.comment      ?? "",
+            "cost":         station.cost         ?? "",
+            "canopyHeight": station.canopyHeight ?? "",
+            "amenities":    amenitiesData,
+            "favorite":     true,
+            "state":        station.state        ?? "",
+            "city":         station.city         ?? "",
+            "address":      station.address      ?? "",
+            "source":       "overpass"
+        ]
+        db.collection("dumpStations").document(docId).setData(data) { error in
+            if let error = error {
+                print("Error saving Overpass dump station to Firestore: \(error)")
+            }
+        }
+    }
 
-    func saveToCoreData() {
-        for station in dumpStationArray {
+    // MARK: - Core Data (local comment persistence)
+    // Only called with Firestore stations to avoid bloating Core Data with Overpass results.
+
+    func saveToCoreData(_ stationsToSave: [DumpStation]) {
+        for station in stationsToSave {
             guard let id = station.id else { continue }
             let fetchRequest = NSFetchRequest<DumpStationCD>(entityName: "DumpStationCD")
             fetchRequest.predicate = NSPredicate(format: "id = %@", id)
@@ -212,6 +295,9 @@ class DumpStationsController {
             }
         }
     }
+
+    // Keep old no-argument signature for any call sites that use it
+    func saveToCoreData() { saveToCoreData(firestoreStations) }
 
     func updateStationComment(stationId: String, newComment: String) {
         let fetchRequest = NSFetchRequest<DumpStationCD>(entityName: "DumpStationCD")

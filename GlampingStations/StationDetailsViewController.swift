@@ -474,12 +474,13 @@ extension StationDetailsViewController: UITableViewDataSource {
                 }
 
                 if let amenity = self.stationDetails?.amenity {
-                    // Station amenities: 6 items -> split 3 and 3
+                    // RV-focused station amenities: 7 items -> split 4 and 3
                     let items: [(String, Bool)] = [
+                        ("Diesel", amenity.diesel),
+                        ("Large Vehicle Access", amenity.hgvAccess),
+                        ("DEF at Pump", amenity.defAtPump),
                         ("Shower", amenity.shower),
                         ("Bathroom", amenity.bathroom),
-                        ("Trailer Parking", amenity.trailerParking),
-                        ("DEF at Pump", amenity.defAtPump),
                         ("Repair Shop", amenity.repairShop),
                         ("CAT Scale", amenity.catScale)
                     ]
@@ -490,6 +491,31 @@ extension StationDetailsViewController: UITableViewDataSource {
                         } else {
                             col2.addArrangedSubview(r)
                         }
+                    }
+
+                    // Canopy height row (shown only when data is available)
+                    if let height = self.stationDetails?.canopyHeight, !height.isEmpty {
+                        let heightRow = UIStackView()
+                        heightRow.axis = .horizontal
+                        heightRow.spacing = 8
+                        heightRow.alignment = .center
+
+                        let icon = UIImageView(image: UIImage(systemName: "arrow.up.and.down"))
+                        icon.tintColor = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+                        icon.translatesAutoresizingMaskIntoConstraints = false
+                        NSLayoutConstraint.activate([
+                            icon.widthAnchor.constraint(equalToConstant: 18),
+                            icon.heightAnchor.constraint(equalToConstant: 18)
+                        ])
+
+                        let lbl = UILabel()
+                        lbl.text = "Canopy Height: \(height)"
+                        lbl.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+                        lbl.textColor = .white
+
+                        heightRow.addArrangedSubview(icon)
+                        heightRow.addArrangedSubview(lbl)
+                        vStack.addArrangedSubview(heightRow)
                     }
                 } else if let dumpAmenities = self.dumpStationDetails?.amenities {
                     // Dump station amenities: 6 items -> split 3 and 3

@@ -15,6 +15,9 @@ struct Amenity: Codable {
     let defAtPump: Bool
     let repairShop: Bool
     let catScale: Bool
+    // RV-specific
+    var diesel: Bool = false        // fuel:diesel=yes or fuel:HGV_diesel=yes
+    var hgvAccess: Bool = false     // hgv=yes or hgv=designated (confirmed large-vehicle access)
 }
 
 class Station: Codable {
@@ -30,12 +33,15 @@ class Station: Codable {
     private(set) var state: String? = nil
     private(set) var city: String? = nil
     private(set) var address: String? = nil
+    var source: String? = nil       // nil = user-added Firestore; "overpass" = from OpenStreetMap
+    var isTruckStop: Bool = false   // true when brand matches known truck-stop chains
 
     init() {}
 
     init(id: String, latitude: Double, longitude: Double, name: String,
          rating: String, comment: String, canopyHeight: String?, amenity: Amenity?,
-         favorite: Bool = false, state: String? = nil, city: String? = nil, address: String? = nil) {
+         favorite: Bool = false, state: String? = nil, city: String? = nil, address: String? = nil,
+         source: String? = nil) {
         self.id = id
         self.latitude = latitude
         self.longitude = longitude
@@ -48,5 +54,6 @@ class Station: Codable {
         self.state = state
         self.city = city
         self.address = address
+        self.source = source
     }
 }

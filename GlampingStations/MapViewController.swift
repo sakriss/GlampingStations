@@ -85,16 +85,41 @@ class MapViewController: UIViewController {
         }
         
         addDumpStationAnnotations()
-        
+
         NotificationCenter.default.addObserver(self, selector: #selector(dumpStationsLoaded), name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(gasStationsLoaded), name: StationsController.stationsDataParseComplete, object: nil)
     }
-    
+
     @objc func dumpStationsLoaded() {
         DispatchQueue.main.async {
             self.addDumpStationAnnotations()
         }
     }
-    
+
+    @objc func gasStationsLoaded() {
+        DispatchQueue.main.async {
+            self.addGasStationAnnotations()
+        }
+    }
+
+    func addGasStationAnnotations() {
+        // Remove existing gas station pins before re-adding the merged set
+        let existing = mapView.annotations.filter { $0 is StationPointAnno }
+        mapView.removeAnnotations(existing)
+        stationCoords.removeAll()
+
+        guard let stations = StationsController.shared.stations else { return }
+        for station in stations {
+            let coordinate = CLLocationCoordinate2D(latitude: station.latitude, longitude: station.longitude)
+            stationCoords.append(coordinate)
+            let annotation = StationPointAnno()
+            annotation.title = station.name
+            annotation.coordinate = coordinate
+            annotation.station = station
+            mapView.addAnnotation(annotation)
+        }
+    }
+
     func addDumpStationAnnotations() {
         guard let dumpStations = DumpStationsController.shared.dumpStation else { return }
         for ds in dumpStations {
