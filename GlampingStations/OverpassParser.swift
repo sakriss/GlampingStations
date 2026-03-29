@@ -66,7 +66,7 @@ enum OverpassParser {
             canopyHeight: tags["canopy:height"] ?? tags["height"],
             amenity:      amenity,
             favorite:     false,
-            state:        tags["addr:state"],
+            state:        StateNormalizer.normalize(tags["addr:state"]),
             city:         tags["addr:city"],
             address:      fullAddress(from: tags),
             source:       "overpass"
@@ -101,7 +101,7 @@ enum OverpassParser {
             canopyHeight: nil,
             amenities:    amenities,
             favorite:     false,
-            state:        tags["addr:state"],
+            state:        StateNormalizer.normalize(tags["addr:state"]),
             city:         tags["addr:city"],
             address:      fullAddress(from: tags),
             source:       "overpass"
@@ -130,4 +130,54 @@ enum OverpassParser {
         let result = segments.joined(separator: ", ")
         return result.isEmpty ? nil : result
     }
+}
+
+// MARK: - State Normalizer
+
+enum StateNormalizer {
+
+    /// Returns the 2-letter US state abbreviation for any input — whether it's already
+    /// an abbreviation ("WA"), a full name ("Washington"), or a mixed-case variant.
+    /// Returns nil for nil/empty input or unrecognized values.
+    static func normalize(_ input: String?) -> String? {
+        guard let raw = input?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else {
+            return nil
+        }
+        let upper = raw.uppercased()
+
+        // Already a valid 2-letter abbreviation
+        if upper.count == 2, validAbbreviations.contains(upper) {
+            return upper
+        }
+
+        // Full name lookup
+        return fullNameToAbbreviation[raw.capitalized]
+            ?? fullNameToAbbreviation[raw.lowercased().capitalized]
+    }
+
+    private static let validAbbreviations: Set<String> = [
+        "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
+        "HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
+        "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
+        "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
+        "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY",
+        "DC"
+    ]
+
+    private static let fullNameToAbbreviation: [String: String] = [
+        "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR",
+        "California": "CA", "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE",
+        "Florida": "FL", "Georgia": "GA", "Hawaii": "HI", "Idaho": "ID",
+        "Illinois": "IL", "Indiana": "IN", "Iowa": "IA", "Kansas": "KS",
+        "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD",
+        "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS",
+        "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV",
+        "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY",
+        "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK",
+        "Oregon": "OR", "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC",
+        "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT",
+        "Vermont": "VT", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV",
+        "Wisconsin": "WI", "Wyoming": "WY", "District Of Columbia": "DC",
+        "District of Columbia": "DC"
+    ]
 }

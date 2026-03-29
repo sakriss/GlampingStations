@@ -18,6 +18,32 @@ struct Amenity: Codable {
     // RV-specific
     var diesel: Bool = false        // fuel:diesel=yes or fuel:HGV_diesel=yes
     var hgvAccess: Bool = false     // hgv=yes or hgv=designated (confirmed large-vehicle access)
+
+    // Explicit memberwise init (required because the custom Decodable init below
+    // suppresses the synthesized one).
+    init(shower: Bool, bathroom: Bool, trailerParking: Bool,
+         defAtPump: Bool, repairShop: Bool, catScale: Bool) {
+        self.shower = shower
+        self.bathroom = bathroom
+        self.trailerParking = trailerParking
+        self.defAtPump = defAtPump
+        self.repairShop = repairShop
+        self.catScale = catScale
+    }
+
+    // Custom decoder so that JSON written before `diesel`/`hgvAccess` were added
+    // (bundle fallback, old offline caches) still decodes successfully.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        shower         = try c.decode(Bool.self, forKey: .shower)
+        bathroom       = try c.decode(Bool.self, forKey: .bathroom)
+        trailerParking = try c.decode(Bool.self, forKey: .trailerParking)
+        defAtPump      = try c.decode(Bool.self, forKey: .defAtPump)
+        repairShop     = try c.decode(Bool.self, forKey: .repairShop)
+        catScale       = try c.decode(Bool.self, forKey: .catScale)
+        diesel         = try c.decodeIfPresent(Bool.self, forKey: .diesel)    ?? false
+        hgvAccess      = try c.decodeIfPresent(Bool.self, forKey: .hgvAccess) ?? false
+    }
 }
 
 class Station: Codable {
@@ -55,5 +81,25 @@ class Station: Codable {
         self.city = city
         self.address = address
         self.source = source
+    }
+
+    // Custom decoder so that JSON written before `isTruckStop` was added
+    // (bundle fallback, old offline caches) still decodes successfully.
+    required init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id           = try c.decodeIfPresent(String.self,  forKey: .id)
+        latitude     = try c.decode(Double.self,            forKey: .latitude)
+        longitude    = try c.decode(Double.self,            forKey: .longitude)
+        name         = try c.decodeIfPresent(String.self,  forKey: .name)
+        rating       = try c.decodeIfPresent(String.self,  forKey: .rating)
+        comment      = try c.decodeIfPresent(String.self,  forKey: .comment)
+        canopyHeight = try c.decodeIfPresent(String.self,  forKey: .canopyHeight)
+        amenity      = try c.decodeIfPresent(Amenity.self, forKey: .amenity)
+        favorite     = try c.decode(Bool.self,              forKey: .favorite)
+        state        = try c.decodeIfPresent(String.self,  forKey: .state)
+        city         = try c.decodeIfPresent(String.self,  forKey: .city)
+        address      = try c.decodeIfPresent(String.self,  forKey: .address)
+        source       = try c.decodeIfPresent(String.self,  forKey: .source)
+        isTruckStop  = try c.decodeIfPresent(Bool.self,    forKey: .isTruckStop) ?? false
     }
 }

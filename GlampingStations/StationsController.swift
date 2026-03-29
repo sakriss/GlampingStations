@@ -84,7 +84,7 @@ class StationsController {
                     canopyHeight: d["canopyHeight"] as? String,
                     amenity:      amenity,
                     favorite:     d["favorite"]     as? Bool   ?? false,
-                    state:        d["state"]        as? String,
+                    state:        StateNormalizer.normalize(d["state"] as? String),
                     city:         d["city"]         as? String,
                     address:      d["address"]      as? String,
                     source:       d["source"]       as? String

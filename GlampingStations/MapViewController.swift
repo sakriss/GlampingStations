@@ -289,6 +289,11 @@ extension MapViewController: CLLocationManagerDelegate {
             )
             mapView.setRegion(region, animated: false)
         }
+
+        // Trigger Overpass fetch so nearby stations load even when the user
+        // navigates directly to the Map tab without visiting the List tab first.
+        // The 5 km throttle in StationsController prevents redundant fetches.
+        StationsController.shared.fetchOverpassStations(near: location)
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

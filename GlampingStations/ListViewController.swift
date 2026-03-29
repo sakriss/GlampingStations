@@ -24,9 +24,9 @@ class ListViewController: UIViewController {
     var locationAuthStatus: CLAuthorizationStatus = .notDetermined
 
     // MARK: - Filter / Sort State
-    private var activeFilters: Set<String> = ["Diesel", "Customer Added"]
+    private var activeFilters: Set<String> = []
     private var activeSortOrder: StationSortOrder = .distance
-    private var activeRadius: Double? = nil          // nil = All
+    private var activeRadius: Double? = 100.0         // default 100 miles
     private var activeStateFilter: String? = nil     // nil = All
     private var searchText: String = ""
 
@@ -72,12 +72,13 @@ class ListViewController: UIViewController {
 
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.distanceFilter = 5_000  // re-fire every 5 km (matches overpassMinMove)
 
         let authStatus = CLLocationManager.authorizationStatus()
         if authStatus == .notDetermined {
             locationManager.requestWhenInUseAuthorization()
         } else {
-            locationManager.requestLocation()
+            locationManager.startUpdatingLocation()
         }
 
         // Pull-to-refresh with dark styling
@@ -221,8 +222,8 @@ class ListViewController: UIViewController {
         vc.currentSort = activeSortOrder
         vc.currentRadius = activeRadius
         vc.currentStateFilter = activeStateFilter
-        // Collect unique states from all stations
-        vc.availableStates = Array(Set(StationsController.shared.stationArray.compactMap { $0.state }.filter { !$0.isEmpty })).sorted()
+        // Collect unique states from currently-displayed (distance-filtered) stations only
+        vc.availableStates = Array(Set(displayedStations.compactMap { $0.state }.filter { !$0.isEmpty })).sorted()
         vc.delegate = self
 
         vc.modalPresentationStyle = .pageSheet
@@ -382,7 +383,6 @@ class ListViewController: UIViewController {
 
     @objc func refreshData(sender: AnyObject) {
         DispatchQueue.main.async { self.refreshControl.beginRefreshing() }
-        locationManager.requestLocation()
         StationsController.shared.fetchOverpassStations(near: userLocation, forceRefresh: true)
         // The snapshot listener keeps data live, so just re-sort and end the spinner
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -448,9 +448,9 @@ extension ListViewController: FilterSortDelegate {
     }
 
     func filterSortDidReset() {
-        activeFilters = ["Diesel", "Customer Added"]
+        activeFilters = []
         activeSortOrder = .distance
-        activeRadius = nil
+        activeRadius = 100.0
         activeStateFilter = nil
         applyDisplayedStations()
     }
@@ -463,7 +463,7 @@ extension ListViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         self.locationAuthStatus = status
         if status == .authorizedWhenInUse {
-            manager.requestLocation()
+            manager.startUpdatingLocation()
         }
     }
 

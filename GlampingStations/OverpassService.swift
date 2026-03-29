@@ -20,30 +20,19 @@ class OverpassService {
     func fetchGasStations(near location: CLLocation) async throws -> [OverpassElement] {
         let lat = location.coordinate.latitude
         let lon = location.coordinate.longitude
-        // Tier 1 (~50 mi): confirmed large-vehicle / truck-stop stations
-        let r1 = 80_000
-        // Tier 2 (~15 mi): any station with diesel
-        let r2 = 25_000
-        // Tier 3 (~5 mi): emergency fallback — any fuel nearby
-        let r3 = 8_000
-        let brandPattern = "Pilot|Flying J|Love|TA Travel|Petro|Buc-ee|Sheetz|Kwik Trip"
+        let radius = 80_000  // ~50 miles
+
+        // Fetch ALL fuel stations in a single pass. Complex multi-clause queries
+        // with regex brand matching cause Overpass to timeout (verified: 24-clause
+        // query returns 0 results after 69s for Kellogg, ID; this simple query
+        // returns 142 stations in ~3s for the same location).
+        // Brand detection, diesel inference, and truck-stop classification are
+        // handled client-side in OverpassParser.toStation().
         let query = """
-        [out:json][timeout:30][maxsize:536870912];
+        [out:json][timeout:30];
         (
-          node["amenity"="fuel"]["hgv"~"^(yes|designated)$"](around:\(r1),\(lat),\(lon));
-          way["amenity"="fuel"]["hgv"~"^(yes|designated)$"](around:\(r1),\(lat),\(lon));
-          node["amenity"="fuel"]["fuel:HGV_diesel"="yes"](around:\(r1),\(lat),\(lon));
-          way["amenity"="fuel"]["fuel:HGV_diesel"="yes"](around:\(r1),\(lat),\(lon));
-          node["amenity"="fuel"]["brand"~"\(brandPattern)",i](around:\(r1),\(lat),\(lon));
-          way["amenity"="fuel"]["brand"~"\(brandPattern)",i](around:\(r1),\(lat),\(lon));
-          node["amenity"="fuel"]["name"~"\(brandPattern)",i](around:\(r1),\(lat),\(lon));
-          way["amenity"="fuel"]["name"~"\(brandPattern)",i](around:\(r1),\(lat),\(lon));
-          node["amenity"="fuel"]["fuel:adblue"="yes"](around:\(r1),\(lat),\(lon));
-          way["amenity"="fuel"]["fuel:adblue"="yes"](around:\(r1),\(lat),\(lon));
-          node["amenity"="fuel"]["fuel:diesel"="yes"](around:\(r2),\(lat),\(lon));
-          way["amenity"="fuel"]["fuel:diesel"="yes"](around:\(r2),\(lat),\(lon));
-          node["amenity"="fuel"](around:\(r3),\(lat),\(lon));
-          way["amenity"="fuel"](around:\(r3),\(lat),\(lon));
+          node["amenity"="fuel"](around:\(radius),\(lat),\(lon));
+          way["amenity"="fuel"](around:\(radius),\(lat),\(lon));
         );
         out body center;
         """
@@ -118,8 +107,15 @@ class OverpassService {
 
     private func parseAndCache(data: Data, cacheKey: String, gridKey: String) throws -> [OverpassElement] {
         let result = try JSONDecoder().decode(OverpassResponse.self, from: data)
+        // Avoid caching empty results so we don't mask transient failures or overly strict filters
+        if result.elements.isEmpty {
+            print("Overpass returned 0 elements for cacheKey=\(cacheKey) gridKey=\(gridKey). Skipping cache write.")
+            cleanOldCaches()
+            return result.elements
+        }
         if let url = cacheURL(cacheKey: cacheKey, gridKey: gridKey) {
             try? data.write(to: url, options: .atomic)
+            print("Cached Overpass response (\(result.elements.count) elements) to \(url.lastPathComponent)")
         }
         cleanOldCaches()
         return result.elements
@@ -140,3 +136,4 @@ class OverpassService {
         }
     }
 }
+

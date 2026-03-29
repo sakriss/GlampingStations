@@ -587,7 +587,7 @@ class AddStationViewController: UIViewController {
             guard let self = self else { return }
 
             let placemark = placemarks?.first
-            let stateStr  = placemark?.administrativeArea
+            let stateStr  = StateNormalizer.normalize(placemark?.administrativeArea)
             let cityStr   = placemark?.locality
 
             // Build a readable address: "123 Main St, Seattle, WA"

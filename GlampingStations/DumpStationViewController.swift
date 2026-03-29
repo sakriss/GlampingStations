@@ -25,9 +25,9 @@ class DumpStationViewController: UIViewController {
     private var hasFetchedStations = false
 
     // MARK: - Filter / Sort State
-    private var activeFilters: Set<String> = ["Customer Added"]
+    private var activeFilters: Set<String> = []
     private var activeSortOrder: StationSortOrder = .distance
-    private var activeRadius: Double? = nil
+    private var activeRadius: Double? = 100.0         // default 100 miles
     private var activeStateFilter: String? = nil
     private var searchText: String = ""
     private var displayedDumpStations: [DumpStation] = []
@@ -66,12 +66,13 @@ class DumpStationViewController: UIViewController {
 
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.distanceFilter = 5_000  // re-fire every 5 km (matches overpassMinMove)
 
         let authStatus = CLLocationManager.authorizationStatus()
         if authStatus == .notDetermined {
             locationManager.requestWhenInUseAuthorization()
         } else {
-            locationManager.requestLocation()
+            locationManager.startUpdatingLocation()
         }
 
         // Pull-to-refresh with dark styling
@@ -214,7 +215,8 @@ class DumpStationViewController: UIViewController {
         vc.activeAmenities = activeFilters
         vc.currentRadius = activeRadius
         vc.currentStateFilter = activeStateFilter
-        vc.availableStates = Array(Set(DumpStationsController.shared.dumpStationArray.compactMap { $0.state }.filter { !$0.isEmpty })).sorted()
+        // Collect unique states from currently-displayed (distance-filtered) stations only
+        vc.availableStates = Array(Set(displayedDumpStations.compactMap { $0.state }.filter { !$0.isEmpty })).sorted()
         vc.currentSort = activeSortOrder
         vc.delegate = self
 
@@ -372,7 +374,6 @@ class DumpStationViewController: UIViewController {
 
     @objc func refreshData(sender: AnyObject) {
         DispatchQueue.main.async { self.refreshControl.beginRefreshing() }
-        locationManager.requestLocation()
         DumpStationsController.shared.fetchOverpassStations(near: userLocation, forceRefresh: true)
         // The snapshot listener keeps data live, so just re-sort and end the spinner
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -445,9 +446,9 @@ extension DumpStationViewController: FilterSortDelegate {
     }
 
     func filterSortDidReset() {
-        activeFilters = ["Customer Added"]
+        activeFilters = []
         activeSortOrder = .distance
-        activeRadius = nil
+        activeRadius = 100.0
         activeStateFilter = nil
         applyDisplayedStations()
     }
@@ -460,7 +461,7 @@ extension DumpStationViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         self.locationAuthStatus = status
         if status == .authorizedWhenInUse {
-            manager.requestLocation()
+            manager.startUpdatingLocation()
         }
     }
 

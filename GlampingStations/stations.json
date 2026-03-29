@@ -14,8 +14,11 @@
             "trailerParking": false,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "2",
@@ -32,8 +35,11 @@
             "trailerParking": false,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "3",
@@ -50,8 +56,11 @@
             "trailerParking": false,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": true,
+            "hgvAccess": true
+        },
+        "isTruckStop": true
     },
     {
         "id": "4",
@@ -68,8 +77,11 @@
             "trailerParking": false,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "5",
@@ -86,8 +98,11 @@
             "trailerParking": false,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "6",
@@ -104,8 +119,11 @@
             "trailerParking": false,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "7",
@@ -122,8 +140,11 @@
             "trailerParking": false,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "8",
@@ -140,8 +161,11 @@
             "trailerParking": false,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "9",
@@ -158,8 +182,11 @@
             "trailerParking": false,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "10",
@@ -176,8 +203,11 @@
             "trailerParking": false,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "11",
@@ -194,8 +224,11 @@
             "trailerParking": false,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "12",
@@ -212,8 +245,11 @@
             "trailerParking": false,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "13",
@@ -230,8 +266,11 @@
             "trailerParking": true,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "14",
@@ -248,8 +287,11 @@
             "trailerParking": true,
             "defAtPump": false,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "15",
@@ -266,8 +308,11 @@
             "trailerParking": true,
             "defAtPump": true,
             "repairShop": true,
-            "catScale": true
-        }
+            "catScale": true,
+            "diesel": true,
+            "hgvAccess": true
+        },
+        "isTruckStop": true
     },
     {
         "id": "16",
@@ -284,8 +329,11 @@
             "trailerParking": true,
             "defAtPump": true,
             "repairShop": false,
-            "catScale": true
-        }
+            "catScale": true,
+            "diesel": true,
+            "hgvAccess": true
+        },
+        "isTruckStop": true
     },
     {
         "id": "17",
@@ -302,8 +350,11 @@
             "trailerParking": true,
             "defAtPump": true,
             "repairShop": true,
-            "catScale": true
-        }
+            "catScale": true,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "18",
@@ -320,8 +371,11 @@
             "trailerParking": true,
             "defAtPump": true,
             "repairShop": true,
-            "catScale": true
-        }
+            "catScale": true,
+            "diesel": true,
+            "hgvAccess": true
+        },
+        "isTruckStop": true
     },
     {
         "id": "19",
@@ -338,8 +392,11 @@
             "trailerParking": true,
             "defAtPump": true,
             "repairShop": true,
-            "catScale": true
-        }
+            "catScale": true,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "20",
@@ -356,8 +413,11 @@
             "trailerParking": true,
             "defAtPump": true,
             "repairShop": false,
-            "catScale": true
-        }
+            "catScale": true,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "21",
@@ -374,8 +434,11 @@
             "trailerParking": true,
             "defAtPump": true,
             "repairShop": false,
-            "catScale": false
-        }
+            "catScale": false,
+            "diesel": false,
+            "hgvAccess": false
+        },
+        "isTruckStop": false
     },
     {
         "id": "22",
@@ -392,7 +455,10 @@
             "trailerParking": true,
             "defAtPump": true,
             "repairShop": false,
-            "catScale": true
-        }
+            "catScale": true,
+            "diesel": true,
+            "hgvAccess": true
+        },
+        "isTruckStop": true
     }
 ]
