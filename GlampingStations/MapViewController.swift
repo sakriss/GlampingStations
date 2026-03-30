@@ -38,6 +38,24 @@ class MapViewController: UIViewController {
         tabBarController?.tabBar.scrollEdgeAppearance = AppDelegate.tabBarAppearance
         navigationController?.navigationBar.standardAppearance = AppDelegate.navBarAppearance
         navigationController?.navigationBar.scrollEdgeAppearance = AppDelegate.navBarAppearance
+
+        // Inject filter button into the tab bar controller's navigation item
+        // (the nav bar belongs to the NavigationController wrapping the TabBarController)
+        if let tabNav = tabBarController?.navigationItem {
+            let existing = tabNav.rightBarButtonItem
+            if existing !== filterBarButton {
+                tabNav.rightBarButtonItems = [existing, filterBarButton].compactMap { $0 }
+            }
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // Restore the tab bar controller's nav item to just the original settings button
+        if let tabNav = tabBarController?.navigationItem {
+            let buttons = tabNav.rightBarButtonItems ?? []
+            tabNav.rightBarButtonItems = buttons.filter { $0 !== filterBarButton }
+        }
     }
 
     override func viewDidLoad() {
@@ -74,18 +92,13 @@ class MapViewController: UIViewController {
             mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
 
-        // Add filter button alongside the storyboard's settings button
+        // Create filter button (injected into tabBarController.navigationItem in viewWillAppear)
         let filterImage = UIImage(systemName: "line.3.horizontal.decrease.circle")
         filterBarButton = UIBarButtonItem(image: filterImage,
                                          style: .plain,
                                          target: self,
                                          action: #selector(filterTapped))
         filterBarButton.tintColor = .white
-        if let existingButton = navigationItem.rightBarButtonItem {
-            navigationItem.rightBarButtonItems = [existingButton, filterBarButton]
-        } else {
-            navigationItem.rightBarButtonItem = filterBarButton
-        }
 
         addGasStationAnnotations()
         addDumpStationAnnotations()
