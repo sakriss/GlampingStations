@@ -17,22 +17,61 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     static private(set) var moc:NSManagedObjectContext! = nil
 
+    // MARK: - Shared Dynamic Colors
+
+    /// Dark navy / light gray — main view background
+    static let primaryBg = UIColor { tc in
+        tc.userInterfaceStyle == .dark
+            ? UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
+            : UIColor(red: 242/255, green: 244/255, blue: 248/255, alpha: 1)
+    }
+
+    /// Dark card / white — card/surface background
+    static let cardColor = UIColor { tc in
+        tc.userInterfaceStyle == .dark
+            ? UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
+            : UIColor.white
+    }
+
+    /// Gold accent — stays the same in both modes
+    static let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+
+    /// Muted blue-gray / slate — secondary labels
+    static let mutedText = UIColor { tc in
+        tc.userInterfaceStyle == .dark
+            ? UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+            : UIColor(red: 95/255,  green: 108/255, blue: 128/255, alpha: 1)
+    }
+
+    /// White in dark / black in light — primary label text
+    static let labelText: UIColor = .label
+
+    /// Subtle input field background
+    static let inputBg = UIColor { tc in
+        tc.userInterfaceStyle == .dark
+            ? UIColor.white.withAlphaComponent(0.07)
+            : UIColor.black.withAlphaComponent(0.05)
+    }
+
+    /// Hairline separator
+    static let separatorColor = UIColor { tc in
+        tc.userInterfaceStyle == .dark
+            ? UIColor.white.withAlphaComponent(0.08)
+            : UIColor.black.withAlphaComponent(0.08)
+    }
+
     // MARK: - Shared Appearance Objects
 
-    static let primaryBg  = UIColor(red: 10/255, green: 25/255, blue: 47/255, alpha: 1)
-    static let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
-    static let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
-
-    static let navBarAppearance: UINavigationBarAppearance = {
+    static var navBarAppearance: UINavigationBarAppearance {
         let a = UINavigationBarAppearance()
         a.configureWithOpaqueBackground()
         a.backgroundColor = primaryBg
-        a.titleTextAttributes = [.foregroundColor: UIColor.white]
-        a.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        a.titleTextAttributes      = [.foregroundColor: UIColor.label]
+        a.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
         return a
-    }()
+    }
 
-    static let tabBarAppearance: UITabBarAppearance = {
+    static var tabBarAppearance: UITabBarAppearance {
         let a = UITabBarAppearance()
         a.configureWithOpaqueBackground()
         a.backgroundColor = primaryBg
@@ -41,7 +80,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         a.stackedLayoutAppearance.normal.iconColor = mutedText
         a.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: mutedText]
         return a
-    }()
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         AppDelegate.moc = persistentContainer.viewContext
@@ -57,6 +96,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UITabBar.appearance().standardAppearance = AppDelegate.tabBarAppearance
         UITabBar.appearance().scrollEdgeAppearance = AppDelegate.tabBarAppearance
         UITabBar.appearance().isTranslucent = false
+
+        // Apply stored appearance preference (default is dark)
+        if UserDefaults.standard.object(forKey: AboutViewController.appearanceKey) == nil {
+            UserDefaults.standard.set(0, forKey: AboutViewController.appearanceKey)
+        }
+        AboutViewController.applyStoredAppearance(to: window)
 
         // Start listening for StoreKit 2 transaction updates
         PremiumManager.shared.startTransactionListener()

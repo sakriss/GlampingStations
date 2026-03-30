@@ -9,10 +9,10 @@ import StoreKit
 class PaywallViewController: UIViewController {
 
     // MARK: - Colors
-    private let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
-    private let cardColor  = UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
-    private let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+    private var primaryBg:  UIColor { AppDelegate.primaryBg }
+    private var cardColor:  UIColor { AppDelegate.cardColor }
+    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var mutedText:  UIColor { AppDelegate.mutedText }
 
     // MARK: - Views
     private let purchaseButton = UIButton(type: .system)
@@ -48,7 +48,7 @@ class PaywallViewController: UIViewController {
         let titleLabel = UILabel()
         titleLabel.text = "Go Premium"
         titleLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-        titleLabel.textColor = .white
+        titleLabel.textColor = .label
         titleLabel.textAlignment = .center
 
         // Subtitle
@@ -191,7 +191,7 @@ class PaywallViewController: UIViewController {
         let titleLbl = UILabel()
         titleLbl.text = feature.title
         titleLbl.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-        titleLbl.textColor = .white
+        titleLbl.textColor = .label
 
         let descLbl = UILabel()
         descLbl.text = feature.desc

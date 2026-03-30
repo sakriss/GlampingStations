@@ -24,10 +24,10 @@ class StationDetailsTableViewCell: UITableViewCell {
 
     var stationDetails: Station = Station()
     
-    private static let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
-    private static let cardColor  = UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
-    private static let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
-    private static let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+    private static var primaryBg:  UIColor { AppDelegate.primaryBg }
+    private static var cardColor:  UIColor { AppDelegate.cardColor }
+    private static let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private static var mutedText:  UIColor { AppDelegate.mutedText }
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -37,7 +37,7 @@ class StationDetailsTableViewCell: UITableViewCell {
         selectionStyle = .none
 
         stationNameLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
-        stationNameLabel?.textColor = .white
+        stationNameLabel?.textColor = .label
         stationNameLabel?.numberOfLines = 2
 
         stationsAddressLabel?.font = UIFont.systemFont(ofSize: 14, weight: .regular)
@@ -68,7 +68,7 @@ class StationDetailsTableViewCell: UITableViewCell {
         }
 
         stationCommentLabel?.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-        stationCommentLabel?.textColor = .white
+        stationCommentLabel?.textColor = .label
 
         stationCommentTextView?.backgroundColor = StationDetailsTableViewCell.cardColor
         stationCommentTextView?.textColor = StationDetailsTableViewCell.mutedText

@@ -11,7 +11,7 @@ import Foundation
 struct Amenity: Codable {
     let shower: Bool
     let bathroom: Bool
-    let trailerParking: Bool
+    var trailerParking: Bool = true
     let defAtPump: Bool
     let repairShop: Bool
     let catScale: Bool

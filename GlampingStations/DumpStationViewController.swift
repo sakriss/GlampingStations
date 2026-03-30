@@ -36,8 +36,8 @@ class DumpStationViewController: UIViewController {
     private var searchBar: UITextField?
 
     // MARK: - Colors
-    private let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
+    private var primaryBg: UIColor { AppDelegate.primaryBg }
+    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
 
     // MARK: - Lifecycle
 
@@ -99,8 +99,8 @@ class DumpStationViewController: UIViewController {
     // MARK: - Filter / Sort Bar
 
     private func setupFilterSortBar() {
-        let cardColor = UIColor(red: 22/255, green: 38/255, blue: 62/255, alpha: 1)
-        let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+        let cardColor = AppDelegate.cardColor
+        let mutedText = AppDelegate.mutedText
 
         let bar = UIView()
         bar.backgroundColor = cardColor
@@ -111,7 +111,7 @@ class DumpStationViewController: UIViewController {
         let sortBtn = UIButton(type: .system)
         sortBtn.translatesAutoresizingMaskIntoConstraints = false
         sortBtn.tintColor = accentGold
-        sortBtn.setTitleColor(.white, for: .normal)
+        sortBtn.setTitleColor(.label, for: .normal)
         sortBtn.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         sortBtn.addTarget(self, action: #selector(showFilterSort), for: .touchUpInside)
         inlineSortButton = sortBtn
@@ -134,7 +134,7 @@ class DumpStationViewController: UIViewController {
 
         // Bottom separator
         let sep = UIView()
-        sep.backgroundColor = UIColor.white.withAlphaComponent(0.08)
+        sep.backgroundColor = AppDelegate.separatorColor
         sep.translatesAutoresizingMaskIntoConstraints = false
 
         bar.addSubview(sortBtn)
@@ -166,13 +166,13 @@ class DumpStationViewController: UIViewController {
         // Search bar below the filter bar
         let search = UITextField()
         search.translatesAutoresizingMaskIntoConstraints = false
-        search.backgroundColor = UIColor.white.withAlphaComponent(0.07)
-        search.textColor = .white
+        search.backgroundColor = AppDelegate.inputBg
+        search.textColor = .label
         search.font = UIFont.systemFont(ofSize: 14)
         search.layer.cornerRadius = 8
         search.attributedPlaceholder = NSAttributedString(
             string: "Search by name, city, or state...",
-            attributes: [.foregroundColor: UIColor.white.withAlphaComponent(0.3)]
+            attributes: [.foregroundColor: AppDelegate.mutedText.withAlphaComponent(0.6)]
         )
         search.returnKeyType = .search
         search.clearButtonMode = .whileEditing
@@ -334,7 +334,7 @@ class DumpStationViewController: UIViewController {
 
     /// Updates the inline sort/filter buttons to reflect current state.
     private func updateFilterButton() {
-        let mutedText = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+        let mutedText = AppDelegate.mutedText
 
         // Sort button: show current sort order with icon
         inlineSortButton?.setImage(UIImage(systemName: "arrow.up.arrow.down"), for: .normal)

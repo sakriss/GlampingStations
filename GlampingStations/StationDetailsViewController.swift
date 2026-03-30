@@ -29,8 +29,8 @@ class StationDetailsViewController: UIViewController {
     var stepByStepDirections:String = ""
     var stationCoords = [CLLocationCoordinate2D()]
     
-    private let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
+    private var primaryBg: UIColor { AppDelegate.primaryBg }
+    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -374,8 +374,8 @@ extension StationDetailsViewController: UITableViewDataSource {
                 // Clear old content (safety)
                 container.subviews.forEach { $0.removeFromSuperview() }
 
-                // Style the container as a dark card
-                container.backgroundColor = UIColor(red: 22/255, green: 38/255, blue: 62/255, alpha: 1)
+                // Style the container as a card
+                container.backgroundColor = AppDelegate.cardColor
                 container.layer.cornerRadius = 14
                 container.clipsToBounds = true
 
@@ -442,7 +442,7 @@ extension StationDetailsViewController: UITableViewDataSource {
                 col2.alignment = .leading
                 col2.spacing = 6
 
-                let mutedTextColor = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+                let mutedTextColor = AppDelegate.mutedText
 
                 func row(title: String, value: Bool) -> UIStackView {
                     let h = UIStackView()
@@ -466,7 +466,7 @@ extension StationDetailsViewController: UITableViewDataSource {
                     let label = UILabel()
                     label.text = title
                     label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-                    label.textColor = value ? UIColor.white : mutedTextColor
+                    label.textColor = value ? UIColor.label : mutedTextColor
 
                     h.addArrangedSubview(icon)
                     h.addArrangedSubview(label)
@@ -511,7 +511,7 @@ extension StationDetailsViewController: UITableViewDataSource {
                         let lbl = UILabel()
                         lbl.text = "Canopy Height: \(height)"
                         lbl.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-                        lbl.textColor = .white
+                        lbl.textColor = .label
 
                         heightRow.addArrangedSubview(icon)
                         heightRow.addArrangedSubview(lbl)

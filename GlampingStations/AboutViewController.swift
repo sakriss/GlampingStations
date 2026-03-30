@@ -14,12 +14,26 @@ class AboutViewController: UIViewController {
     @IBOutlet weak var versionLabel: UILabel!
     @IBOutlet weak var buildLabel: UILabel!
 
-    private let primaryBg   = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
-    private let cardColor   = UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
-    private let accentGold  = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
-    private let mutedText   = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+    private var primaryBg:  UIColor { AppDelegate.primaryBg }
+    private var cardColor:  UIColor { AppDelegate.cardColor }
+    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var mutedText:  UIColor { AppDelegate.mutedText }
 
     private var demoBadgeLabel: UILabel?
+    private var appearanceSegment: UISegmentedControl?
+
+    // MARK: - Appearance Preference
+
+    static let appearanceKey = "AppAppearanceMode"  // 0=Dark, 1=Light, 2=System
+
+    static func applyStoredAppearance(to window: UIWindow?) {
+        let stored = UserDefaults.standard.integer(forKey: appearanceKey)
+        switch stored {
+        case 1:  window?.overrideUserInterfaceStyle = .light
+        case 2:  window?.overrideUserInterfaceStyle = .unspecified
+        default: window?.overrideUserInterfaceStyle = .dark
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -66,7 +80,7 @@ class AboutViewController: UIViewController {
         let appNameLabel = UILabel()
         appNameLabel.text = "Glamping Gas/Dump Stations"
         appNameLabel.font = UIFont.systemFont(ofSize: 20, weight: .bold)
-        appNameLabel.textColor = .white
+        appNameLabel.textColor = .label
         appNameLabel.textAlignment = .center
 
         // Tagline
@@ -90,9 +104,12 @@ class AboutViewController: UIViewController {
         let buildCard   = makeInfoCard(icon: "hammer.fill",    title: "Build Number",   value: "#\(buildText)")
         let stationsCard = makeInfoCard(icon: "mappin.circle.fill", title: "Station Types", value: "Gas · Dump")
 
+        // Appearance card
+        let appearanceCard = makeAppearanceCard()
+
         // Divider
         let divider = UIView()
-        divider.backgroundColor = UIColor(red: 40/255, green: 60/255, blue: 90/255, alpha: 1)
+        divider.backgroundColor = AppDelegate.separatorColor
         divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
 
         // Footer credit
@@ -103,7 +120,7 @@ class AboutViewController: UIViewController {
         footerLabel.textAlignment = .center
 
         // Cards container
-        let cardsStack = UIStackView(arrangedSubviews: [versionCard, buildCard, stationsCard, divider, footerLabel])
+        let cardsStack = UIStackView(arrangedSubviews: [versionCard, buildCard, stationsCard, appearanceCard, divider, footerLabel])
         cardsStack.axis = .vertical
         cardsStack.spacing = 12
         cardsStack.alignment = .fill
@@ -154,6 +171,82 @@ class AboutViewController: UIViewController {
         present(alert, animated: true)
     }
 
+    private func makeAppearanceCard() -> UIView {
+        let card = UIView()
+        card.backgroundColor = cardColor
+        card.layer.cornerRadius = 14
+        card.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconView = UIImageView(image: UIImage(systemName: "circle.lefthalf.filled"))
+        iconView.tintColor = accentGold
+        iconView.contentMode = .scaleAspectFit
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            iconView.widthAnchor.constraint(equalToConstant: 22),
+            iconView.heightAnchor.constraint(equalToConstant: 22)
+        ])
+
+        let titleLbl = UILabel()
+        titleLbl.text = "Appearance"
+        titleLbl.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        titleLbl.textColor = mutedText
+
+        let stored = UserDefaults.standard.integer(forKey: AboutViewController.appearanceKey)
+        let segment = UISegmentedControl(items: ["Dark", "Light", "System"])
+        segment.selectedSegmentIndex = stored
+        segment.backgroundColor = AppDelegate.primaryBg
+        segment.setTitleTextAttributes([.foregroundColor: AppDelegate.mutedText], for: .normal)
+        segment.setTitleTextAttributes(
+            [.foregroundColor: UIColor(red: 10/255, green: 25/255, blue: 47/255, alpha: 1)],
+            for: .selected
+        )
+        segment.selectedSegmentTintColor = accentGold
+        segment.addTarget(self, action: #selector(appearanceChanged(_:)), for: .valueChanged)
+        appearanceSegment = segment
+
+        let textStack = UIStackView(arrangedSubviews: [titleLbl, segment])
+        textStack.axis = .vertical
+        textStack.spacing = 10
+
+        let rowStack = UIStackView(arrangedSubviews: [iconView, textStack])
+        rowStack.axis = .horizontal
+        rowStack.alignment = .center
+        rowStack.spacing = 14
+        rowStack.translatesAutoresizingMaskIntoConstraints = false
+
+        card.addSubview(rowStack)
+        NSLayoutConstraint.activate([
+            rowStack.topAnchor.constraint(equalTo: card.topAnchor, constant: 16),
+            rowStack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -16),
+            rowStack.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 18),
+            rowStack.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -18)
+        ])
+
+        return card
+    }
+
+    @objc private func appearanceChanged(_ sender: UISegmentedControl) {
+        UserDefaults.standard.set(sender.selectedSegmentIndex, forKey: AboutViewController.appearanceKey)
+        guard let window = view.window else { return }
+        switch sender.selectedSegmentIndex {
+        case 1:  window.overrideUserInterfaceStyle = .light
+        case 2:  window.overrideUserInterfaceStyle = .unspecified
+        default: window.overrideUserInterfaceStyle = .dark
+        }
+        // Re-apply nav/tab bar appearances so they pick up the updated dynamic colors
+        UINavigationBar.appearance().standardAppearance   = AppDelegate.navBarAppearance
+        UINavigationBar.appearance().scrollEdgeAppearance = AppDelegate.navBarAppearance
+        UINavigationBar.appearance().compactAppearance    = AppDelegate.navBarAppearance
+        UITabBar.appearance().standardAppearance    = AppDelegate.tabBarAppearance
+        UITabBar.appearance().scrollEdgeAppearance  = AppDelegate.tabBarAppearance
+        // Force each visible nav/tab bar to refresh
+        for scene in UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }) {
+            for w in scene.windows {
+                for sub in w.subviews { sub.removeFromSuperview(); w.addSubview(sub) }
+            }
+        }
+    }
+
     private func makeInfoCard(icon: String, title: String, value: String) -> UIView {
         let card = UIView()
         card.backgroundColor = cardColor
@@ -177,7 +270,7 @@ class AboutViewController: UIViewController {
         let valueLbl = UILabel()
         valueLbl.text = value
         valueLbl.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-        valueLbl.textColor = .white
+        valueLbl.textColor = .label
 
         let textStack = UIStackView(arrangedSubviews: [titleLbl, valueLbl])
         textStack.axis = .vertical

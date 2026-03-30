@@ -26,10 +26,10 @@ class AddStationViewController: UIViewController {
 
     // MARK: - Colors
 
-    private let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
-    private let cardColor  = UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
-    private let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+    private var primaryBg:  UIColor { AppDelegate.primaryBg }
+    private var cardColor:  UIColor { AppDelegate.cardColor }
+    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var mutedText:  UIColor { AppDelegate.mutedText }
 
     // MARK: - State
 
@@ -86,7 +86,7 @@ class AddStationViewController: UIViewController {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = primaryBg
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         navigationController?.navigationBar.tintColor = accentGold
@@ -269,7 +269,7 @@ class AddStationViewController: UIViewController {
             inner.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -16)
         ])
 
-        let titleLabel = makeLabel("Details", size: 16, weight: .semibold, color: .white)
+        let titleLabel = makeLabel("Details", size: 16, weight: .semibold, color: .label)
 
         styleTextField(nameField, placeholder: "Station name *", required: true)
         nameField.returnKeyType = .next
@@ -280,12 +280,12 @@ class AddStationViewController: UIViewController {
 
         // Comment text view
         commentView.translatesAutoresizingMaskIntoConstraints = false
-        commentView.backgroundColor = UIColor.white.withAlphaComponent(0.07)
-        commentView.textColor = .white
+        commentView.backgroundColor = AppDelegate.inputBg
+        commentView.textColor = .label
         commentView.font = UIFont.systemFont(ofSize: 15)
         commentView.layer.cornerRadius = 8
         commentView.layer.borderWidth = 1
-        commentView.layer.borderColor = UIColor.white.withAlphaComponent(0.1).cgColor
+        commentView.layer.borderColor = AppDelegate.separatorColor.cgColor
         commentView.textContainerInset = UIEdgeInsets(top: 10, left: 8, bottom: 10, right: 8)
         commentView.heightAnchor.constraint(equalToConstant: 80).isActive = true
         commentView.delegate = self
@@ -293,7 +293,7 @@ class AddStationViewController: UIViewController {
         // Placeholder for text view
         commentPlaceholder.text = "Notes..."
         commentPlaceholder.font = UIFont.systemFont(ofSize: 15)
-        commentPlaceholder.textColor = UIColor.white.withAlphaComponent(0.3)
+        commentPlaceholder.textColor = AppDelegate.mutedText.withAlphaComponent(0.6)
         commentPlaceholder.translatesAutoresizingMaskIntoConstraints = false
         commentView.addSubview(commentPlaceholder)
         NSLayoutConstraint.activate([
@@ -326,7 +326,7 @@ class AddStationViewController: UIViewController {
             inner.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -16)
         ])
 
-        let titleLabel = makeLabel("Additional Info", size: 16, weight: .semibold, color: .white)
+        let titleLabel = makeLabel("Additional Info", size: 16, weight: .semibold, color: .label)
 
         let placeholder: String
         switch stationType {
@@ -358,7 +358,7 @@ class AddStationViewController: UIViewController {
             inner.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -16)
         ])
 
-        let titleLabel = makeLabel("Amenities", size: 16, weight: .semibold, color: .white)
+        let titleLabel = makeLabel("Amenities", size: 16, weight: .semibold, color: .label)
         inner.addArrangedSubview(titleLabel)
 
         amenitySwitches = []
@@ -367,7 +367,7 @@ class AddStationViewController: UIViewController {
             let row = UIView()
             row.translatesAutoresizingMaskIntoConstraints = false
 
-            let label = makeLabel(name, size: 15, weight: .regular, color: .white)
+            let label = makeLabel(name, size: 15, weight: .regular, color: .label)
             label.translatesAutoresizingMaskIntoConstraints = false
 
             let toggle = UISwitch()
@@ -417,12 +417,12 @@ class AddStationViewController: UIViewController {
 
     private func styleTextField(_ field: UITextField, placeholder: String, required: Bool = false) {
         field.translatesAutoresizingMaskIntoConstraints = false
-        field.backgroundColor = UIColor.white.withAlphaComponent(0.07)
-        field.textColor = .white
+        field.backgroundColor = AppDelegate.inputBg
+        field.textColor = .label
         field.font = UIFont.systemFont(ofSize: 15)
         field.layer.cornerRadius = 8
         field.layer.borderWidth = 1
-        field.layer.borderColor = UIColor.white.withAlphaComponent(0.1).cgColor
+        field.layer.borderColor = AppDelegate.separatorColor.cgColor
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 1))
         field.leftViewMode = .always
         field.heightAnchor.constraint(equalToConstant: 44).isActive = true
@@ -431,7 +431,7 @@ class AddStationViewController: UIViewController {
             let base = String(placeholder.dropLast(2))
             let attr = NSMutableAttributedString(
                 string: base,
-                attributes: [.foregroundColor: UIColor.white.withAlphaComponent(0.3), .font: UIFont.systemFont(ofSize: 15)]
+                attributes: [.foregroundColor: AppDelegate.mutedText.withAlphaComponent(0.6), .font: UIFont.systemFont(ofSize: 15)]
             )
             attr.append(NSAttributedString(
                 string: " *",
@@ -441,7 +441,7 @@ class AddStationViewController: UIViewController {
         } else {
             field.attributedPlaceholder = NSAttributedString(
                 string: placeholder,
-                attributes: [.foregroundColor: UIColor.white.withAlphaComponent(0.3)]
+                attributes: [.foregroundColor: AppDelegate.mutedText.withAlphaComponent(0.6)]
             )
         }
     }
@@ -450,7 +450,7 @@ class AddStationViewController: UIViewController {
         let label = UILabel()
         let attr = NSMutableAttributedString(
             string: text,
-            attributes: [.foregroundColor: UIColor.white, .font: UIFont.systemFont(ofSize: 16, weight: .semibold)]
+            attributes: [.foregroundColor: UIColor.label, .font: UIFont.systemFont(ofSize: 16, weight: .semibold)]
         )
         attr.append(NSAttributedString(
             string: " *",
@@ -522,7 +522,7 @@ class AddStationViewController: UIViewController {
         let btn = UIButton(type: .system)
         btn.translatesAutoresizingMaskIntoConstraints = false
         btn.setImage(UIImage(systemName: systemName, withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)), for: .normal)
-        btn.tintColor = .white
+        btn.tintColor = .label
         btn.backgroundColor = UIColor.black.withAlphaComponent(0.55)
         btn.layer.cornerRadius = 8
         btn.addTarget(self, action: action, for: .touchUpInside)

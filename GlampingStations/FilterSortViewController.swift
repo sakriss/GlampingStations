@@ -47,10 +47,10 @@ class FilterSortViewController: UIViewController {
     weak var delegate: FilterSortDelegate?
 
     // MARK: Colors
-    private let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
-    private let cardColor  = UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
-    private let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+    private var primaryBg:  UIColor { AppDelegate.primaryBg }
+    private var cardColor:  UIColor { AppDelegate.cardColor }
+    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var mutedText:  UIColor { AppDelegate.mutedText }
 
     // MARK: Tracked UI
     private var sortRowViews: [(container: UIView, order: StationSortOrder)] = []
@@ -100,7 +100,7 @@ class FilterSortViewController: UIViewController {
         let titleLabel = UILabel()
         titleLabel.text = "Filter & Sort"
         titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .bold)
-        titleLabel.textColor = .white
+        titleLabel.textColor = .label
         content.addArrangedSubview(titleLabel)
         content.setCustomSpacing(24, after: titleLabel)
 
@@ -271,7 +271,7 @@ class FilterSortViewController: UIViewController {
         let label = UILabel()
         label.text = order.title
         label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
-        label.textColor = .white
+        label.textColor = .label
         label.translatesAutoresizingMaskIntoConstraints = false
 
         let checkmark = UIImageView(image: UIImage(systemName: "checkmark"))
@@ -329,7 +329,7 @@ class FilterSortViewController: UIViewController {
         let label = UILabel()
         label.text = name
         label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
-        label.textColor = .white
+        label.textColor = .label
         label.translatesAutoresizingMaskIntoConstraints = false
 
         let isOn = activeAmenities.contains(name)
@@ -389,7 +389,7 @@ class FilterSortViewController: UIViewController {
 
     private func divider() -> UIView {
         let v = UIView()
-        v.backgroundColor = UIColor.white.withAlphaComponent(0.07)
+        v.backgroundColor = AppDelegate.inputBg
         v.heightAnchor.constraint(equalToConstant: 1).isActive = true
         return v
     }

@@ -75,10 +75,10 @@ class TripStationAnnotation: NSObject, MKAnnotation {
 class TripPlannerViewController: UIViewController {
 
     // MARK: - Colors
-    private let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
-    private let cardColor  = UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
-    private let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+    private var primaryBg:  UIColor { AppDelegate.primaryBg }
+    private var cardColor:  UIColor { AppDelegate.cardColor }
+    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var mutedText:  UIColor { AppDelegate.mutedText }
 
     // MARK: - Public
     var userLocation: CLLocation = CLLocation(latitude: 0, longitude: 0)
@@ -139,7 +139,7 @@ class TripPlannerViewController: UIViewController {
     private func setupSearchField() {
         searchField.translatesAutoresizingMaskIntoConstraints = false
         searchField.placeholder = "Where are you headed?"
-        searchField.textColor = .white
+        searchField.textColor = .label
         searchField.backgroundColor = cardColor
         searchField.layer.cornerRadius = 10
         searchField.layer.masksToBounds = true
@@ -655,7 +655,7 @@ extension TripPlannerViewController: UITableViewDataSource, UITableViewDelegate 
             let completion = completions[indexPath.row]
             cell.backgroundColor = UIColor(red: 18/255, green: 32/255, blue: 54/255, alpha: 1)
             cell.textLabel?.text = completion.title
-            cell.textLabel?.textColor = .white
+            cell.textLabel?.textColor = .label
             cell.textLabel?.font = UIFont.systemFont(ofSize: 15)
             cell.detailTextLabel?.text = nil
             cell.accessoryType = .none
@@ -719,7 +719,7 @@ extension TripPlannerViewController: MKMapViewDelegate {
                 view?.markerTintColor = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
                 view?.glyphImage = UIImage(systemName: "fuelpump.fill")
             case .dump:
-                view?.markerTintColor = UIColor(red: 52/255, green: 120/255, blue: 246/255, alpha: 1)
+                view?.markerTintColor = UIColor(red: 139/255, green: 90/255, blue: 43/255, alpha: 1)
                 view?.glyphImage = UIImage(systemName: "drop.fill")
             case .none:
                 view?.markerTintColor = .gray
@@ -747,9 +747,9 @@ extension TripPlannerViewController: MKMapViewDelegate {
 class TripStationCell: UITableViewCell {
     static let reuseId = "TripStationCell"
 
-    private let cardColor  = UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
-    private let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+    private var cardColor:  UIColor { AppDelegate.cardColor }
+    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var mutedText:  UIColor { AppDelegate.mutedText }
 
     private let card          = UIView()
     private let iconView      = UIImageView()
@@ -778,7 +778,7 @@ class TripStationCell: UITableViewCell {
         iconView.translatesAutoresizingMaskIntoConstraints = false
 
         nameLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-        nameLabel.textColor = .white
+        nameLabel.textColor = .label
         nameLabel.numberOfLines = 1
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
 
@@ -848,7 +848,7 @@ class TripStationCell: UITableViewCell {
         case .gas:
             iconView.tintColor = accentGold
         case .dump:
-            iconView.tintColor = UIColor(red: 52/255, green: 120/255, blue: 246/255, alpha: 1)
+            iconView.tintColor = UIColor(red: 139/255, green: 90/255, blue: 43/255, alpha: 1)
         }
         nameLabel.text     = trip.type.name
         locationLabel.text = trip.type.locationLabel

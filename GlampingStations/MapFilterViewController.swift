@@ -39,10 +39,10 @@ class MapFilterViewController: UIViewController {
     weak var delegate: MapFilterDelegate?
 
     // MARK: Colors (match FilterSortViewController)
-    private let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
-    private let cardColor  = UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
-    private let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+    private var primaryBg:  UIColor { AppDelegate.primaryBg }
+    private var cardColor:  UIColor { AppDelegate.cardColor }
+    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var mutedText:  UIColor { AppDelegate.mutedText }
 
     // MARK: Amenity options
     private let fuelAmenityOptions = ["Diesel", "Large Vehicle Access", "DEF at Pump",
@@ -102,7 +102,7 @@ class MapFilterViewController: UIViewController {
         let titleLabel = UILabel()
         titleLabel.text = "Map Filters"
         titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .bold)
-        titleLabel.textColor = .white
+        titleLabel.textColor = .label
         content.addArrangedSubview(titleLabel)
         content.setCustomSpacing(24, after: titleLabel)
 
@@ -306,7 +306,7 @@ class MapFilterViewController: UIViewController {
         let label = UILabel()
         label.text = title
         label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
-        label.textColor = .white
+        label.textColor = .label
         label.translatesAutoresizingMaskIntoConstraints = false
 
         let toggle = UIButton(type: .custom)
@@ -361,7 +361,7 @@ class MapFilterViewController: UIViewController {
         let label = UILabel()
         label.text = name
         label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
-        label.textColor = .white
+        label.textColor = .label
         label.translatesAutoresizingMaskIntoConstraints = false
 
         let toggle = UIButton(type: .custom)
@@ -421,7 +421,7 @@ class MapFilterViewController: UIViewController {
 
     private func divider() -> UIView {
         let v = UIView()
-        v.backgroundColor = UIColor.white.withAlphaComponent(0.07)
+        v.backgroundColor = AppDelegate.inputBg
         v.heightAnchor.constraint(equalToConstant: 1).isActive = true
         return v
     }

@@ -13,10 +13,10 @@ class HomeViewController: UIViewController {
 
     // MARK: - Colors
 
-    private let primaryBg  = UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
-    private let cardColor  = UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
+    private var primaryBg:  UIColor { AppDelegate.primaryBg }
+    private var cardColor:  UIColor { AppDelegate.cardColor }
     private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
-    private let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+    private var mutedText:  UIColor { AppDelegate.mutedText }
 
     // MARK: - Views
 
@@ -198,7 +198,7 @@ class HomeViewController: UIViewController {
         let titleLabel = UILabel()
         titleLabel.text = "Glamping Stations"
         titleLabel.font = UIFont.systemFont(ofSize: 24, weight: .bold)
-        titleLabel.textColor = .white
+        titleLabel.textColor = .label
 
         titleRow.addArrangedSubview(iconView)
         titleRow.addArrangedSubview(titleLabel)
@@ -279,7 +279,7 @@ class HomeViewController: UIViewController {
 
         valueLabel.text = "0"
         valueLabel.font = UIFont.systemFont(ofSize: 22, weight: .bold)
-        valueLabel.textColor = .white
+        valueLabel.textColor = .label
         valueLabel.textAlignment = .center
 
         let titleLbl = UILabel()
@@ -526,7 +526,7 @@ class HomeViewController: UIViewController {
         let titleLabel = UILabel()
         titleLabel.text = title
         titleLabel.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
-        titleLabel.textColor = .white
+        titleLabel.textColor = .label
 
         headerStack.addArrangedSubview(iconView)
         headerStack.addArrangedSubview(titleLabel)
@@ -691,9 +691,9 @@ extension HomeViewController: CLLocationManagerDelegate {
 class FavoriteStationCell: UICollectionViewCell {
     static let reuseId = "FavoriteStationCell"
 
-    private let cardColor  = UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
-    private let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+    private var cardColor:  UIColor { AppDelegate.cardColor }
+    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var mutedText:  UIColor { AppDelegate.mutedText }
 
     private let nameLabel = UILabel()
     private let ratingLabel = UILabel()
@@ -727,7 +727,7 @@ class FavoriteStationCell: UICollectionViewCell {
 
         // Name
         nameLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-        nameLabel.textColor = .white
+        nameLabel.textColor = .label
         nameLabel.numberOfLines = 2
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
 

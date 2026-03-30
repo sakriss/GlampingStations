@@ -14,9 +14,9 @@ class DumpStationViewCell: UITableViewCell {
     @IBOutlet weak var dumpStationAddressLbl: UILabel!
     @IBOutlet weak var dumpStationDistanceLbl: UILabel!
 
-    private static let cardColor  = UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
-    private static let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
-    private static let mutedText  = UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
+    private static var cardColor:  UIColor { AppDelegate.cardColor }
+    private static let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private static var mutedText:  UIColor { AppDelegate.mutedText }
 
     let favoriteIcon: UIImageView = {
         let iv = UIImageView()
@@ -37,7 +37,7 @@ class DumpStationViewCell: UITableViewCell {
         selectionStyle = .none
 
         dumpStationName?.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-        dumpStationName?.textColor = .white
+        dumpStationName?.textColor = .label
         dumpStationName?.numberOfLines = 1
 
         dumpStationAddressLbl?.font = UIFont.systemFont(ofSize: 13, weight: .regular)
