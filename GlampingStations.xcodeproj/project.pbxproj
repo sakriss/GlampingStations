@@ -45,6 +45,7 @@
 		D2BB00062F60000000000004 /* PremiumManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00072F60000000000005 /* PremiumManager.swift */; };
 		D2BB00082F60000000000006 /* PaywallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB00092F60000000000007 /* PaywallViewController.swift */; };
 		D2BB000A2F60000000000008 /* TripPlannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB000B2F60000000000009 /* TripPlannerViewController.swift */; };
+		D2BB000C2F6000000000000A /* MapFilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BB000D2F6000000000000B /* MapFilterViewController.swift */; };
 		D2OP00042F70000000000004 /* OverpassModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2OP00012F70000000000001 /* OverpassModels.swift */; };
 		D2OP00052F70000000000005 /* OverpassService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2OP00022F70000000000002 /* OverpassService.swift */; };
 		D2OP00062F70000000000006 /* OverpassParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2OP00032F70000000000003 /* OverpassParser.swift */; };
@@ -85,6 +86,7 @@
 		D2BB00072F60000000000005 /* PremiumManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumManager.swift; sourceTree = "<group>"; };
 		D2BB00092F60000000000007 /* PaywallViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewController.swift; sourceTree = "<group>"; };
 		D2BB000B2F60000000000009 /* TripPlannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripPlannerViewController.swift; sourceTree = "<group>"; };
+		D2BB000D2F6000000000000B /* MapFilterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFilterViewController.swift; sourceTree = "<group>"; };
 		D2OP00012F70000000000001 /* OverpassModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverpassModels.swift; sourceTree = "<group>"; };
 		D2OP00022F70000000000002 /* OverpassService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverpassService.swift; sourceTree = "<group>"; };
 		D2OP00032F70000000000003 /* OverpassParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverpassParser.swift; sourceTree = "<group>"; };
@@ -159,6 +161,7 @@
 				D2BB00072F60000000000005 /* PremiumManager.swift */,
 				D2BB00092F60000000000007 /* PaywallViewController.swift */,
 				D2BB000B2F60000000000009 /* TripPlannerViewController.swift */,
+				D2BB000D2F6000000000000B /* MapFilterViewController.swift */,
 				D2OP00012F70000000000001 /* OverpassModels.swift */,
 				D2OP00022F70000000000002 /* OverpassService.swift */,
 				D2OP00032F70000000000003 /* OverpassParser.swift */,
@@ -271,6 +274,7 @@
 				D2BB00062F60000000000004 /* PremiumManager.swift in Sources */,
 				D2BB00082F60000000000006 /* PaywallViewController.swift in Sources */,
 				D2BB000A2F60000000000008 /* TripPlannerViewController.swift in Sources */,
+				D2BB000C2F6000000000000A /* MapFilterViewController.swift in Sources */,
 				D2OP00042F70000000000004 /* OverpassModels.swift in Sources */,
 				D2OP00052F70000000000005 /* OverpassService.swift in Sources */,
 				D2OP00062F70000000000006 /* OverpassParser.swift in Sources */,
