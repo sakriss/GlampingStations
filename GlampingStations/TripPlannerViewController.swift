@@ -1865,7 +1865,7 @@ extension TripPlannerViewController: MKMapViewDelegate {
             view?.annotation = annotation
             view?.accessibilityIdentifier = "routeWarningMarker_\(warning.severity.accessibilityIdentifier)"
             view?.accessibilityLabel = warning.title
-            view?.accessibilityValue = warning.subtitle
+            view?.accessibilityValue = warning.warning.mapCalloutDetails
             view?.markerTintColor = warning.severity.color
             view?.glyphImage = UIImage(systemName: warning.severity == .risk ? "exclamationmark.triangle.fill" : "questionmark.diamond.fill")
             view?.canShowCallout = true
@@ -1909,11 +1909,14 @@ extension TripPlannerViewController: MKMapViewDelegate {
         return view
     }
 
-    func mapView(_ mapView: MKMapView, didSelect annotation: MKAnnotation) {
-        guard let warningAnnotation = annotation as? RouteWarningAnnotation else { return }
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        guard let warningAnnotation = view.annotation as? RouteWarningAnnotation else { return }
         tableSegment.selectedSegmentIndex = 0
         expandedWarningIDs.insert(warningAnnotation.warning.stableID)
         refreshRows()
+        if presentedViewController == nil {
+            showWarningDetails(warningAnnotation.warning)
+        }
     }
 
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {

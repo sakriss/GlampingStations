@@ -27,12 +27,17 @@ final class RoutesUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["routeWarningMarker_risk"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Low Clearance Test Bridge"].waitForExistence(timeout: 5))
 
+        let typeDetail = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Type: Low clearance")).firstMatch
         app.staticTexts["Low Clearance Test Bridge"].tap()
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Type: Low clearance")).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(typeDetail.waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "OSM way #1001")).firstMatch.exists)
 
-        app.descendants(matching: .any)["routeWarningMarker_risk"].tap()
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "The listed clearance is lower")).firstMatch.waitForExistence(timeout: 5))
+        let riskMarker = app.descendants(matching: .any)["routeWarningMarker_risk"]
+        app.staticTexts["Low Clearance Test Bridge"].tap()
+        expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: typeDetail)
+        waitForExpectations(timeout: 5)
+        riskMarker.tap()
+        XCTAssertTrue(typeDetail.waitForExistence(timeout: 5))
     }
 
     func testRoutesNoWarningsFixtureDoesNotShowRiskMarker() throws {
