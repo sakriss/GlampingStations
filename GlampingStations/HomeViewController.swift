@@ -486,20 +486,15 @@ class HomeViewController: UIViewController {
     }
 
     @objc private func tripPlannerTapped() {
-        if !PremiumManager.shared.isPremium {
-            let paywall = PaywallViewController()
-            paywall.modalPresentationStyle = .formSheet
-            present(paywall, animated: true)
-            return
+        guard let tabBarController else { return }
+        if let routesIndex = tabBarController.viewControllers?.firstIndex(where: { vc in
+            vc is TripPlannerViewController || vc.tabBarItem.title == "Routes"
+        }) {
+            if let routesVC = tabBarController.viewControllers?[routesIndex] as? TripPlannerViewController {
+                routesVC.userLocation = userLocation
+            }
+            tabBarController.selectedIndex = routesIndex
         }
-
-        let tripVC = TripPlannerViewController()
-        tripVC.userLocation = userLocation
-        let nav = UINavigationController(rootViewController: tripVC)
-        nav.navigationBar.standardAppearance   = AppDelegate.navBarAppearance
-        nav.navigationBar.scrollEdgeAppearance = AppDelegate.navBarAppearance
-        nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true)
     }
 
     // MARK: - Favorites Section

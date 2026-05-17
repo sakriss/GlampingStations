@@ -49,9 +49,21 @@
 		D2OP00042F70000000000004 /* OverpassModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2OP00012F70000000000001 /* OverpassModels.swift */; };
 		D2OP00052F70000000000005 /* OverpassService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2OP00022F70000000000002 /* OverpassService.swift */; };
 		D2OP00062F70000000000006 /* OverpassParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2OP00032F70000000000003 /* OverpassParser.swift */; };
+		D9F0ECA9D4F9A933EB7EBA59 /* RoutesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02B5A61D6C893A058ED05686 /* RoutesUITests.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		49DC2939A14E485ABB238643 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 16F5BDAD21062B7E00A93A03 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 16F5BDB421062B7F00A93A03;
+			remoteInfo = GlampingStations;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		02B5A61D6C893A058ED05686 /* RoutesUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RoutesUITests.swift; sourceTree = "<group>"; };
 		1668EE3D2124A879008B5B4A /* stations.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = stations.xcdatamodel; sourceTree = "<group>"; };
 		16C522342141E25B007F9935 /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		16C70A782107DF7400806321 /* StationDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationDetailsViewController.swift; sourceTree = "<group>"; };
@@ -70,6 +82,7 @@
 		16F5BDD22106382C00A93A03 /* Station.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Station.swift; sourceTree = "<group>"; };
 		16F5BDD62106397000A93A03 /* stations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = stations.json; sourceTree = "<group>"; };
 		16F5BDD82106789800A93A03 /* StationsInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationsInfo.swift; sourceTree = "<group>"; };
+		344DC2EDEBB54819A55B1B9A /* GlampingStationsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GlampingStationsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D236AF7526CB4FDD009FD4BE /* dumpstations.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = dumpstations.json; sourceTree = "<group>"; };
 		D236AF7726CB507C009FD4BE /* DumpStation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DumpStation.swift; sourceTree = "<group>"; };
 		D236AF7926CB51A3009FD4BE /* DumpStationsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DumpStationsController.swift; sourceTree = "<group>"; };
@@ -106,6 +119,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F07B40C94A6319AED7A58FB2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -118,6 +138,7 @@
 				1668EE3C2124A879008B5B4A /* stations.xcdatamodeld */,
 				16F5BDB721062B7F00A93A03 /* GlampingStations */,
 				16F5BDB621062B7F00A93A03 /* Products */,
+				79594D5AF6A924E89B5B4AF4 /* GlampingStationsUITests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -125,6 +146,7 @@
 			isa = PBXGroup;
 			children = (
 				16F5BDB521062B7F00A93A03 /* GlampingStations.app */,
+				344DC2EDEBB54819A55B1B9A /* GlampingStationsUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -169,6 +191,15 @@
 			path = GlampingStations;
 			sourceTree = "<group>";
 		};
+		79594D5AF6A924E89B5B4AF4 /* GlampingStationsUITests */ = {
+			isa = PBXGroup;
+			children = (
+				02B5A61D6C893A058ED05686 /* RoutesUITests.swift */,
+			);
+			name = GlampingStationsUITests;
+			path = GlampingStationsUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -188,6 +219,24 @@
 			productName = GlampingStations;
 			productReference = 16F5BDB521062B7F00A93A03 /* GlampingStations.app */;
 			productType = "com.apple.product-type.application";
+		};
+		BC159FFAE1DAA8E8D05570C9 /* GlampingStationsUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 33D0824E961157918D414A6F /* Build configuration list for PBXNativeTarget "GlampingStationsUITests" */;
+			buildPhases = (
+				B641B0A36809A53072462AA6 /* Sources */,
+				F07B40C94A6319AED7A58FB2 /* Frameworks */,
+				FBB4941BE4B171450568D6E3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3FAB18428C1DECDADCD805AB /* PBXTargetDependency */,
+			);
+			name = GlampingStationsUITests;
+			productName = GlampingStationsUITests;
+			productReference = 344DC2EDEBB54819A55B1B9A /* GlampingStationsUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -223,6 +272,7 @@
 			projectRoot = "";
 			targets = (
 				16F5BDB421062B7F00A93A03 /* GlampingStations */,
+				BC159FFAE1DAA8E8D05570C9 /* GlampingStationsUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -238,6 +288,13 @@
 				16F5BDD72106397000A93A03 /* stations.json in Resources */,
 				16F5BDBE21062B7F00A93A03 /* Main.storyboard in Resources */,
 				D23714F12DCA88A100C0BBC3 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FBB4941BE4B171450568D6E3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,7 +338,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B641B0A36809A53072462AA6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D9F0ECA9D4F9A933EB7EBA59 /* RoutesUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3FAB18428C1DECDADCD805AB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = GlampingStations;
+			target = 16F5BDB421062B7F00A93A03 /* GlampingStations */;
+			targetProxy = 49DC2939A14E485ABB238643 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		16F5BDBC21062B7F00A93A03 /* Main.storyboard */ = {
@@ -465,6 +539,41 @@
 			};
 			name = Release;
 		};
+		61D607BE19A96364D0864B7F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 6QK74KTAZV;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.happygiraffe.GlampingStations1UITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = GlampingStations;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		62E1FD3112A70F4807AEF2A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 6QK74KTAZV;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.happygiraffe.GlampingStations1UITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = GlampingStations;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -482,6 +591,15 @@
 			buildConfigurations = (
 				16F5BDC821062B8000A93A03 /* Debug */,
 				16F5BDC921062B8000A93A03 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		33D0824E961157918D414A6F /* Build configuration list for PBXNativeTarget "GlampingStationsUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				61D607BE19A96364D0864B7F /* Release */,
+				62E1FD3112A70F4807AEF2A3 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

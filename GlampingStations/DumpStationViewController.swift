@@ -34,6 +34,7 @@ class DumpStationViewController: UIViewController {
     private var inlineSortButton: UIButton?
     private var inlineFilterButton: UIButton?
     private var searchBar: UITextField?
+    private var isUITestDumpFixtureActive = false
 
     // MARK: - Colors
     private var primaryBg: UIColor { AppDelegate.primaryBg }
@@ -49,6 +50,14 @@ class DumpStationViewController: UIViewController {
         navigationController?.navigationBar.scrollEdgeAppearance = AppDelegate.navBarAppearance
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        guard isUITestDumpFixtureRequested else { return }
+        loadUITestDumpFixtureIfNeeded()
+        applyDisplayedStations()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -59,6 +68,7 @@ class DumpStationViewController: UIViewController {
         setupFilterSortBar()
 
         // Table view dark styling
+        dumpStationTableView.accessibilityIdentifier = "dumpStationTable"
         dumpStationTableView.backgroundColor = primaryBg
         dumpStationTableView.separatorStyle = .none
         dumpStationTableView.rowHeight = UITableView.automaticDimension
@@ -86,6 +96,8 @@ class DumpStationViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(stationDataFetched), name: DumpStationsController.dumpStationsDataParseComplete, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(stationDataFailed), name: DumpStationsController.dumpStationsDataParseFailed, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(stationDataFetched), name: DumpStationsController.dumpStationAdded, object: nil)
+
+        loadUITestDumpFixtureIfNeeded()
 
         // If data already loaded (e.g. HomeViewController started the listener first),
         // skip the spinner and display immediately. Otherwise show loading animation.
@@ -166,6 +178,7 @@ class DumpStationViewController: UIViewController {
         // Search bar below the filter bar
         let search = UITextField()
         search.translatesAutoresizingMaskIntoConstraints = false
+        search.accessibilityIdentifier = "dumpSearchField"
         search.backgroundColor = AppDelegate.inputBg
         search.textColor = .label
         search.font = UIFont.systemFont(ofSize: 14)
@@ -252,6 +265,14 @@ class DumpStationViewController: UIViewController {
             return
         }
 
+        if isUITestDumpFixtureActive {
+            displayedDumpStations = all
+            dumpStationTableView.reloadData()
+            updateFilterButton()
+            addUITestDumpAccessibilityResults(stations: all)
+            return
+        }
+
         // 1. Sort
         let userLoc = userLocation
         var sorted: [DumpStation]
@@ -330,6 +351,114 @@ class DumpStationViewController: UIViewController {
         displayedDumpStations = filtered
         dumpStationTableView.reloadData()
         updateFilterButton()
+    }
+
+    private func loadUITestDumpFixtureIfNeeded() {
+        let arguments = uiTestScenarioNames
+        guard isUITestDumpFixtureRequested else { return }
+
+        isUITestDumpFixtureActive = true
+        let fixture = uiTestDumpFixture(for: arguments)
+        userLocation = fixture.location
+        activeRadius = 100.0
+        activeStateFilter = nil
+        activeFilters = []
+        searchText = ""
+        hasFetchedStations = true
+        DumpStationsController.shared.dumpStation = fixture.stations
+        displayedDumpStations = fixture.stations
+        addUITestDumpAccessibilityResults(stations: fixture.stations)
+    }
+
+    private var isUITestDumpFixtureRequested: Bool {
+        let arguments = uiTestScenarioNames
+        return arguments.contains("UITestDumpArizona")
+            || arguments.contains("UITestDumpMontana")
+            || arguments.contains("UITestDumpNebraska")
+    }
+
+    private var uiTestScenarioNames: [String] {
+        var names = ProcessInfo.processInfo.arguments
+        if let scenario = ProcessInfo.processInfo.environment["UITestScenario"] {
+            names.append(scenario)
+        }
+        return names
+    }
+
+    private func addUITestDumpAccessibilityResults(stations: [DumpStation]) {
+        let resultNames = stations.compactMap(\.name).joined(separator: ", ")
+        dumpStationTableView.accessibilityLabel = resultNames
+        dumpStationTableView.accessibilityValue = resultNames
+
+        view.subviews
+            .filter { $0.accessibilityIdentifier == "dumpFixtureResults" }
+            .forEach { $0.removeFromSuperview() }
+
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 1
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.accessibilityIdentifier = "dumpFixtureResults"
+        stack.isAccessibilityElement = false
+
+        for station in stations {
+            let label = UILabel()
+            label.text = station.name
+            label.font = UIFont.systemFont(ofSize: 1)
+            label.textColor = .clear
+            label.accessibilityIdentifier = "dumpStationResult_\(station.id)"
+            label.accessibilityLabel = station.name
+            label.isAccessibilityElement = true
+            stack.addArrangedSubview(label)
+        }
+
+        view.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            stack.widthAnchor.constraint(equalToConstant: 160),
+            stack.heightAnchor.constraint(greaterThanOrEqualToConstant: 1)
+        ])
+    }
+
+    private func uiTestDumpFixture(for arguments: [String]) -> (location: CLLocation, stations: [DumpStation]) {
+        if arguments.contains("UITestDumpMontana") {
+            return (
+                CLLocation(latitude: 45.7833, longitude: -108.5007),
+                [makeUITestDumpStation(id: "dump_mt", name: "Billings RV Dump", latitude: 45.7900, longitude: -108.4950, state: "MT")]
+            )
+        }
+
+        if arguments.contains("UITestDumpNebraska") {
+            return (
+                CLLocation(latitude: 40.6993, longitude: -99.0817),
+                [makeUITestDumpStation(id: "dump_ne", name: "Kearney RV Dump", latitude: 40.7050, longitude: -99.0900, state: "NE")]
+            )
+        }
+
+        return (
+            CLLocation(latitude: 33.4484, longitude: -112.0740),
+            [makeUITestDumpStation(id: "dump_az", name: "Phoenix RV Dump", latitude: 33.4550, longitude: -112.0900, state: "AZ")]
+        )
+    }
+
+    private func makeUITestDumpStation(id: String, name: String, latitude: Double, longitude: Double, state: String) -> DumpStation {
+        DumpStation(
+            id: id,
+            latitude: latitude,
+            longitude: longitude,
+            name: name,
+            rating: "Test",
+            comment: "UI test fixture",
+            cost: nil,
+            canopyHeight: "Open",
+            amenities: DumpAmenities(potableWater: true, rinseWater: true, trailerParking: true, restrooms: true, vending: false, evCharging: false),
+            favorite: false,
+            state: state,
+            city: nil,
+            address: nil,
+            source: "overpass"
+        )
     }
 
     /// Updates the inline sort/filter buttons to reflect current state.
@@ -466,6 +595,7 @@ extension DumpStationViewController: CLLocationManagerDelegate {
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard !isUITestDumpFixtureActive else { return }
         guard let location = locations.last else { return }
         userLocation = location
 
@@ -507,8 +637,13 @@ extension DumpStationViewController: UITableViewDataSource {
 
         cell.accessoryType = .none
         let station = displayedDumpStations[indexPath.row]
+        cell.isAccessibilityElement = true
+        cell.accessibilityIdentifier = "dumpStationCell_\(station.id)"
+        cell.accessibilityLabel = station.name
 
         cell.dumpStationName.text = station.name
+        cell.dumpStationName.accessibilityIdentifier = "dumpStationName_\(station.id)"
+        cell.dumpStationName.accessibilityLabel = station.name
         cell.favoriteIcon.isHidden = !station.favorite
 
         // Address stored at write time — no async geocoding needed

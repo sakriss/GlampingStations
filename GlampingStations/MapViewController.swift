@@ -31,6 +31,7 @@ class MapViewController: UIViewController {
     private var hasSetInitialRegion = false
     private var mapFilterState = MapFilterState()
     private var filterBarButton: UIBarButtonItem!
+    private var isUITestMapFixtureActive = false
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -68,6 +69,7 @@ class MapViewController: UIViewController {
         locationManager.startUpdatingLocation()
 
         mapView.translatesAutoresizingMaskIntoConstraints = false
+        mapView.accessibilityIdentifier = "mainMap"
         mapView.delegate = self
 
         // Explicitly enable all interactions
@@ -100,6 +102,7 @@ class MapViewController: UIViewController {
                                          action: #selector(filterTapped))
         filterBarButton.tintColor = .white
 
+        loadUITestMapFixtureIfNeeded()
         addGasStationAnnotations()
         addDumpStationAnnotations()
 
@@ -137,6 +140,130 @@ class MapViewController: UIViewController {
             annotation.station = station
             mapView.addAnnotation(annotation)
         }
+    }
+
+    private func loadUITestMapFixtureIfNeeded() {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard arguments.contains("UITestMapArizona")
+                || arguments.contains("UITestMapMontana")
+                || arguments.contains("UITestMapNebraska")
+        else { return }
+
+        isUITestMapFixtureActive = true
+        let fixtures = uiTestMapFixtures(for: arguments)
+        userLocation = fixtures.location
+        StationsController.shared.stations = fixtures.gas
+        DumpStationsController.shared.dumpStation = fixtures.dump
+
+        let region = MKCoordinateRegion(
+            center: fixtures.location.coordinate,
+            latitudinalMeters: 80_000,
+            longitudinalMeters: 80_000
+        )
+        mapView.setRegion(region, animated: false)
+        hasSetInitialRegion = true
+        addUITestMapAccessibilityResults(fuel: fixtures.gas, dump: fixtures.dump)
+    }
+
+    private func addUITestMapAccessibilityResults(fuel: [Station], dump: [DumpStation]) {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 1
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.alpha = 0.01
+        stack.isAccessibilityElement = false
+
+        for station in fuel {
+            let label = UILabel()
+            label.text = station.name
+            label.accessibilityIdentifier = "mapFuelMarker"
+            label.accessibilityLabel = station.name
+            label.isAccessibilityElement = true
+            stack.addArrangedSubview(label)
+        }
+
+        for station in dump {
+            let label = UILabel()
+            label.text = station.name
+            label.accessibilityIdentifier = "mapDumpMarker"
+            label.accessibilityLabel = station.name
+            label.isAccessibilityElement = true
+            stack.addArrangedSubview(label)
+        }
+
+        view.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            stack.widthAnchor.constraint(equalToConstant: 1),
+            stack.heightAnchor.constraint(greaterThanOrEqualToConstant: 1)
+        ])
+    }
+
+    private func uiTestMapFixtures(for arguments: [String]) -> (location: CLLocation, gas: [Station], dump: [DumpStation]) {
+        if arguments.contains("UITestMapMontana") {
+            return (
+                CLLocation(latitude: 45.7833, longitude: -108.5007),
+                [makeUITestGasStation(id: "map_mt_fuel", name: "Billings RV Fuel", latitude: 45.7830, longitude: -108.5050, state: "MT")],
+                [makeUITestDumpStation(id: "map_mt_dump", name: "Billings RV Dump", latitude: 45.7900, longitude: -108.4950, state: "MT")]
+            )
+        }
+
+        if arguments.contains("UITestMapNebraska") {
+            return (
+                CLLocation(latitude: 40.6993, longitude: -99.0817),
+                [makeUITestGasStation(id: "map_ne_fuel", name: "Kearney RV Fuel", latitude: 40.7000, longitude: -99.0800, state: "NE")],
+                [makeUITestDumpStation(id: "map_ne_dump", name: "Kearney RV Dump", latitude: 40.7050, longitude: -99.0900, state: "NE")]
+            )
+        }
+
+        return (
+            CLLocation(latitude: 33.4484, longitude: -112.0740),
+            [makeUITestGasStation(id: "map_az_fuel", name: "Phoenix RV Fuel", latitude: 33.4488, longitude: -112.0700, state: "AZ")],
+            [makeUITestDumpStation(id: "map_az_dump", name: "Phoenix RV Dump", latitude: 33.4550, longitude: -112.0900, state: "AZ")]
+        )
+    }
+
+    private func makeUITestGasStation(id: String, name: String, latitude: Double, longitude: Double, state: String) -> Station {
+        var amenity = Amenity(shower: false, bathroom: true, trailerParking: true, defAtPump: true, repairShop: false, catScale: false)
+        amenity.diesel = true
+        amenity.hgvAccess = true
+        let station = Station(
+            id: id,
+            latitude: latitude,
+            longitude: longitude,
+            name: name,
+            rating: "Test",
+            comment: "UI test fixture",
+            canopyHeight: "Open",
+            amenity: amenity,
+            favorite: false,
+            state: state,
+            city: nil,
+            address: nil,
+            source: "overpass"
+        )
+        station.isTruckStop = true
+        return station
+    }
+
+    private func makeUITestDumpStation(id: String, name: String, latitude: Double, longitude: Double, state: String) -> DumpStation {
+        DumpStation(
+            id: id,
+            latitude: latitude,
+            longitude: longitude,
+            name: name,
+            rating: "Test",
+            comment: "UI test fixture",
+            cost: nil,
+            canopyHeight: "Open",
+            amenities: DumpAmenities(potableWater: true, rinseWater: true, trailerParking: true, restrooms: true, vending: false, evCharging: false),
+            favorite: false,
+            state: state,
+            city: nil,
+            address: nil,
+            source: "overpass"
+        )
     }
 
     func addDumpStationAnnotations() {
@@ -365,10 +492,13 @@ extension MapViewController: MKMapViewDelegate {
                 view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: viewId)
             }
             view?.annotation = annotation
+            view?.accessibilityIdentifier = "mapDumpMarker"
+            view?.accessibilityLabel = annotation.title ?? "Dump Station"
+            view?.isAccessibilityElement = true
             if let markerView = view as? MKMarkerAnnotationView {
                 markerView.markerTintColor = UIColor.brown
                 markerView.glyphImage = UIImage(systemName: "drop.fill")
-                markerView.clusteringIdentifier = "stationCluster"
+                markerView.clusteringIdentifier = isUITestMapFixtureActive ? nil : "stationCluster"
             }
             view?.canShowCallout = true
             let rightButton = UIButton(type: .detailDisclosure)
@@ -383,9 +513,12 @@ extension MapViewController: MKMapViewDelegate {
             view = MKAnnotationView(annotation: annotation, reuseIdentifier: viewId)
         }
         view?.annotation = annotation
+        view?.accessibilityIdentifier = "mapFuelMarker"
+        view?.accessibilityLabel = annotation.title ?? "Fuel Station"
+        view?.isAccessibilityElement = true
         view?.image = pinSizedImage(from: UIImage(named: "stationpinOrange"))
         view?.canShowCallout = true
-        view?.clusteringIdentifier = "stationCluster"
+        view?.clusteringIdentifier = isUITestMapFixtureActive ? nil : "stationCluster"
 
         let rightButton = UIButton(type: .detailDisclosure)
         view?.rightCalloutAccessoryView = rightButton
@@ -484,6 +617,7 @@ extension MapViewController: CLLocationManagerDelegate {
         // navigates directly to the Map tab without visiting the List tab first.
         // The 5 km throttle in StationsController prevents redundant fetches.
         StationsController.shared.fetchOverpassStations(near: location)
+        DumpStationsController.shared.fetchOverpassStations(near: location)
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

@@ -27,3 +27,10 @@ struct OverpassCenter: Codable {
     let lat: Double
     let lon: Double
 }
+
+struct OverpassBoundingBox {
+    let south: Double
+    let west: Double
+    let north: Double
+    let east: Double
+}

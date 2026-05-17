@@ -51,6 +51,61 @@ class OverpassService {
         return try await fetchElements(query: query, cacheKey: "dump", gridKey: gridKey(for: location))
     }
 
+    func fetchRouteAdvisories(near coordinates: [CLLocationCoordinate2D], radiusMeters: Int = 900) async throws -> [OverpassElement] {
+        guard !coordinates.isEmpty else { return [] }
+
+        let clauses = coordinates.map { coordinate in
+            let around = "\(radiusMeters),\(coordinate.latitude),\(coordinate.longitude)"
+            return """
+              node["maxheight"](around:\(around));
+              way["maxheight"](around:\(around));
+              node["maxheight:physical"](around:\(around));
+              way["maxheight:physical"](around:\(around));
+              node["maxheight:forward"](around:\(around));
+              way["maxheight:forward"](around:\(around));
+              node["maxheight:backward"](around:\(around));
+              way["maxheight:backward"](around:\(around));
+              node["maxweight"](around:\(around));
+              way["maxweight"](around:\(around));
+              way["hgv"="no"](around:\(around));
+              way["tunnel"](around:\(around));
+              way["covered"](around:\(around));
+            """
+        }.joined(separator: "\n")
+
+        let query = """
+        [out:json][timeout:12][maxsize:67108864];
+        (
+        \(clauses)
+        );
+        out body center;
+        """
+        return try await fetchElements(query: query, cacheKey: "route_advisory_corridor", gridKey: advisoryGridKey(for: coordinates, radiusMeters: radiusMeters))
+    }
+
+    func fetchRouteStops(near coordinates: [CLLocationCoordinate2D], radiusMeters: Int = 40_000) async throws -> [OverpassElement] {
+        guard !coordinates.isEmpty else { return [] }
+
+        let clauses = coordinates.map { coordinate in
+            let around = "\(radiusMeters),\(coordinate.latitude),\(coordinate.longitude)"
+            return """
+              node["amenity"="fuel"](around:\(around));
+              way["amenity"="fuel"](around:\(around));
+              node["amenity"="sanitary_dump_station"](around:\(around));
+              way["amenity"="sanitary_dump_station"](around:\(around));
+            """
+        }.joined(separator: "\n")
+
+        let query = """
+        [out:json][timeout:18][maxsize:134217728];
+        (
+        \(clauses)
+        );
+        out body center;
+        """
+        return try await fetchElements(query: query, cacheKey: "route_stop_corridor", gridKey: advisoryGridKey(for: coordinates, radiusMeters: radiusMeters))
+    }
+
     // MARK: - Private
 
     private func gridKey(for location: CLLocation) -> String {
@@ -58,6 +113,24 @@ class OverpassService {
         let latBucket = Int(location.coordinate.latitude * 2)
         let lonBucket = Int(location.coordinate.longitude * 2)
         return "\(latBucket)_\(lonBucket)"
+    }
+
+    private func advisoryGridKey(for box: OverpassBoundingBox) -> String {
+        let centerLat = (box.south + box.north) / 2
+        let centerLon = (box.west + box.east) / 2
+        let latBucket = Int(centerLat * 4)
+        let lonBucket = Int(centerLon * 4)
+        return "\(latBucket)_\(lonBucket)"
+    }
+
+    private func advisoryGridKey(for coordinates: [CLLocationCoordinate2D], radiusMeters: Int) -> String {
+        let first = coordinates.first ?? CLLocationCoordinate2D(latitude: 0, longitude: 0)
+        let last = coordinates.last ?? first
+        let firstLat = Int(first.latitude * 20)
+        let firstLon = Int(first.longitude * 20)
+        let lastLat = Int(last.latitude * 20)
+        let lastLon = Int(last.longitude * 20)
+        return "\(firstLat)_\(firstLon)_\(lastLat)_\(lastLon)_\(coordinates.count)_\(radiusMeters)"
     }
 
     private func cacheURL(cacheKey: String, gridKey: String) -> URL? {
@@ -136,4 +209,3 @@ class OverpassService {
         }
     }
 }
-
