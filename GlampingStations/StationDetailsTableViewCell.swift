@@ -26,7 +26,7 @@ class StationDetailsTableViewCell: UITableViewCell {
     
     private static var primaryBg:  UIColor { AppDelegate.primaryBg }
     private static var cardColor:  UIColor { AppDelegate.cardColor }
-    private static let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private static var accentGold: UIColor { AppDelegate.accentGold }
     private static var mutedText:  UIColor { AppDelegate.mutedText }
 
     override func awakeFromNib() {

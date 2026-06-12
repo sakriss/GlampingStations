@@ -63,6 +63,7 @@ class MapViewController: UIViewController {
         super.viewDidLoad()
 
         title = "Map"
+        tabBarItem.image = AppDelegate.exploreMapImage
 
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
@@ -95,12 +96,11 @@ class MapViewController: UIViewController {
         ])
 
         // Create filter button (injected into tabBarController.navigationItem in viewWillAppear)
-        let filterImage = UIImage(systemName: "line.3.horizontal.decrease.circle")
-        filterBarButton = UIBarButtonItem(image: filterImage,
+        filterBarButton = UIBarButtonItem(image: AppDelegate.mapFilterImage,
                                          style: .plain,
                                          target: self,
                                          action: #selector(filterTapped))
-        filterBarButton.tintColor = .white
+        filterBarButton.tintColor = .label
 
         loadUITestMapFixtureIfNeeded()
         addGasStationAnnotations()
@@ -380,11 +380,8 @@ class MapViewController: UIViewController {
     }
 
     private func updateFilterButtonIcon() {
-        let iconName = mapFilterState.isActive
-            ? "line.3.horizontal.decrease.circle.fill"
-            : "line.3.horizontal.decrease.circle"
-        filterBarButton.image = UIImage(systemName: iconName)
-        filterBarButton.tintColor = mapFilterState.isActive ? UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1) : .white
+        filterBarButton.image = AppDelegate.mapFilterImage
+        filterBarButton.tintColor = mapFilterState.isActive ? AppDelegate.accentGold : .label
     }
 
     // MARK: - Filter Button
@@ -475,11 +472,11 @@ extension MapViewController: MKMapViewDelegate {
             let hasFuel = members.contains { $0 is StationPointAnno }
             let hasDump = members.contains { $0 is DumpStationPointAnno }
             if hasFuel && hasDump {
-                view.markerTintColor = UIColor(red: 128/255, green: 0/255, blue: 128/255, alpha: 1) // purple
+                view.markerTintColor = AppDelegate.routeTeal
             } else if hasDump {
-                view.markerTintColor = .brown
+                view.markerTintColor = AppDelegate.dumpCopper
             } else {
-                view.markerTintColor = UIColor(red: 200/255, green: 80/255, blue: 20/255, alpha: 1) // orange
+                view.markerTintColor = AppDelegate.accentGold
             }
             view.glyphText = "\(members.count)"
             return view
@@ -496,8 +493,8 @@ extension MapViewController: MKMapViewDelegate {
             view?.accessibilityLabel = annotation.title ?? "Dump Station"
             view?.isAccessibilityElement = true
             if let markerView = view as? MKMarkerAnnotationView {
-                markerView.markerTintColor = UIColor.brown
-                markerView.glyphImage = UIImage(systemName: "drop.fill")
+                markerView.markerTintColor = AppDelegate.dumpCopper
+                markerView.glyphImage = AppDelegate.dumpStationImage
                 markerView.clusteringIdentifier = isUITestMapFixtureActive ? nil : "stationCluster"
             }
             view?.canShowCallout = true

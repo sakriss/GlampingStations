@@ -41,7 +41,7 @@ class MapFilterViewController: UIViewController {
     // MARK: Colors (match FilterSortViewController)
     private var primaryBg:  UIColor { AppDelegate.primaryBg }
     private var cardColor:  UIColor { AppDelegate.cardColor }
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var accentGold: UIColor { AppDelegate.accentGold }
     private var mutedText:  UIColor { AppDelegate.mutedText }
 
     // MARK: Amenity options
@@ -126,6 +126,7 @@ class MapFilterViewController: UIViewController {
         let fuelRow = buildLayerToggleRow(
             title: "Fuel Stations",
             icon: "fuelpump.fill",
+            tintColor: AppDelegate.accentGold,
             isOn: currentState.showFuelStations,
             tag: 0
         )
@@ -135,7 +136,8 @@ class MapFilterViewController: UIViewController {
 
         let dumpRow = buildLayerToggleRow(
             title: "Dump Stations",
-            icon: "drop.fill",
+            image: AppDelegate.dumpStationImage,
+            tintColor: AppDelegate.dumpCopper,
             isOn: currentState.showDumpStations,
             tag: 1
         )
@@ -292,14 +294,21 @@ class MapFilterViewController: UIViewController {
         return card
     }
 
-    private func buildLayerToggleRow(title: String, icon: String, isOn: Bool, tag: Int)
+    private func buildLayerToggleRow(
+        title: String,
+        image: UIImage? = nil,
+        icon: String? = nil,
+        tintColor: UIColor,
+        isOn: Bool,
+        tag: Int
+    )
         -> (container: UIView, button: UIButton) {
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false
         container.heightAnchor.constraint(equalToConstant: 52).isActive = true
 
-        let iconView = UIImageView(image: UIImage(systemName: icon))
-        iconView.tintColor = accentGold
+        let iconView = UIImageView(image: image ?? icon.flatMap { UIImage(systemName: $0) })
+        iconView.tintColor = tintColor
         iconView.contentMode = .scaleAspectFit
         iconView.translatesAutoresizingMaskIntoConstraints = false
 

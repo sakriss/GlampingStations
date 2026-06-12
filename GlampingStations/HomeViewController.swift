@@ -15,7 +15,9 @@ class HomeViewController: UIViewController {
 
     private var primaryBg:  UIColor { AppDelegate.primaryBg }
     private var cardColor:  UIColor { AppDelegate.cardColor }
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255,  alpha: 1)
+    private var accentGold: UIColor { AppDelegate.accentGold }
+    private var routeTeal: UIColor { AppDelegate.routeTeal }
+    private var dumpCopper: UIColor { AppDelegate.dumpCopper }
     private var mutedText:  UIColor { AppDelegate.mutedText }
 
     // MARK: - Views
@@ -42,6 +44,7 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Home"
+        tabBarItem.image = AppDelegate.travelTrailerImage
         view.backgroundColor = primaryBg
 
         setupLocationManager()
@@ -135,6 +138,7 @@ class HomeViewController: UIViewController {
         let gasSection = buildFavoritesSection(
             title: "Favorite Gas Stations",
             icon: "fuelpump.fill",
+            tintColor: accentGold,
             tag: 0
         )
         stackView.addArrangedSubview(gasSection)
@@ -142,7 +146,8 @@ class HomeViewController: UIViewController {
         // Favorite Dump Stations section
         let dumpSection = buildFavoritesSection(
             title: "Favorite Dump Stations",
-            icon: "drop.fill",
+            image: AppDelegate.dumpStationImage,
+            tintColor: dumpCopper,
             tag: 1
         )
         stackView.addArrangedSubview(dumpSection)
@@ -154,9 +159,14 @@ class HomeViewController: UIViewController {
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false
 
-        let card = UIView()
-        card.backgroundColor = cardColor
-        card.layer.cornerRadius = 16
+        let card = TrailGradientView()
+        card.colors = [
+            UIColor(red: 28/255, green: 68/255, blue: 67/255, alpha: 1),
+            UIColor(red: 11/255, green: 35/255, blue: 48/255, alpha: 1)
+        ]
+        card.layer.cornerRadius = 24
+        card.layer.cornerCurve = .continuous
+        card.layer.masksToBounds = true
         card.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(card)
 
@@ -169,46 +179,63 @@ class HomeViewController: UIViewController {
 
         let inner = UIStackView()
         inner.axis = .vertical
-        inner.spacing = 8
+        inner.spacing = 10
         inner.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(inner)
 
         NSLayoutConstraint.activate([
-            inner.topAnchor.constraint(equalTo: card.topAnchor, constant: 20),
-            inner.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 20),
-            inner.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -20),
-            inner.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -20)
+            inner.topAnchor.constraint(equalTo: card.topAnchor, constant: 22),
+            inner.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 22),
+            inner.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -22),
+            inner.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -22)
         ])
 
-        // App icon + title row
+        let eyebrow = UILabel()
+        eyebrow.text = "RV ROAD COMPANION"
+        eyebrow.font = UIFont.systemFont(ofSize: 11, weight: .bold)
+        eyebrow.textColor = routeTeal
+
         let titleRow = UIStackView()
         titleRow.axis = .horizontal
-        titleRow.spacing = 12
+        titleRow.spacing = 14
         titleRow.alignment = .center
 
-        let iconView = UIImageView()
-        iconView.image = UIImage(systemName: "rv")
-            ?? UIImage(systemName: "car.fill")
+        let iconBadge = UIView()
+        iconBadge.backgroundColor = accentGold.withAlphaComponent(0.16)
+        iconBadge.layer.cornerRadius = 18
+        iconBadge.layer.cornerCurve = .continuous
+        iconBadge.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconView = UIImageView(image: AppDelegate.travelTrailerImage)
         iconView.tintColor = accentGold
         iconView.contentMode = .scaleAspectFit
         iconView.translatesAutoresizingMaskIntoConstraints = false
-        iconView.widthAnchor.constraint(equalToConstant: 36).isActive = true
-        iconView.heightAnchor.constraint(equalToConstant: 36).isActive = true
+        iconBadge.addSubview(iconView)
+        NSLayoutConstraint.activate([
+            iconBadge.widthAnchor.constraint(equalToConstant: 58),
+            iconBadge.heightAnchor.constraint(equalToConstant: 58),
+            iconView.leadingAnchor.constraint(equalTo: iconBadge.leadingAnchor, constant: 10),
+            iconView.trailingAnchor.constraint(equalTo: iconBadge.trailingAnchor, constant: -10),
+            iconView.topAnchor.constraint(equalTo: iconBadge.topAnchor, constant: 10),
+            iconView.bottomAnchor.constraint(equalTo: iconBadge.bottomAnchor, constant: -10)
+        ])
 
         let titleLabel = UILabel()
-        titleLabel.text = "Glamping Stations"
-        titleLabel.font = UIFont.systemFont(ofSize: 24, weight: .bold)
-        titleLabel.textColor = .label
+        titleLabel.text = "Know the next\ngood stop."
+        titleLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
+        titleLabel.textColor = .white
+        titleLabel.numberOfLines = 2
 
-        titleRow.addArrangedSubview(iconView)
+        titleRow.addArrangedSubview(iconBadge)
         titleRow.addArrangedSubview(titleLabel)
 
         let subtitleLabel = UILabel()
-        subtitleLabel.text = "Your guide to RV-friendly fuel and dump stops"
-        subtitleLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-        subtitleLabel.textColor = mutedText
+        subtitleLabel.text = "Fuel, dump stations, and route confidence for the road ahead."
+        subtitleLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        subtitleLabel.textColor = UIColor.white.withAlphaComponent(0.72)
         subtitleLabel.numberOfLines = 0
 
+        inner.addArrangedSubview(eyebrow)
         inner.addArrangedSubview(titleRow)
         inner.addArrangedSubview(subtitleLabel)
 
@@ -227,7 +254,10 @@ class HomeViewController: UIViewController {
 
         let card = UIView()
         card.backgroundColor = cardColor
-        card.layer.cornerRadius = 16
+        card.layer.cornerRadius = 20
+        card.layer.cornerCurve = .continuous
+        card.layer.borderWidth = 1
+        card.layer.borderColor = AppDelegate.separatorColor.cgColor
         card.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(card)
 
@@ -256,39 +286,68 @@ class HomeViewController: UIViewController {
         dumpCountLabel = UILabel()
         favCountLabel = UILabel()
 
-        statsStack.addArrangedSubview(buildStatItem(icon: "fuelpump.fill", valueLabel: gasCountLabel, title: "Gas Stations"))
-        statsStack.addArrangedSubview(buildStatItem(icon: "drop.fill", valueLabel: dumpCountLabel, title: "Dump Stations"))
-        statsStack.addArrangedSubview(buildStatItem(icon: "star.fill", valueLabel: favCountLabel, title: "Favorites"))
+        statsStack.addArrangedSubview(buildStatItem(
+            image: UIImage(systemName: "fuelpump.fill"),
+            tintColor: accentGold,
+            valueLabel: gasCountLabel,
+            title: "Fuel"
+        ))
+        statsStack.addArrangedSubview(buildStatItem(
+            image: AppDelegate.dumpStationImage,
+            tintColor: dumpCopper,
+            valueLabel: dumpCountLabel,
+            title: "Dump"
+        ))
+        statsStack.addArrangedSubview(buildStatItem(
+            image: UIImage(systemName: "star.fill"),
+            tintColor: routeTeal,
+            valueLabel: favCountLabel,
+            title: "Saved"
+        ))
 
         updateStats()
 
         return container
     }
 
-    private func buildStatItem(icon: String, valueLabel: UILabel, title: String) -> UIView {
+    private func buildStatItem(image: UIImage?, tintColor: UIColor, valueLabel: UILabel, title: String) -> UIView {
         let stack = UIStackView()
         stack.axis = .vertical
         stack.alignment = .center
-        stack.spacing = 4
+        stack.spacing = 6
 
-        let iconView = UIImageView(image: UIImage(systemName: icon))
-        iconView.tintColor = accentGold
+        let iconBadge = UIView()
+        iconBadge.backgroundColor = tintColor.withAlphaComponent(0.13)
+        iconBadge.layer.cornerRadius = 13
+        iconBadge.layer.cornerCurve = .continuous
+        iconBadge.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconView = UIImageView(image: image)
+        iconView.tintColor = tintColor
         iconView.contentMode = .scaleAspectFit
         iconView.translatesAutoresizingMaskIntoConstraints = false
-        iconView.heightAnchor.constraint(equalToConstant: 22).isActive = true
+        iconBadge.addSubview(iconView)
+        NSLayoutConstraint.activate([
+            iconBadge.widthAnchor.constraint(equalToConstant: 36),
+            iconBadge.heightAnchor.constraint(equalToConstant: 30),
+            iconView.centerXAnchor.constraint(equalTo: iconBadge.centerXAnchor),
+            iconView.centerYAnchor.constraint(equalTo: iconBadge.centerYAnchor),
+            iconView.widthAnchor.constraint(equalToConstant: 19),
+            iconView.heightAnchor.constraint(equalToConstant: 19)
+        ])
 
         valueLabel.text = "0"
-        valueLabel.font = UIFont.systemFont(ofSize: 22, weight: .bold)
+        valueLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 22, weight: .bold)
         valueLabel.textColor = .label
         valueLabel.textAlignment = .center
 
         let titleLbl = UILabel()
         titleLbl.text = title
-        titleLbl.font = UIFont.systemFont(ofSize: 11, weight: .medium)
+        titleLbl.font = UIFont.systemFont(ofSize: 11, weight: .semibold)
         titleLbl.textColor = mutedText
         titleLbl.textAlignment = .center
 
-        stack.addArrangedSubview(iconView)
+        stack.addArrangedSubview(iconBadge)
         stack.addArrangedSubview(valueLabel)
         stack.addArrangedSubview(titleLbl)
 
@@ -313,7 +372,8 @@ class HomeViewController: UIViewController {
 
         let card = UIView()
         card.backgroundColor = UIColor(red: 35/255, green: 28/255, blue: 10/255, alpha: 1)
-        card.layer.cornerRadius = 16
+        card.layer.cornerRadius = 20
+        card.layer.cornerCurve = .continuous
         card.layer.borderWidth = 1
         card.layer.borderColor = accentGold.withAlphaComponent(0.4).cgColor
         card.translatesAutoresizingMaskIntoConstraints = false
@@ -398,22 +458,29 @@ class HomeViewController: UIViewController {
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false
 
-        let card = UIView()
-        card.backgroundColor = cardColor
-        card.layer.cornerRadius = 16
+        let card = TrailGradientView()
+        card.colors = [
+            routeTeal.withAlphaComponent(0.32),
+            cardColor
+        ]
+        card.layer.cornerRadius = 20
+        card.layer.cornerCurve = .continuous
+        card.layer.borderWidth = 1
+        card.layer.borderColor = routeTeal.withAlphaComponent(0.28).cgColor
+        card.layer.masksToBounds = true
         card.translatesAutoresizingMaskIntoConstraints = false
         card.isUserInteractionEnabled = true
         container.addSubview(card)
 
-        let mapIcon = UIImageView(image: UIImage(systemName: "map.fill"))
-        mapIcon.tintColor = accentGold
+        let mapIcon = UIImageView(image: AppDelegate.routeJourneyImage)
+        mapIcon.tintColor = routeTeal
         mapIcon.contentMode = .scaleAspectFit
         mapIcon.translatesAutoresizingMaskIntoConstraints = false
 
         let titleLbl = UILabel()
         titleLbl.text = "Plan a Trip"
         titleLbl.font = UIFont.systemFont(ofSize: 18, weight: .bold)
-        titleLbl.textColor = .white
+        titleLbl.textColor = .label
 
         let subtitleLbl = UILabel()
         subtitleLbl.text = "Find fuel and dump stations along your route"
@@ -445,7 +512,7 @@ class HomeViewController: UIViewController {
         textStack.translatesAutoresizingMaskIntoConstraints = false
 
         let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
-        chevron.tintColor = mutedText
+        chevron.tintColor = routeTeal
         chevron.contentMode = .scaleAspectFit
         chevron.translatesAutoresizingMaskIntoConstraints = false
         chevron.setContentHuggingPriority(.required, for: .horizontal)
@@ -499,7 +566,13 @@ class HomeViewController: UIViewController {
 
     // MARK: - Favorites Section
 
-    private func buildFavoritesSection(title: String, icon: String, tag: Int) -> UIView {
+    private func buildFavoritesSection(
+        title: String,
+        image: UIImage? = nil,
+        icon: String? = nil,
+        tintColor: UIColor,
+        tag: Int
+    ) -> UIView {
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false
 
@@ -511,8 +584,8 @@ class HomeViewController: UIViewController {
         headerStack.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(headerStack)
 
-        let iconView = UIImageView(image: UIImage(systemName: icon))
-        iconView.tintColor = accentGold
+        let iconView = UIImageView(image: image ?? icon.flatMap { UIImage(systemName: $0) })
+        iconView.tintColor = tintColor
         iconView.contentMode = .scaleAspectFit
         iconView.translatesAutoresizingMaskIntoConstraints = false
         iconView.widthAnchor.constraint(equalToConstant: 20).isActive = true
@@ -629,7 +702,8 @@ extension HomeViewController: UICollectionViewDataSource {
                 name: station.name ?? "Unknown",
                 rating: station.rating ?? "",
                 distance: String(format: "%.0f mi", miles),
-                icon: "fuelpump.fill"
+                image: UIImage(systemName: "fuelpump.fill"),
+                tintColor: AppDelegate.accentGold
             )
         } else {
             let station = favoriteDumpStations[indexPath.item]
@@ -639,7 +713,8 @@ extension HomeViewController: UICollectionViewDataSource {
                 name: station.name ?? "Unknown",
                 rating: station.rating ?? "",
                 distance: String(format: "%.0f mi", miles),
-                icon: "drop.fill"
+                image: AppDelegate.dumpStationImage,
+                tintColor: AppDelegate.dumpCopper
             )
         }
 
@@ -687,7 +762,7 @@ class FavoriteStationCell: UICollectionViewCell {
     static let reuseId = "FavoriteStationCell"
 
     private var cardColor:  UIColor { AppDelegate.cardColor }
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var accentGold: UIColor { AppDelegate.accentGold }
     private var mutedText:  UIColor { AppDelegate.mutedText }
 
     private let nameLabel = UILabel()
@@ -707,7 +782,10 @@ class FavoriteStationCell: UICollectionViewCell {
 
     private func setupCell() {
         contentView.backgroundColor = cardColor
-        contentView.layer.cornerRadius = 14
+        contentView.layer.cornerRadius = 18
+        contentView.layer.cornerCurve = .continuous
+        contentView.layer.borderWidth = 1
+        contentView.layer.borderColor = AppDelegate.separatorColor.cgColor
         contentView.layer.masksToBounds = true
 
         // Star badge
@@ -770,11 +848,12 @@ class FavoriteStationCell: UICollectionViewCell {
         ])
     }
 
-    func configure(name: String, rating: String, distance: String, icon: String) {
+    func configure(name: String, rating: String, distance: String, image: UIImage?, tintColor: UIColor) {
         nameLabel.text = name
         ratingLabel.text = rating
         distanceLabel.text = distance
-        iconView.image = UIImage(systemName: icon)
+        iconView.image = image
+        iconView.tintColor = tintColor
     }
 
     override func prepareForReuse() {
@@ -783,5 +862,29 @@ class FavoriteStationCell: UICollectionViewCell {
         ratingLabel.text = nil
         distanceLabel.text = nil
         iconView.image = nil
+    }
+}
+
+private final class TrailGradientView: UIView {
+    var colors: [UIColor] = [] {
+        didSet { gradientLayer.colors = colors.map(\.cgColor) }
+    }
+
+    private let gradientLayer = CAGradientLayer()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 1, y: 1)
+        layer.insertSublayer(gradientLayer, at: 0)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        gradientLayer.frame = bounds
     }
 }

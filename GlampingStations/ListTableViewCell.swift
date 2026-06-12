@@ -14,13 +14,13 @@ class ListTableViewCell: UITableViewCell {
     @IBOutlet weak var stationDistanceLabel: UILabel!
 
     private static var cardColor:  UIColor { AppDelegate.cardColor }
-    private static let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private static var accentGold: UIColor { AppDelegate.accentGold }
     private static var mutedText:  UIColor { AppDelegate.mutedText }
 
     let favoriteIcon: UIImageView = {
         let iv = UIImageView()
         iv.image = UIImage(systemName: "star.fill")
-        iv.tintColor = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+        iv.tintColor = AppDelegate.accentGold
         iv.translatesAutoresizingMaskIntoConstraints = false
         iv.isHidden = true
         return iv
@@ -41,7 +41,10 @@ class ListTableViewCell: UITableViewCell {
 
         backgroundColor = .clear
         contentView.backgroundColor = ListTableViewCell.cardColor
-        contentView.layer.cornerRadius = 14
+        contentView.layer.cornerRadius = 18
+        contentView.layer.cornerCurve = .continuous
+        contentView.layer.borderWidth = 1
+        contentView.layer.borderColor = AppDelegate.separatorColor.cgColor
         contentView.layer.masksToBounds = true
         selectionStyle = .none
 

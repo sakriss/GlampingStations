@@ -253,7 +253,7 @@
                             <constraint firstItem="B5z-6z-9nV" firstAttribute="leading" secondItem="VoW-uh-6Ci" secondAttribute="leading" id="smp-1e-TgC"/>
                         </constraints>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Map" image="map.fill" catalog="system" id="lgD-Ql-w8I"/>
+                    <tabBarItem key="tabBarItem" title="Map" image="exploreMapGlyph" id="lgD-Ql-w8I"/>
                     <connections>
                         <segue destination="YR0-Cu-PTZ" kind="show" identifier="stationDetailsSegue" id="RcT-aJ-dSb"/>
                     </connections>
@@ -1564,7 +1564,7 @@ Cg
                     <toolbarItems/>
                     <navigationItem key="navigationItem" title="Glamping Stations" id="Fr5-WI-edb">
                         <barButtonItem key="backBarButtonItem" title="Back" id="0GH-a6-hfO"/>
-                        <barButtonItem key="rightBarButtonItem" title="Item" image="folder.badge.gear" catalog="system" id="nol-1k-2Mu">
+                        <barButtonItem key="rightBarButtonItem" title="Settings" image="rvSettingsGlyph" id="nol-1k-2Mu">
                             <color key="tintColor" systemColor="labelColor"/>
                             <connections>
                                 <segue destination="Bjb-Du-QBe" kind="show" id="ewM-ea-C3e"/>
@@ -1662,7 +1662,7 @@ Cg
                             <constraint firstItem="dmW-vd-bJz" firstAttribute="trailing" secondItem="Uyt-rZ-fna" secondAttribute="trailing" id="qdZ-qN-Wih"/>
                         </constraints>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Dump" image="trash.fill" catalog="system" id="2FK-SM-zJj" userLabel="Dump"/>
+                    <tabBarItem key="tabBarItem" title="Dump" image="dumpStationGlyph" id="2FK-SM-zJj" userLabel="Dump"/>
                     <connections>
                         <outlet property="dumpStationTableView" destination="Uyt-rZ-fna" id="ZU1-c9-F1A"/>
                     </connections>
@@ -1681,7 +1681,7 @@ Cg
                         <viewLayoutGuide key="safeArea" id="HOME-SG-002"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Home" image="house.fill" catalog="system" id="HOME-TB-001"/>
+                    <tabBarItem key="tabBarItem" title="Home" image="travelTrailerGlyph" id="HOME-TB-001"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="HOME-FR-001" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -1697,7 +1697,7 @@ Cg
                         <viewLayoutGuide key="safeArea" id="ROUTES-SG-002"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
-                    <tabBarItem key="tabBarItem" title="Routes" image="map.fill" catalog="system" id="ROUTES-TB-001"/>
+                    <tabBarItem key="tabBarItem" title="Routes" image="routeJourneyGlyph" id="ROUTES-TB-001"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ROUTES-FR-001" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -1708,11 +1708,16 @@ Cg
         <segue reference="RcT-aJ-dSb"/>
     </inferredMetricsTieBreakers>
     <resources>
-        <image name="folder.badge.gear" catalog="system" width="128" height="93"/>
+        <image name="dumpStationGlyph" width="28" height="28"/>
+        <image name="exploreMapGlyph" width="28" height="28"/>
         <image name="fuelpump.fill" catalog="system" width="128" height="125"/>
         <image name="house.fill" catalog="system" width="128" height="104"/>
+        <image name="mapFilterGlyph" width="28" height="28"/>
         <image name="map.fill" catalog="system" width="128" height="110"/>
+        <image name="rvSettingsGlyph" width="32" height="32"/>
         <image name="trash.fill" catalog="system" width="117" height="128"/>
+        <image name="travelTrailerGlyph" width="28" height="28"/>
+        <image name="routeJourneyGlyph" width="28" height="28"/>
         <namedColor name="DarkModeText">
             <color white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </namedColor>

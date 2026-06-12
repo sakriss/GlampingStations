@@ -30,7 +30,7 @@ class StationDetailsViewController: UIViewController {
     var stationCoords = [CLLocationCoordinate2D()]
     
     private var primaryBg: UIColor { AppDelegate.primaryBg }
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var accentGold: UIColor { AppDelegate.accentGold }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -255,8 +255,8 @@ extension StationDetailsViewController: MKMapViewDelegate {
                 view = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: viewId)
             }
             if let markerView = view as? MKMarkerAnnotationView {
-                markerView.markerTintColor = .brown
-                markerView.glyphImage = UIImage(systemName: "drop.fill")
+                markerView.markerTintColor = AppDelegate.dumpCopper
+                markerView.glyphImage = AppDelegate.dumpStationImage
             }
             view?.canShowCallout = false
             return view
@@ -284,7 +284,7 @@ extension StationDetailsViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         let renderer = MKPolylineRenderer(overlay: overlay)
-        renderer.strokeColor = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 0.85)
+        renderer.strokeColor = AppDelegate.accentGold.withAlphaComponent(0.85)
         renderer.lineWidth = 3
         return renderer
     }
@@ -401,7 +401,7 @@ extension StationDetailsViewController: UITableViewDataSource {
                     let costLabel = UILabel()
                     costLabel.text = cost
                     costLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-                    costLabel.textColor = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+                    costLabel.textColor = AppDelegate.accentGold
 
                     costRow.addArrangedSubview(costIcon)
                     costRow.addArrangedSubview(costLabel)
@@ -422,7 +422,7 @@ extension StationDetailsViewController: UITableViewDataSource {
                 let header = UILabel()
                 header.text = "Amenities"
                 header.font = UIFont.systemFont(ofSize: 16, weight: .bold)
-                header.textColor = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+                header.textColor = AppDelegate.accentGold
                 vStack.addArrangedSubview(header)
 
                 // Grid (2 columns)
@@ -501,7 +501,7 @@ extension StationDetailsViewController: UITableViewDataSource {
                         heightRow.alignment = .center
 
                         let icon = UIImageView(image: UIImage(systemName: "arrow.up.and.down"))
-                        icon.tintColor = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+                        icon.tintColor = AppDelegate.accentGold
                         icon.translatesAutoresizingMaskIntoConstraints = false
                         NSLayoutConstraint.activate([
                             icon.widthAnchor.constraint(equalToConstant: 18),
@@ -576,4 +576,3 @@ extension UINavigationController {
        viewControllers.count > 1 ? viewControllers[viewControllers.count - 2] : nil
     }
 }
-

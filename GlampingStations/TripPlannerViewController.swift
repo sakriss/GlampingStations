@@ -41,10 +41,17 @@ enum TripStationType {
         }
     }
 
-    var systemIcon: String {
+    var iconImage: UIImage? {
         switch self {
-        case .gas:  return "fuelpump.fill"
-        case .dump: return "drop.fill"
+        case .gas:  return UIImage(systemName: "fuelpump.fill")
+        case .dump: return AppDelegate.dumpStationImage
+        }
+    }
+
+    var tintColor: UIColor {
+        switch self {
+        case .gas:  return AppDelegate.accentGold
+        case .dump: return AppDelegate.dumpCopper
         }
     }
 }
@@ -284,6 +291,7 @@ class TripPlannerViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tabBarItem.image = AppDelegate.routeJourneyImage
         title = "Routes"
         view.backgroundColor = primaryBg
 
@@ -1890,8 +1898,8 @@ extension TripPlannerViewController: MKMapViewDelegate {
                 view?.markerTintColor = accentGold
                 view?.glyphImage = UIImage(systemName: "fuelpump.fill")
             case .dump:
-                view?.markerTintColor = UIColor(red: 139/255, green: 90/255, blue: 43/255, alpha: 1)
-                view?.glyphImage = UIImage(systemName: "drop.fill")
+                view?.markerTintColor = AppDelegate.dumpCopper
+                view?.glyphImage = AppDelegate.dumpStationImage
             case .none:
                 view?.markerTintColor = .gray
             }
@@ -2115,8 +2123,8 @@ class TripStationCell: UITableViewCell {
     }
 
     func configure(with trip: TripStation) {
-        iconView.image = UIImage(systemName: trip.type.systemIcon)
-        iconView.tintColor = trip.type.systemIcon == "fuelpump.fill" ? AppDelegate.accentGold : UIColor(red: 139/255, green: 90/255, blue: 43/255, alpha: 1)
+        iconView.image = trip.type.iconImage
+        iconView.tintColor = trip.type.tintColor
         nameLabel.text = trip.type.name
         locationLabel.text = trip.type.locationLabel
         milesLabel.text = String(format: "%.0f mi along route", trip.milesFromStart)

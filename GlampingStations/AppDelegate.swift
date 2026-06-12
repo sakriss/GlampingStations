@@ -19,28 +19,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // MARK: - Shared Dynamic Colors
 
-    /// Dark navy / light gray — main view background
+    /// Deep trailhead navy / warm off-white - main view background.
     static let primaryBg = UIColor { tc in
         tc.userInterfaceStyle == .dark
-            ? UIColor(red: 10/255,  green: 25/255,  blue: 47/255,  alpha: 1)
-            : UIColor(red: 242/255, green: 244/255, blue: 248/255, alpha: 1)
+            ? UIColor(red: 7/255, green: 20/255, blue: 30/255, alpha: 1)
+            : UIColor(red: 246/255, green: 246/255, blue: 240/255, alpha: 1)
     }
 
-    /// Dark card / white — card/surface background
+    /// Raised surface with a subtle green cast in dark mode.
     static let cardColor = UIColor { tc in
         tc.userInterfaceStyle == .dark
-            ? UIColor(red: 22/255,  green: 38/255,  blue: 62/255,  alpha: 1)
-            : UIColor.white
+            ? UIColor(red: 17/255, green: 37/255, blue: 43/255, alpha: 1)
+            : UIColor(red: 255/255, green: 255/255, blue: 252/255, alpha: 1)
     }
 
-    /// Gold accent — stays the same in both modes
-    static let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    /// Warm campsite light, cool route teal, and utility copper.
+    static let accentGold = UIColor(red: 232/255, green: 178/255, blue: 66/255, alpha: 1)
+    static let routeTeal = UIColor(red: 67/255, green: 166/255, blue: 151/255, alpha: 1)
+    static let dumpCopper = UIColor(red: 196/255, green: 104/255, blue: 62/255, alpha: 1)
 
     /// Muted blue-gray / slate — secondary labels
     static let mutedText = UIColor { tc in
         tc.userInterfaceStyle == .dark
-            ? UIColor(red: 150/255, green: 165/255, blue: 190/255, alpha: 1)
-            : UIColor(red: 95/255,  green: 108/255, blue: 128/255, alpha: 1)
+            ? UIColor(red: 154/255, green: 174/255, blue: 177/255, alpha: 1)
+            : UIColor(red: 91/255, green: 105/255, blue: 105/255, alpha: 1)
     }
 
     /// White in dark / black in light — primary label text
@@ -64,8 +66,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     static var navBarAppearance: UINavigationBarAppearance {
         let a = UINavigationBarAppearance()
-        a.configureWithOpaqueBackground()
-        a.backgroundColor = primaryBg
+        a.configureWithTransparentBackground()
+        a.backgroundEffect = UIBlurEffect(style: .systemThinMaterial)
+        a.backgroundColor = primaryBg.withAlphaComponent(0.72)
+        a.shadowColor = separatorColor
         a.titleTextAttributes      = [.foregroundColor: UIColor.label]
         a.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
         return a
@@ -73,13 +77,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     static var tabBarAppearance: UITabBarAppearance {
         let a = UITabBarAppearance()
-        a.configureWithOpaqueBackground()
-        a.backgroundColor = primaryBg
+        a.configureWithTransparentBackground()
+        a.backgroundEffect = UIBlurEffect(style: .systemThinMaterial)
+        a.backgroundColor = primaryBg.withAlphaComponent(0.76)
+        a.shadowColor = separatorColor
         a.stackedLayoutAppearance.selected.iconColor = accentGold
         a.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: accentGold]
         a.stackedLayoutAppearance.normal.iconColor = mutedText
         a.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: mutedText]
         return a
+    }
+
+    static var dumpStationImage: UIImage? {
+        UIImage(named: "dumpStationGlyph")?.withRenderingMode(.alwaysTemplate)
+    }
+
+    static var travelTrailerImage: UIImage? {
+        UIImage(named: "travelTrailerGlyph")?.withRenderingMode(.alwaysTemplate)
+    }
+
+    static var exploreMapImage: UIImage? {
+        UIImage(named: "exploreMapGlyph")?.withRenderingMode(.alwaysTemplate)
+    }
+
+    static var routeJourneyImage: UIImage? {
+        UIImage(named: "routeJourneyGlyph")?.withRenderingMode(.alwaysTemplate)
+    }
+
+    static var mapFilterImage: UIImage? {
+        UIImage(named: "mapFilterGlyph")?.withRenderingMode(.alwaysTemplate)
+    }
+
+    static var rvSettingsImage: UIImage? {
+        UIImage(named: "rvSettingsGlyph")?.withRenderingMode(.alwaysTemplate)
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
@@ -91,11 +121,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UINavigationBar.appearance().scrollEdgeAppearance = AppDelegate.navBarAppearance
         UINavigationBar.appearance().compactAppearance = AppDelegate.navBarAppearance
         UINavigationBar.appearance().tintColor = AppDelegate.accentGold
-        UINavigationBar.appearance().isTranslucent = false
+        UINavigationBar.appearance().isTranslucent = true
 
         UITabBar.appearance().standardAppearance = AppDelegate.tabBarAppearance
         UITabBar.appearance().scrollEdgeAppearance = AppDelegate.tabBarAppearance
-        UITabBar.appearance().isTranslucent = false
+        UITabBar.appearance().isTranslucent = true
 
         // Apply stored appearance preference (default is dark)
         if UserDefaults.standard.object(forKey: AboutViewController.appearanceKey) == nil {
@@ -169,4 +199,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
 }
-

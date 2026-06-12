@@ -49,7 +49,7 @@ class FilterSortViewController: UIViewController {
     // MARK: Colors
     private var primaryBg:  UIColor { AppDelegate.primaryBg }
     private var cardColor:  UIColor { AppDelegate.cardColor }
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var accentGold: UIColor { AppDelegate.accentGold }
     private var mutedText:  UIColor { AppDelegate.mutedText }
 
     // MARK: Tracked UI

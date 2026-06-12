@@ -38,7 +38,7 @@ class DumpStationViewController: UIViewController {
 
     // MARK: - Colors
     private var primaryBg: UIColor { AppDelegate.primaryBg }
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var accentGold: UIColor { AppDelegate.accentGold }
 
     // MARK: - Lifecycle
 
@@ -62,6 +62,7 @@ class DumpStationViewController: UIViewController {
         super.viewDidLoad()
 
         title = "Dump"
+        tabBarItem.image = AppDelegate.dumpStationImage
         view.backgroundColor = primaryBg
 
         // Inline filter/sort bar (nav bar buttons don't work when Nav wraps TabBar)
@@ -88,7 +89,7 @@ class DumpStationViewController: UIViewController {
         // Pull-to-refresh with dark styling
         let attrs: [NSAttributedString.Key: Any] = [.foregroundColor: accentGold]
         refreshControl.tintColor = accentGold
-        refreshControl.backgroundColor = UIColor(red: 22/255, green: 38/255, blue: 62/255, alpha: 1)
+        refreshControl.backgroundColor = AppDelegate.cardColor
         refreshControl.attributedTitle = NSAttributedString(string: "Refreshing Dump Stations...", attributes: attrs)
         refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
         dumpStationTableView.addSubview(refreshControl)

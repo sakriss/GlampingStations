@@ -11,7 +11,7 @@ class PaywallViewController: UIViewController {
     // MARK: - Colors
     private var primaryBg:  UIColor { AppDelegate.primaryBg }
     private var cardColor:  UIColor { AppDelegate.cardColor }
-    private let accentGold = UIColor(red: 212/255, green: 175/255, blue: 55/255, alpha: 1)
+    private var accentGold: UIColor { AppDelegate.accentGold }
     private var mutedText:  UIColor { AppDelegate.mutedText }
 
     // MARK: - Views
@@ -62,7 +62,7 @@ class PaywallViewController: UIViewController {
         let features: [(icon: String, title: String, desc: String)] = [
             ("star.fill",           "Unlimited Favorites",  "Save as many stations as you want"),
             ("wifi.slash",          "Offline Mode",         "Access stations with no cell signal"),
-            ("map.fill",            "Trip Planner",         "Find stations along your entire route")
+            ("routeJourneyGlyph",   "Trip Planner",         "Find stations along your entire route")
         ]
         let featuresStack = UIStackView(arrangedSubviews: features.map { makeFeatureRow($0) })
         featuresStack.axis = .vertical
@@ -183,7 +183,10 @@ class PaywallViewController: UIViewController {
         card.layer.cornerRadius = 12
         card.translatesAutoresizingMaskIntoConstraints = false
 
-        let icon = UIImageView(image: UIImage(systemName: feature.icon))
+        let iconImage = feature.icon == "routeJourneyGlyph"
+            ? AppDelegate.routeJourneyImage
+            : UIImage(systemName: feature.icon)
+        let icon = UIImageView(image: iconImage)
         icon.tintColor = accentGold
         icon.contentMode = .scaleAspectFit
         icon.translatesAutoresizingMaskIntoConstraints = false
